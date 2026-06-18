@@ -1,16 +1,36 @@
 "use client";
 
 import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { Button } from "@/components/ui/button";
+import { PlayerBar } from "@/components/PlayerBar";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import {
-  Play, Activity, Wind, TrendingUp, Calendar as CalendarIcon,
-  Smile, Frown, Meh, Angry, Heart
+  Play,
+  Pause,
+  Activity,
+  Wind,
+  TrendingUp,
+  Calendar as CalendarIcon,
+  Smile,
+  Frown,
+  Meh,
+  Angry,
+  Heart,
+  Music2,
 } from "lucide-react";
 import {
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
-  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
 } from "recharts";
-import { motion } from "framer-motion";
 
 const emotionData = [
   { subject: "شادی", A: 40, fullMark: 100 },
@@ -30,152 +50,360 @@ const weeklyData = [
   { name: "جمعه", score: 90 },
 ];
 
+function formatTime(s: number) {
+  if (!s || isNaN(s)) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
 export function DashboardContent() {
+  const player = useAudioPlayer();
+
   return (
-    <div className="flex h-screen bg-background font-sans overflow-hidden">
-      <DashboardSidebar />
+    <div dir="rtl" className="h-screen flex flex-col bg-black overflow-hidden">
+      {/* Main area: sidebar + content with gap (Spotify seams) */}
+      <div className="flex flex-1 gap-2 p-2 pb-0 min-h-0">
+        <DashboardSidebar
+          tracks={player.queue}
+          currentTrack={player.currentTrack}
+          isPlaying={player.isPlaying}
+          onPlayTrack={player.playTrack}
+        />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto space-y-8">
+        {/* Main content panel */}
+        <main className="flex-1 bg-[#121212] rounded-lg overflow-y-auto min-w-0">
+          {/* Gradient header */}
+          <div className="bg-gradient-to-b from-primary/30 via-[#1a1a2e] to-[#121212] px-6 pt-6 pb-4">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  سلام، سارا جان 👋
+                </h1>
+                <p className="text-white/50 mt-1 text-sm">
+                  امروز ۲۴ مهر ۱۴۰۳
+                </p>
+              </div>
+            </header>
+          </div>
 
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">سلام، سارا جان 👋</h1>
-              <p className="text-muted-foreground mt-1">امروز ۲۴ مهر ۱۴۰۳</p>
-            </div>
-          </header>
+          <div className="px-6 pb-6 space-y-6">
+            {/* Mood Check-in */}
+            <section>
+              <h2 className="text-lg font-bold text-white mb-3">
+                امروز چه احساسی داری؟
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  {
+                    icon: Smile,
+                    label: "عالی",
+                    color: "text-green-400",
+                    bg: "bg-green-500/10 hover:bg-green-500/20",
+                  },
+                  {
+                    icon: Heart,
+                    label: "آرام",
+                    color: "text-blue-400",
+                    bg: "bg-blue-500/10 hover:bg-blue-500/20",
+                  },
+                  {
+                    icon: Meh,
+                    label: "معمولی",
+                    color: "text-yellow-400",
+                    bg: "bg-yellow-500/10 hover:bg-yellow-500/20",
+                  },
+                  {
+                    icon: Frown,
+                    label: "غمگین",
+                    color: "text-indigo-400",
+                    bg: "bg-indigo-500/10 hover:bg-indigo-500/20",
+                  },
+                  {
+                    icon: Angry,
+                    label: "مضطرب",
+                    color: "text-red-400",
+                    bg: "bg-red-500/10 hover:bg-red-500/20",
+                  },
+                ].map((mood, i) => (
+                  <button
+                    key={i}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-[80px] ${mood.bg}`}
+                  >
+                    <mood.icon className={`w-7 h-7 ${mood.color}`} />
+                    <span className="text-sm font-medium text-white/90">
+                      {mood.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          {/* Mood Check-in */}
-          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-foreground mb-4">امروز چه احساسی داری؟</h2>
-            <div className="flex flex-wrap gap-4">
-              {[
-                { icon: Smile, label: "عالی", color: "text-green-500", bg: "bg-green-500/10 hover:bg-green-500/20" },
-                { icon: Heart, label: "آرام", color: "text-blue-500", bg: "bg-blue-500/10 hover:bg-blue-500/20" },
-                { icon: Meh, label: "معمولی", color: "text-yellow-500", bg: "bg-yellow-500/10 hover:bg-yellow-500/20" },
-                { icon: Frown, label: "غمگین", color: "text-indigo-500", bg: "bg-indigo-500/10 hover:bg-indigo-500/20" },
-                { icon: Angry, label: "مضطرب", color: "text-red-500", bg: "bg-red-500/10 hover:bg-red-500/20" },
-              ].map((mood, i) => (
-                <button
-                  key={i}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-[80px] ${mood.bg} border border-transparent hover:border-${mood.color.split("-")[1]}-200`}
-                >
-                  <mood.icon className={`w-8 h-8 ${mood.color}`} />
-                  <span className="text-sm font-medium text-foreground">{mood.label}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Stats Cards */}
-            <div className="col-span-1 md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: "روزهای پیاپی", val: "۱۲", suffix: "روز", icon: Activity },
-                { label: "جلسات این ماه", val: "۲۴", suffix: "جلسه", icon: CalendarIcon },
+                {
+                  label: "جلسات این ماه",
+                  val: "۲۴",
+                  suffix: "جلسه",
+                  icon: CalendarIcon,
+                },
                 { label: "میانگین خلق", val: "۷۲", suffix: "٪", icon: TrendingUp },
-                { label: "تمرین‌های انجام شده", val: "۳۸", suffix: "تمرین", icon: Wind },
+                {
+                  label: "تمرین‌های انجام شده",
+                  val: "۳۸",
+                  suffix: "تمرین",
+                  icon: Wind,
+                },
               ].map((stat, i) => (
-                <div key={i} className="bg-card p-5 rounded-xl border border-border">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                <div
+                  key={i}
+                  className="bg-white/5 hover:bg-white/10 transition-colors p-4 rounded-lg"
+                >
+                  <div className="flex items-center gap-2 text-white/50 mb-2">
                     <stat.icon className="w-4 h-4" />
-                    <span className="text-sm">{stat.label}</span>
+                    <span className="text-xs">{stat.label}</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-foreground">{stat.val}</span>
-                    <span className="text-xs text-muted-foreground">{stat.suffix}</span>
+                    <span className="text-2xl font-bold text-white">
+                      {stat.val}
+                    </span>
+                    <span className="text-xs text-white/40">{stat.suffix}</span>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Radar Chart */}
-            <div className="col-span-1 md:col-span-1 bg-card rounded-2xl border border-border p-6 shadow-sm">
-              <h3 className="font-semibold text-foreground mb-4">نقشه احساسات (هفته جاری)</h3>
-              <div className="h-[250px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={emotionData}>
-                    <PolarGrid stroke="hsl(var(--border))" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar name="شما" dataKey="A" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.4} />
-                  </RadarChart>
-                </ResponsiveContainer>
+            {/* Now Playing / Tracks section */}
+            <section>
+              <h2 className="text-lg font-bold text-white mb-3">
+                آهنگ‌های آرامش‌بخش
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {player.queue.map((track) => {
+                  const isCurrent = player.currentTrack?.id === track.id;
+                  return (
+                    <button
+                      key={track.id}
+                      onClick={() => player.playTrack(track)}
+                      className="bg-white/5 hover:bg-white/10 rounded-lg p-4 transition-all group text-right relative"
+                    >
+                      <div className="aspect-square rounded-md bg-gradient-to-br from-primary/30 to-secondary/20 mb-3 flex items-center justify-center relative overflow-hidden">
+                        <Music2 className="w-8 h-8 text-white/30" />
+                        {/* Play overlay */}
+                        <div
+                          className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${
+                            isCurrent && player.isPlaying
+                              ? "opacity-100"
+                              : "opacity-0 group-hover:opacity-100"
+                          }`}
+                        >
+                          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                            {isCurrent && player.isPlaying ? (
+                              <Pause className="w-5 h-5 text-white fill-white" />
+                            ) : (
+                              <Play className="w-5 h-5 text-white fill-white mr-0.5" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm font-semibold text-white truncate">
+                        {track.title}
+                      </p>
+                      <p className="text-xs text-white/40 mt-1 truncate">
+                        {track.artist} • {formatTime(track.duration)}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
-            </div>
+            </section>
 
-            {/* Line Chart */}
-            <div className="col-span-1 md:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-foreground">روند تغییرات خلقی</h3>
-                <span className="text-xs font-medium px-2 py-1 bg-green-500/10 text-green-500 rounded-full flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  بهتر از هفته گذشته
-                </span>
+            {/* Charts */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Radar Chart */}
+              <div className="bg-white/5 rounded-lg p-5">
+                <h3 className="font-semibold text-white mb-4 text-sm">
+                  نقشه احساسات (هفته جاری)
+                </h3>
+                <div className="h-[220px] w-full">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <RadarChart
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="70%"
+                      data={emotionData}
+                    >
+                      <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                      <PolarAngleAxis
+                        dataKey="subject"
+                        tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11 }}
+                      />
+                      <PolarRadiusAxis
+                        angle={30}
+                        domain={[0, 100]}
+                        tick={false}
+                        axisLine={false}
+                      />
+                      <Radar
+                        name="شما"
+                        dataKey="A"
+                        stroke="hsl(var(--primary))"
+                        fill="hsl(var(--primary))"
+                        fillOpacity={0.3}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <div className="h-[250px] w-full mt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={weeklyData} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "hsl(var(--card))", borderColor: "hsl(var(--border))", borderRadius: "8px" }}
-                      itemStyle={{ color: "hsl(var(--foreground))" }}
-                    />
-                    <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 0 }} activeDot={{ r: 6 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+
+              {/* Line Chart */}
+              <div className="md:col-span-2 bg-white/5 rounded-lg p-5">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold text-white text-sm">
+                    روند تغییرات خلقی
+                  </h3>
+                  <span className="text-xs font-medium px-2 py-1 bg-green-500/10 text-green-400 rounded-full flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" />
+                    بهتر از هفته گذشته
+                  </span>
+                </div>
+                <div className="h-[220px] w-full">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <LineChart
+                      data={weeklyData}
+                      margin={{ top: 5, right: 5, bottom: 5, left: -20 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="rgba(255,255,255,0.06)"
+                      />
+                      <XAxis
+                        dataKey="name"
+                        stroke="rgba(255,255,255,0.3)"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="rgba(255,255,255,0.3)"
+                        fontSize={11}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#1a1a1a",
+                          borderColor: "rgba(255,255,255,0.1)",
+                          borderRadius: "8px",
+                        }}
+                        itemStyle={{ color: "#fff" }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="score"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={3}
+                        dot={{
+                          r: 4,
+                          fill: "hsl(var(--primary))",
+                          strokeWidth: 0,
+                        }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
             {/* Recommendations */}
-            <div className="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl border border-primary/20 p-6 flex flex-col justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-gradient-to-r from-primary/20 to-secondary/10 rounded-lg p-6 flex flex-col justify-between border border-primary/10">
                 <div>
-                  <div className="flex items-center gap-2 text-primary font-medium mb-2">
+                  <div className="flex items-center gap-2 text-primary font-medium mb-2 text-sm">
                     <Activity className="w-5 h-5" />
                     <span>پیشنهاد اختصاصی امروز</span>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">مدیتیشن رهایی از استرس</h3>
-                  <p className="text-muted-foreground text-sm mb-6">با توجه به اینکه اخیراً سطح اضطرابت بالاتر بوده، این تمرین ۱۰ دقیقه‌ای تنفسی به تو کمک می‌کند.</p>
+                  <h3 className="text-lg font-bold text-white mb-2">
+                    مدیتیشن رهایی از استرس
+                  </h3>
+                  <p className="text-white/50 text-sm mb-5">
+                    با توجه به اینکه اخیراً سطح اضطرابت بالاتر بوده، این تمرین ۱۰
+                    دقیقه‌ای تنفسی به تو کمک می‌کند.
+                  </p>
                 </div>
-                <Button className="w-fit gap-2">
-                  <Play className="w-4 h-4" />
+                <button
+                  onClick={() => player.playTrack(player.queue[0])}
+                  className="w-fit flex items-center gap-2 bg-white text-black font-semibold px-5 py-2.5 rounded-full text-sm hover:scale-105 transition-transform"
+                >
+                  <Play className="w-4 h-4 fill-black mr-0.5" />
                   شروع تمرین
-                </Button>
+                </button>
               </div>
 
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h3 className="font-semibold text-foreground mb-4">تمرین‌های کوتاه</h3>
-                <div className="space-y-3">
+              <div className="bg-white/5 rounded-lg p-5">
+                <h3 className="font-semibold text-white mb-3 text-sm">
+                  تمرین‌های کوتاه
+                </h3>
+                <div className="space-y-2">
                   {[
                     { title: "آرامش ذهن", time: "۱۰ دقیقه", type: "مدیتیشن" },
-                    { title: "تنفس عمیق", time: "۵ دقیقه", type: "تمرین تنفسی" },
-                    { title: "یوگای صبحگاهی", time: "۱۵ دقیقه", type: "حرکتی" },
+                    {
+                      title: "تنفس عمیق",
+                      time: "۵ دقیقه",
+                      type: "تمرین تنفسی",
+                    },
+                    {
+                      title: "یوگای صبحگاهی",
+                      time: "۱۵ دقیقه",
+                      type: "حرکتی",
+                    },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border cursor-pointer group">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-3 hover:bg-white/5 rounded-md transition-colors cursor-pointer group"
+                    >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-10 h-10 rounded-md bg-white/5 flex items-center justify-center text-white/50 group-hover:text-white transition-colors">
                           <Wind className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-medium text-sm text-foreground">{item.title}</h4>
-                          <span className="text-xs text-muted-foreground">{item.type} • {item.time}</span>
+                          <h4 className="font-medium text-sm text-white">
+                            {item.title}
+                          </h4>
+                          <span className="text-xs text-white/40">
+                            {item.type} • {item.time}
+                          </span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Play className="w-4 h-4 text-primary" />
-                      </Button>
+                      <button className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center">
+                        <Play className="w-3.5 h-3.5 text-white fill-white mr-0.5" />
+                      </button>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
+
+      {/* Player Bar */}
+      <PlayerBar
+        currentTrack={player.currentTrack}
+        isPlaying={player.isPlaying}
+        progress={player.progress}
+        duration={player.duration}
+        volume={player.volume}
+        onTogglePlay={player.togglePlay}
+        onNext={player.playNext}
+        onPrev={player.playPrev}
+        onSeek={player.seek}
+        onVolumeChange={player.changeVolume}
+      />
     </div>
   );
 }

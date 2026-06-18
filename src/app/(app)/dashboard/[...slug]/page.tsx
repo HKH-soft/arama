@@ -1,6 +1,11 @@
 "use client";
 
-import { DashboardContent } from "@/components/DashboardContent";
+import dynamic from "next/dynamic";
+
+const DashboardContent = dynamic(
+  () => import("@/components/DashboardContent").then((m) => m.DashboardContent),
+  { ssr: false }
+);
 
 export default function DashboardCatchAll() {
   return <DashboardContent />;

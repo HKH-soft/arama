@@ -1,23 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND = process.env.OPENAI_BACKEND_URL || "http://localhost:3001";
+import { db } from "@/db";
+import { conversations, messages } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const convId = parseInt(id, 10);
+
+  if (isNaN(convId)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
   try {
-    const res = await fetch(`${BACKEND}/openai/conversations/${id}`, {
-      next: { revalidate: 0 },
-    });
-    if (!res.ok) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: res.status });
+    const conv = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, convId))
+      .limit(1);
+
+    if (!conv.length) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
     }
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: "Backend unavailable" }, { status: 502 });
+
+    const msgs = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, convId))
+      .orderBy(messages.createdAt);
+
+    return NextResponse.json({ ...conv[0], messages: msgs });
+  } catch (error) {
+    console.error("Failed to fetch conversation:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch conversation" },
+      { status: 500 }
+    );
   }
 }
 
@@ -26,15 +49,31 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const convId = parseInt(id, 10);
+
+  if (isNaN(convId)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
   try {
-    const res = await fetch(`${BACKEND}/openai/conversations/${id}`, {
-      method: "DELETE",
-    });
-    if (!res.ok) {
-      return NextResponse.json({ error: "Failed to delete conversation" }, { status: res.status });
+    const deleted = await db
+      .delete(conversations)
+      .where(eq(conversations.id, convId))
+      .returning();
+
+    if (!deleted.length) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
     }
+
     return new NextResponse(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: "Backend unavailable" }, { status: 502 });
+  } catch (error) {
+    console.error("Failed to delete conversation:", error);
+    return NextResponse.json(
+      { error: "Failed to delete conversation" },
+      { status: 500 }
+    );
   }
 }
