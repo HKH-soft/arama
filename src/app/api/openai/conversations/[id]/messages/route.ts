@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_API_BASE_URL,
 });
 
 // Arama system prompt — empathetic Persian mental wellness AI
@@ -22,7 +23,7 @@ const SYSTEM_PROMPT = `تو آراما هستی، یک دستیار هوشمند
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const convId = parseInt(id, 10);
@@ -55,7 +56,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const convId = parseInt(id, 10);

@@ -14,7 +14,7 @@ export async function GET() {
     console.error("Failed to fetch conversations:", error);
     return NextResponse.json(
       { error: "Failed to fetch conversations" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -25,10 +25,7 @@ export async function POST(request: NextRequest) {
     const { title } = body;
 
     if (!title || typeof title !== "string" || !title.trim()) {
-      return NextResponse.json(
-        { error: "title is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "title is required" }, { status: 400 });
     }
 
     const [conv] = await db
@@ -41,7 +38,7 @@ export async function POST(request: NextRequest) {
     console.error("Failed to create conversation:", error);
     return NextResponse.json(
       { error: "Failed to create conversation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
