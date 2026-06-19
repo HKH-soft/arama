@@ -1,11 +1,7 @@
 "use client";
 
-import { DashboardSidebar } from "@/components/DashboardSidebar";
-import { PlayerBar } from "@/components/PlayerBar";
-import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import {
   Play,
-  Pause,
   Activity,
   Wind,
   TrendingUp,
@@ -15,7 +11,6 @@ import {
   Meh,
   Angry,
   Heart,
-  Music2,
 } from "lucide-react";
 import {
   Radar,
@@ -31,6 +26,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+
+import Link from "next/link";
 
 const emotionData = [
   { subject: "شادی", A: 40, fullMark: 100 },
@@ -50,42 +47,23 @@ const weeklyData = [
   { name: "جمعه", score: 90 },
 ];
 
-function formatTime(s: number) {
-  if (!s || isNaN(s)) return "0:00";
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, "0")}`;
-}
-
 export function DashboardContent() {
-  const player = useAudioPlayer();
 
   return (
-    <div dir="rtl" className="h-screen flex flex-col bg-black overflow-hidden">
-      {/* Main area: sidebar + content with gap (Spotify seams) */}
-      <div className="flex flex-1 gap-2 p-2 pb-0 min-h-0">
-        <DashboardSidebar
-          tracks={player.queue}
-          currentTrack={player.currentTrack}
-          isPlaying={player.isPlaying}
-          onPlayTrack={player.playTrack}
-        />
-
-        {/* Main content panel */}
-        <main className="flex-1 bg-[#121212] rounded-lg overflow-y-auto min-w-0">
-          {/* Gradient header */}
-          <div className="bg-gradient-to-b from-primary/30 via-[#1a1a2e] to-[#121212] px-6 pt-6 pb-4">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  سلام، سارا جان 👋
-                </h1>
-                <p className="text-white/50 mt-1 text-sm">
-                  امروز ۲۴ مهر ۱۴۰۳
-                </p>
-              </div>
-            </header>
+    <>
+      {/* Gradient header */}
+      <div className="bg-gradient-to-b from-primary/30 via-[#1a1a2e] to-[#121212] px-6 pt-6 pb-4">
+        <header className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              سلام، سارا جان 👋
+            </h1>
+            <p className="text-white/50 mt-1 text-sm">
+              امروز ۲۴ مهر ۱۴۰۳
+            </p>
           </div>
+        </header>
+      </div>
 
           <div className="px-6 pb-6 space-y-6">
             {/* Mood Check-in */}
@@ -174,51 +152,6 @@ export function DashboardContent() {
                 </div>
               ))}
             </div>
-
-            {/* Now Playing / Tracks section */}
-            <section>
-              <h2 className="text-lg font-bold text-white mb-3">
-                آهنگ‌های آرامش‌بخش
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {player.queue.map((track) => {
-                  const isCurrent = player.currentTrack?.id === track.id;
-                  return (
-                    <button
-                      key={track.id}
-                      onClick={() => player.playTrack(track)}
-                      className="bg-white/5 hover:bg-white/10 rounded-lg p-4 transition-all group text-right relative"
-                    >
-                      <div className="aspect-square rounded-md bg-gradient-to-br from-primary/30 to-secondary/20 mb-3 flex items-center justify-center relative overflow-hidden">
-                        <Music2 className="w-8 h-8 text-white/30" />
-                        {/* Play overlay */}
-                        <div
-                          className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${
-                            isCurrent && player.isPlaying
-                              ? "opacity-100"
-                              : "opacity-0 group-hover:opacity-100"
-                          }`}
-                        >
-                          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-                            {isCurrent && player.isPlaying ? (
-                              <Pause className="w-5 h-5 text-white fill-white" />
-                            ) : (
-                              <Play className="w-5 h-5 text-white fill-white mr-0.5" />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-sm font-semibold text-white truncate">
-                        {track.title}
-                      </p>
-                      <p className="text-xs text-white/40 mt-1 truncate">
-                        {track.artist} • {formatTime(track.duration)}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
 
             {/* Charts */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -335,13 +268,13 @@ export function DashboardContent() {
                     دقیقه‌ای تنفسی به تو کمک می‌کند.
                   </p>
                 </div>
-                <button
-                  onClick={() => player.playTrack(player.queue[0])}
+                <Link
+                  href="/dashboard/meditation"
                   className="w-fit flex items-center gap-2 bg-white text-black font-semibold px-5 py-2.5 rounded-full text-sm hover:scale-105 transition-transform"
                 >
                   <Play className="w-4 h-4 fill-black mr-0.5" />
                   شروع تمرین
-                </button>
+                </Link>
               </div>
 
               <div className="bg-white/5 rounded-lg p-5">
@@ -387,23 +320,8 @@ export function DashboardContent() {
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
 
-      {/* Player Bar */}
-      <PlayerBar
-        currentTrack={player.currentTrack}
-        isPlaying={player.isPlaying}
-        progress={player.progress}
-        duration={player.duration}
-        volume={player.volume}
-        onTogglePlay={player.togglePlay}
-        onNext={player.playNext}
-        onPrev={player.playPrev}
-        onSeek={player.seek}
-        onVolumeChange={player.changeVolume}
-      />
-    </div>
+          </div>
+    </>
   );
 }

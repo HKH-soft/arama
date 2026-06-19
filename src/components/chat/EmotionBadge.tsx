@@ -14,7 +14,7 @@ const emotionConfig: Record<NonNullable<Emotion>, { color: string; bg: string; b
   اضطراب:  { color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30" },
   استرس:   { color: "text-red-600 dark:text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/30" },
   غم:      { color: "text-blue-600 dark:text-blue-400",  bg: "bg-blue-500/10",   border: "border-blue-500/30" },
-  تنهایی: { color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/30" },
+  تنهایی: { color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/30" },
   شادی:    { color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/30" },
   آرامش:   { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
   امید:    { color: "text-sky-600 dark:text-sky-400",    bg: "bg-sky-500/10",    border: "border-sky-500/30" },

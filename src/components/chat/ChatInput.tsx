@@ -62,7 +62,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
                 setValue(prompt);
                 textareaRef.current?.focus();
               }}
-              className="text-xs px-3 py-1.5 rounded-full border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 transition-colors"
               data-testid={`prompt-${prompt}`}
             >
               {prompt}
@@ -72,16 +72,14 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       )}
 
       <form onSubmit={handleSubmit} className="relative flex items-end gap-2">
-        {/* Voice button */}
+        {/* Send button */}
         <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-primary h-11 w-11 shrink-0 rounded-full"
-          data-testid="button-voice"
-          title="ورودی صوتی (به زودی)"
+          type="submit"
+          disabled={!value.trim() || disabled}
+          className="h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground p-0 flex items-center justify-center shrink-0 shadow-md disabled:opacity-40"
+          data-testid="button-send"
         >
-          <Mic className="w-5 h-5" />
+          <Send className="w-4 h-4" />
         </Button>
 
         {/* Textarea */}
@@ -95,23 +93,25 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             placeholder="احساست رو بنویس..."
             rows={1}
             disabled={disabled}
-            className="w-full resize-none bg-card border border-border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-muted-foreground disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
+            className="w-full resize-none bg-[#1e1e1e] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-white/30 disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
             data-testid="input-message"
           />
         </div>
 
-        {/* Send button */}
+        {/* Voice button */}
         <Button
-          type="submit"
-          disabled={!value.trim() || disabled}
-          className="h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground p-0 flex items-center justify-center shrink-0 shadow-md disabled:opacity-40"
-          data-testid="button-send"
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-white/40 hover:text-primary h-11 w-11 shrink-0 rounded-full"
+          data-testid="button-voice"
+          title="ورودی صوتی (به زودی)"
         >
-          <Send className="w-4 h-4" />
+          <Mic className="w-5 h-5" />
         </Button>
       </form>
 
-      <p className="text-center text-[10px] text-muted-foreground">
+      <p className="text-center text-[10px] text-white/25">
         آراما ممکن است اشتباه کند. در بحران‌های جدی با اورژانس اجتماعی ۱۲۳ تماس بگیرید.
       </p>
     </div>

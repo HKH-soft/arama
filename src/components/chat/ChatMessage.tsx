@@ -23,7 +23,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className={`flex items-end gap-3 ${isAI ? "" : "flex-row-reverse"}`}
+      className={`flex items-end gap-3 ${isAI ? "flex-row-reverse" : ""}`}
       data-testid={`message-${message.role}-${message.id}`}
     >
       {/* Avatar */}
@@ -32,7 +32,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
           <Brain className="w-4 h-4" />
         </div>
       ) : (
-        <div className="w-8 h-8 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-medium shrink-0">
+        <div className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.06] flex items-center justify-center text-[10px] font-medium text-white/60 shrink-0">
           شما
         </div>
       )}
@@ -40,9 +40,10 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       {/* Bubble */}
       <div
         className={`max-w-[85%] sm:max-w-[72%] px-4 py-3 text-sm leading-7 rounded-2xl shadow-sm
-          ${isAI
-            ? "bg-card border border-border text-foreground rounded-br-sm"
-            : "bg-primary text-primary-foreground rounded-bl-sm"
+          ${
+            isAI
+              ? "bg-[#1e1e1e] text-white/90 rounded-bl-sm"
+              : "bg-primary text-primary-foreground rounded-br-sm"
           }
           ${isStreaming ? "animate-pulse" : ""}
         `}

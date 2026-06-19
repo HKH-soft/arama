@@ -21,9 +21,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import SoftAurora from "@/components/SoftAurora";
+import { BackgroundRenderer } from "@/components/BackgroundSelector";
+import TextType from "@/components/TextType";
 import { useTheme } from "@/components/theme-provider";
 import { useState, useEffect } from "react";
+import MagneticButton from "@/components/MagneticButton";
+import MagicBento from "@/components/MagicBento";
+import BorderGlowCard from "@/components/BorderGlowCard";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -50,29 +54,16 @@ export default function Landing() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative isolate overflow-hidden pt-20 pb-32 lg:pt-32 lg:pb-40">
-        {/* Background Aurora Canvas Container */}
+      <section className="relative isolate overflow-hidden -mt-20 pt-0 pb-32 lg:pb-40">
+        {/* Dynamic Background — extends behind navbar */}
         <div className="absolute inset-0 -z-10 pointer-events-none">
-          <SoftAurora
-            speed={0.6}
-            scale={1.5}
-            brightness={1.0}
-            color1={isDark ? "#f7f7f7" : "#6366f1"}
-            color2={isDark ? "#e100ff" : "#a855f7"}
-            noiseFrequency={2.5}
-            noiseAmplitude={1.0}
-            bandHeight={0.5}
-            bandSpread={1.0}
-            octaveDecay={0.1}
-            layerOffset={0}
-            colorSpeed={1.0}
-            enableMouseInteraction={true}
-            mouseInfluence={0.25}
-          />
+          <BackgroundRenderer isDark={isDark} />
         </div>
+        {/* Smooth fade at bottom to blend with page bg */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-b from-transparent via-background/60 to-background -z-[5] pointer-events-none" />
 
-        {/* Foreground Content Wrapper - Added 'relative z-10' to stack over animated framer-motion blocks */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Foreground Content Wrapper */}
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-36">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
             <motion.div
               className="lg:w-1/2 text-center lg:text-right"
@@ -91,10 +82,27 @@ export default function Landing() {
                 variants={fadeInUp}
                 className="text-4xl sm:text-5xl lg:text-6xl font-black text-foreground tracking-tight leading-[1.2] mb-6"
               >
-                گاهی فقط نیاز داری کسی{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary">
-                  بدون قضاوت
-                </span>{" "}
+                گاهی فقط نیاز داری کسی
+                <br />
+                <span className="inline-block text-transparent bg-clip-text bg-primary min-w-[8ch]">
+                  <TextType
+                    text={[
+                      "بدون قضاوت",
+                      "با همدلی",
+                      "با مهربانی",
+                      "با صبر",
+                      "با درک عمیق",
+                      "با آرامش",
+                    ]}
+                    typingSpeed={100}
+                    deletingSpeed={100}
+                    pauseDuration={2500}
+                    loop={true}
+                    showCursor={true}
+                    cursorCharacter="|"
+                  />
+                </span>
+                <br />
                 به حرف‌هایت گوش بدهد
               </motion.h1>
               <motion.p
@@ -108,21 +116,25 @@ export default function Landing() {
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4"
               >
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90"
-                  asChild
-                >
-                  <Link href="/dashboard">شروع رایگان</Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto text-lg h-14 px-8 border-border"
-                  asChild
-                >
-                  <Link href="/#features">مشاهده امکانات</Link>
-                </Button>
+                <MagneticButton>
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto text-lg h-14 px-8 bg-primary hover:bg-primary/90 rounded-full"
+                    asChild
+                  >
+                    <Link href="/dashboard">شروع رایگان</Link>
+                  </Button>
+                </MagneticButton>
+                <MagneticButton>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto text-lg h-14 px-8 border-border rounded-full"
+                    asChild
+                  >
+                    <Link href="/#features">مشاهده امکانات</Link>
+                  </Button>
+                </MagneticButton>
               </motion.div>
             </motion.div>
 
@@ -214,15 +226,24 @@ export default function Landing() {
               <motion.div
                 key={i}
                 variants={fadeInUp}
-                className="bg-card p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow text-center"
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
-                <div className="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4">
-                  <item.icon className="w-6 h-6" />
-                </div>
-                <h3 className="font-semibold text-foreground text-lg mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-muted-foreground text-sm">{item.desc}</p>
+                <BorderGlowCard
+                  className="p-6 text-center"
+                  colors={[
+                    "hsl(195 42% 52%)",
+                    "hsl(170 35% 55%)",
+                    "hsl(215 22% 72%)",
+                  ]}
+                >
+                  <div className="w-12 h-12 mx-auto bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4">
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-semibold text-foreground text-lg mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">{item.desc}</p>
+                </BorderGlowCard>
               </motion.div>
             ))}
           </motion.div>
@@ -247,107 +268,204 @@ export default function Landing() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
+          <MagicBento
+            cards={[
               {
                 title: "تحلیل احساسات متن",
-                desc: "تشخیص دقیق احساسات پنهان در پیام‌های شما با استفاده از هوش مصنوعی",
-                icon: MessageCircle,
+                description:
+                  "تشخیص دقیق احساسات پنهان در پیام‌های شما با استفاده از هوش مصنوعی",
+                label: "هوش مصنوعی",
+                icon: <MessageCircle className="w-5 h-5" />,
               },
               {
                 title: "تحلیل احساسات صوت",
-                desc: "درک لحن و احساس صدا برای ارتباطی عمیق‌تر و انسانی‌تر",
-                icon: Activity,
+                description:
+                  "درک لحن و احساس صدا برای ارتباطی عمیق‌تر و انسانی‌تر",
+                label: "صوتی",
+                icon: <Activity className="w-5 h-5" />,
               },
               {
                 title: "گفتگوی همدلانه",
-                desc: "پاسخ‌های طراحی شده بر اساس اصول روانشناسی برای حمایت عاطفی",
-                icon: Heart,
+                description:
+                  "پاسخ‌های طراحی شده بر اساس اصول روانشناسی برای حمایت عاطفی",
+                label: "همدلی",
+                icon: <Heart className="w-5 h-5" />,
               },
               {
                 title: "مدیتیشن و آرام‌سازی",
-                desc: "ارائه تمرین‌های تنفسی و مدیتیشن متناسب با وضعیت فعلی شما",
-                icon: Wind,
+                description:
+                  "ارائه تمرین‌های تنفسی و مدیتیشن متناسب با وضعیت فعلی شما",
+                label: "آرامش",
+                icon: <Wind className="w-5 h-5" />,
               },
               {
                 title: "محتوای شخصی‌سازی شده",
-                desc: "پادکست‌ها و مقالات پیشنهادی بر اساس نیازهای روانی شما",
-                icon: Brain,
+                description:
+                  "پادکست‌ها و مقالات پیشنهادی بر اساس نیازهای روانی شما",
+                label: "شخصی‌سازی",
+                icon: <Brain className="w-5 h-5" />,
               },
               {
                 title: "گزارش پیشرفت روانی",
-                desc: "نمودارها و تحلیل‌های دوره‌ای از تغییرات خلقی شما",
-                icon: LineChart,
+                description: "نمودارها و تحلیل‌های دوره‌ای از تغییرات خلقی شما",
+                label: "تحلیل",
+                icon: <LineChart className="w-5 h-5" />,
               },
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="group relative bg-card p-8 rounded-3xl border border-border overflow-hidden hover:border-primary/50 transition-colors"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative z-10">
-                  <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white mb-6 shadow-lg">
-                    <feature.icon className="w-7 h-7" />
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+            ]}
+            glowColor="95, 165, 145"
+          />
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-24 bg-muted/30 relative overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* How It Works — Full-Screen Scroll Stack */}
+      <section className="relative">
+        {/* Section header */}
+        <div className="bg-muted/30 py-16 text-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUp}
-            className="text-center mb-20"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
               چطور کار می‌کند؟
             </h2>
             <p className="text-muted-foreground text-lg">ساده، سریع و موثر</p>
           </motion.div>
+        </div>
 
-          <div className="relative max-w-4xl mx-auto">
-            <div className="absolute top-6 right-0 left-0 h-0.5 bg-border -translate-y-1/2 hidden md:block z-0k" />
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative z-10">
-              {[
-                "احساست را بنویس",
-                "آراما تحلیل می‌کند",
-                "پاسخ همدلانه دریافت کن",
-                "تمرین مناسب دریافت کن",
-                "پیشرفتت را مشاهده کن",
-              ].map((step, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="flex flex-col items-center text-center group"
+        {/* Stack container */}
+        <div className="relative">
+          {[
+            {
+              step: 1,
+              title: "احساست را بنویس",
+              desc: "هر چه در دل داری بنویس. آراما با صبر و بدون قضاوت گوش می‌دهد. هیچ محدودیتی نیست.",
+              icon: MessageCircle,
+              bg: "from-primary/10 to-secondary/5",
+              accent: "bg-primary/10",
+            },
+            {
+              step: 2,
+              title: "آراما تحلیل می‌کند",
+              desc: "هوش مصنوعی احساسات پنهان و نیازهای واقعی تو را شناسایی می‌کند و الگوهای رفتاری را درک می‌کند.",
+              icon: Brain,
+              bg: "from-accent/10 to-primary/5",
+              accent: "bg-accent/10",
+            },
+            {
+              step: 3,
+              title: "پاسخ همدلانه دریافت کن",
+              desc: "پاسخ‌هایی بر اساس اصول روانشناسی، شخصی‌سازی شده برای تو. هر پاسخ مخصوص توست.",
+              icon: Heart,
+              bg: "from-secondary/10 to-accent/5",
+              accent: "bg-secondary/10",
+            },
+            {
+              step: 4,
+              title: "تمرین مناسب دریافت کن",
+              desc: "مدیتیشن، تنفس عمیق یا محتوای پیشنهادی متناسب با حالت فعلی‌ات. همه چیز در لحظه آماده است.",
+              icon: Wind,
+              bg: "from-primary/10 to-accent/5",
+              accent: "bg-primary/10",
+            },
+            {
+              step: 5,
+              title: "پیشرفتت را مشاهده کن",
+              desc: "نمودارها و تحلیل‌های دوره‌ای برای دیدن مسیر رشد و آرامش. قدم به قدم به جلو.",
+              icon: LineChart,
+              bg: "from-accent/10 to-secondary/5",
+              accent: "bg-accent/10",
+            },
+          ].map((item, i) => {
+            const textRight = i % 2 === 0;
+            return (
+              <div
+                key={i}
+                className="sticky top-20 h-[calc(100vh-5rem)] overflow-hidden"
+                style={{ zIndex: i + 1 }}
+              >
+                <div
+                  className={`w-full h-full bg-gradient-to-br ${item.bg} bg-card`}
                 >
-                  <div className="w-12 h-12 rounded-full bg-card border-2 border-primary text-primary font-bold text-lg flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors shadow-sm">
-                    {i + 1}
+                  <div className="w-full h-full flex flex-col md:flex-row items-center">
+                    {/* Text half */}
+                    <div
+                      className={`w-full md:w-1/2 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-12 md:py-0 ${
+                        textRight ? "md:order-2" : "md:order-1"
+                      }`}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, x: textRight ? 40 : -40 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7 }}
+                      >
+                        <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground mb-5 leading-tight">
+                          {item.title}
+                        </h3>
+                        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg">
+                          {item.desc}
+                        </p>
+                      </motion.div>
+                    </div>
+
+                    {/* Graphic half */}
+                    <div
+                      className={`w-full md:w-1/2 flex items-center justify-center py-8 md:py-0 ${
+                        textRight ? "md:order-1" : "md:order-2"
+                      }`}
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        className="relative w-56 h-56 sm:w-72 sm:h-72 lg:w-96 lg:h-96"
+                      >
+                        {/* Decorative rings */}
+                        <div className="absolute inset-0 rounded-full border-2 border-primary/10 animate-[spin_20s_linear_infinite]" />
+                        <div className="absolute inset-4 rounded-full border border-secondary/15 animate-[spin_15s_linear_infinite_reverse]" />
+                        <div className="absolute inset-10 rounded-full border border-primary/10 animate-[spin_25s_linear_infinite]" />
+
+                        {/* Glow blobs */}
+                        <div
+                          className={`absolute -top-6 -right-6 w-20 h-20 rounded-full ${item.accent} blur-2xl`}
+                        />
+                        <div
+                          className={`absolute -bottom-4 -left-4 w-16 h-16 rounded-full ${item.accent} blur-xl`}
+                        />
+
+                        {/* Center icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-2xl">
+                            <item.icon className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-primary-foreground" />
+                          </div>
+                        </div>
+
+                        {/* Floating dots */}
+                        {[...Array(6)].map((_, d) => {
+                          const angle = (d / 6) * Math.PI * 2;
+                          const radius = 45;
+                          return (
+                            <div
+                              key={d}
+                              className="absolute w-2 h-2 rounded-full bg-primary/40"
+                              style={{
+                                top: `${50 + radius * Math.sin(angle)}%`,
+                                left: `${50 + radius * Math.cos(angle)}%`,
+                                animation: `pulse 2s ease-in-out ${d * 0.3}s infinite alternate`,
+                              }}
+                            />
+                          );
+                        })}
+                      </motion.div>
+                    </div>
                   </div>
-                  <h3 className="font-medium text-foreground">{step}</h3>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -634,13 +752,15 @@ export default function Landing() {
             <p className="text-xl text-muted-foreground mb-10">
               آراما همین الان آماده شنیدن حرف‌های توست.
             </p>
-            <Button
-              size="lg"
-              className="h-16 px-10 text-lg bg-primary hover:bg-primary/90"
-              asChild
-            >
-              <Link href="/dashboard">شروع گفتگو با آراما</Link>
-            </Button>
+            <MagneticButton>
+              <Button
+                size="lg"
+                className="h-16 px-10 text-lg bg-primary hover:bg-primary/90 rounded-full"
+                asChild
+              >
+                <Link href="/dashboard">شروع گفتگو با آراما</Link>
+              </Button>
+            </MagneticButton>
           </motion.div>
         </div>
       </section>

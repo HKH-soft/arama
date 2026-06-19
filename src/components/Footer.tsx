@@ -16,7 +16,7 @@ export function Footer() {
             <p className="text-sm text-muted-foreground mb-6">
               هم‌صحبت امن روزهای سخت. دستیار هوشمند سلامت روان که همیشه در کنار توست.
             </p>
-            <div className="flex space-x-4 space-x-reverse">
+            <div className="flex space-x-4">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
                 <SiX className="w-5 h-5" />
               </a>

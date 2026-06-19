@@ -79,7 +79,7 @@ export default function About() {
             {[
               { name: "دکتر نیلوفر رضایی", role: "مدیرعامل و هم‌بنیانگذار", color: "from-blue-400 to-indigo-500" },
               { name: "امیر حسینی", role: "مدیر فنی و هم‌بنیانگذار", color: "from-emerald-400 to-teal-500" },
-              { name: "دکتر لیلا کریمی", role: "متخصص روانشناسی", color: "from-purple-400 to-pink-500" },
+              { name: "دکتر لیلا کریمی", role: "متخصص روانشناسی", color: "from-teal-400 to-cyan-500" },
               { name: "آرش محمدی", role: "طراح تجربه کاربری", color: "from-orange-400 to-amber-500" }
             ].map((member, i) => (
               <div key={i} className="text-center group">

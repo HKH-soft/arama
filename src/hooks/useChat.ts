@@ -64,8 +64,9 @@ export function useMessages(conversationId: number | null) {
   }, []);
 
   const send = useCallback(
-    async (content: string) => {
-      if (!conversationId || isStreaming) return;
+    async (content: string, overrideConvId?: number) => {
+      const effectiveId = overrideConvId ?? conversationId;
+      if (!effectiveId || isStreaming) return;
 
       const userMsg: Message = { id: makeId(), role: "user", content };
       setMessages((prev) => [...prev, userMsg]);
@@ -77,7 +78,7 @@ export function useMessages(conversationId: number | null) {
       abortRef.current = new AbortController();
 
       try {
-        const res = await fetch(`${BASE}/openai/conversations/${conversationId}/messages`, {
+        const res = await fetch(`${BASE}/openai/conversations/${effectiveId}/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content }),

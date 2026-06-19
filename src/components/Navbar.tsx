@@ -30,85 +30,145 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/40">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">
-              آ
+    <nav
+      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl"
+      dir="rtl"
+    >
+      {/* Main glass bar */}
+      <div className=" relative rounded-2xl overflow-hidden transition-all duration-300 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.42)]">
+        {/* Apple Premium Glass Base Layer */}
+        <div className="absolute inset-0 rounded-2xl bg-white/90 dark:bg-neutral-900/[0.45] backdrop-blur-[32px] saturate-[210%] transition-colors duration-300" />
+
+        {/* Liquid Fluid Gloss/Sheen Surface Injection */}
+        <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-b from-white/35 dark:from-white/[0.08] via-white/[0.03] dark:via-transparent to-transparent" />
+
+        {/* Dynamic Micro-Refraction Borders (Crisp Specular Edge Highlight) */}
+        <div className="absolute inset-0 rounded-2xl border-0 pointer-events-none mix-blend-overlay dark:mix-blend-normal" />
+        <div className="absolute inset-0 rounded-2xl border-t border-x border-white/60 dark:border-white/[0.12] pointer-events-none" />
+
+        {/* Content */}
+        <div className="relative px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            {/* Logo & Brand */}
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
+                آ
+              </div>
+              <span className="font-bold text-lg tracking-tight text-neutral-900 dark:text-neutral-50 transition-colors">
+                آراما
+              </span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
             </div>
-            <span className="font-bold text-xl tracking-tight text-foreground">آراما</span>
-          </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-8 space-x-reverse">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            {/* Desktop Actions */}
+            <div className="hidden md:flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="text-neutral-600 dark:text-neutral-300 hover:bg-neutral-950/5 dark:hover:bg-white/10 rounded-xl"
               >
-                {link.name}
-              </Link>
-            ))}
-          </div>
+                {mounted && theme === "dark" ? (
+                  <Sun className="w-[18px] h-[18px]" />
+                ) : (
+                  <Moon className="w-[18px] h-[18px]" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                className=" rounded-full text-sm text-neutral-700 dark:text-neutral-200 border-0 hover:bg-neutral-950/5 dark:hover:bg-white/10"
+                asChild
+              >
+                <Link href="/login">ورود</Link>
+              </Button>
+              <Button
+                className="bg-primary rounded-full  hover:bg-primary/50 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border-0 font-medium shadow-sm transition-all"
+                asChild
+              >
+                <Link href="/signup">شروع رایگان</Link>
+              </Button>
+            </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4 space-x-reverse">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-muted-foreground">
-              {mounted ? (theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />) : <Moon className="w-5 h-5" />}
-            </Button>
-            <Button variant="ghost" className="text-sm" asChild>
-              <Link href="/login">ورود</Link>
-            </Button>
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-              <Link href="/signup">شروع رایگان</Link>
-            </Button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-muted-foreground ml-2">
-              {mounted ? (theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />) : <Moon className="w-5 h-5" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-foreground"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </Button>
+            {/* Mobile Menu Action Trigger */}
+            <div className="md:hidden flex items-center gap-1.5">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="text-neutral-600 dark:text-neutral-300 rounded-xl"
+              >
+                {mounted && theme === "dark" ? (
+                  <Sun className="w-[18px] h-[18px]" />
+                ) : (
+                  <Moon className="w-[18px] h-[18px]" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-neutral-800 dark:text-neutral-100 rounded-xl"
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Glass Menu Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden border-b border-border/40 bg-background overflow-hidden"
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="md:hidden mt-2 rounded-2xl overflow-hidden relative shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.42)]"
           >
-            <div className="px-4 pt-2 pb-4 space-y-1">
+            {/* Fluid Glass Spec Overlay */}
+            <div className="absolute inset-0 rounded-2xl bg-white/[0.55] dark:bg-neutral-900/[0.55] backdrop-blur-[32px] saturate-[210%]" />
+            <div className="absolute inset-0 rounded-2xl border border-white/50 dark:border-neutral-800/60 pointer-events-none" />
+
+            <div className="relative px-4 pt-2 pb-4 space-y-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                  className="block px-3 py-2.5 rounded-xl text-base font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-950/5 dark:hover:bg-white/5 transition-all"
                 >
                   {link.name}
                 </Link>
               ))}
-              <div className="pt-4 flex flex-col gap-2">
-                <Button variant="outline" className="w-full justify-center" asChild>
+              <div className="pt-3 flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-center rounded-xl bg-transparent border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200"
+                  asChild
+                >
                   <Link href="/login">ورود</Link>
                 </Button>
-                <Button className="w-full justify-center bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
+                <Button
+                  className="w-full justify-center rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black shadow-sm"
+                  asChild
+                >
                   <Link href="/signup">شروع رایگان</Link>
                 </Button>
               </div>
