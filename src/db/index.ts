@@ -3,24 +3,38 @@ import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
 import path from "path";
 
-// Detect if we should use Cloudflare D1
-const isD1 =
-  process.env.DB_DRIVER === "d1" ||
-  (typeof process.env.DB !== "undefined" &&
-    process.env.DB !== null &&
-    typeof (process.env.DB as any).prepare === "function");
+// Helper to get the D1 binding from either process.env or globalThis (Cloudflare global scope)
+function getD1Binding(): any {
+  if (typeof process.env.DB !== "undefined" && process.env.DB !== null) {
+    return process.env.DB;
+  }
+  if (typeof (globalThis as any).DB !== "undefined" && (globalThis as any).DB !== null) {
+    return (globalThis as any).DB;
+  }
+  return null;
+}
+
+// Dynamically check if we should run with Cloudflare D1
+function checkIsD1(): boolean {
+  if (process.env.DB_DRIVER === "d1") return true;
+  const binding = getD1Binding();
+  return binding !== null && typeof binding.prepare === "function";
+}
 
 let _db: any = null;
 
 function getDb() {
   if (_db) return _db;
 
-  if (isD1) {
-    const d1Binding = process.env.DB;
+  if (checkIsD1()) {
+    const d1Binding = getD1Binding();
     if (!d1Binding) {
-      throw new Error("Cloudflare D1 database binding 'DB' is not defined in process.env");
+      throw new Error(
+        "Cloudflare D1 database binding 'DB' is not defined in process.env or globalThis. " +
+        "Please ensure you have configured a D1 database binding named 'DB'."
+      );
     }
-    _db = drizzleD1(d1Binding as any, { schema });
+    _db = drizzleD1(d1Binding, { schema });
   } else {
     // Dynamically require better-sqlite3 and drizzle-orm/better-sqlite3 to avoid loading them on Cloudflare Edge Runtime
     const Database = require("better-sqlite3");
