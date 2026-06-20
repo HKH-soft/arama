@@ -51,19 +51,19 @@ export function DashboardContent() {
   return (
     <>
       {/* Gradient header */}
-      <div className="bg-gradient-to-b from-primary/30 via-[#1a1a2e] to-[#121212] px-6 pt-6 pb-4">
+      <div className="bg-gradient-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
         <header className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">سلام، سارا جان 👋</h1>
-            <p className="text-white/50 mt-1 text-sm">امروز ۲۴ مهر ۱۴۰۳</p>
+            <h1 className="text-2xl font-bold text-foreground">سلام، سارا جان 👋</h1>
+            <p className="text-muted-foreground mt-1 text-sm">امروز ۲۴ مهر ۱۴۰۳</p>
           </div>
         </header>
       </div>
 
       <div className="px-6 pb-6 space-y-6">
         {/* Mood Check-in */}
-        <section>
-          <h2 className="text-lg font-bold text-white mb-3">
+        <section className="mt-6">
+          <h2 className="text-lg font-bold text-foreground mb-3">
             امروز چه احساسی داری؟
           </h2>
           <div className="flex flex-wrap gap-3">
@@ -71,31 +71,31 @@ export function DashboardContent() {
               {
                 icon: Smile,
                 label: "عالی",
-                color: "text-green-400",
+                color: "text-green-500 dark:text-green-400",
                 bg: "bg-green-500/10 hover:bg-green-500/20",
               },
               {
                 icon: Heart,
                 label: "آرام",
-                color: "text-blue-400",
+                color: "text-blue-500 dark:text-blue-400",
                 bg: "bg-blue-500/10 hover:bg-blue-500/20",
               },
               {
                 icon: Meh,
                 label: "معمولی",
-                color: "text-yellow-400",
+                color: "text-yellow-600 dark:text-yellow-400",
                 bg: "bg-yellow-500/10 hover:bg-yellow-500/20",
               },
               {
                 icon: Frown,
                 label: "غمگین",
-                color: "text-indigo-400",
+                color: "text-indigo-500 dark:text-indigo-400",
                 bg: "bg-indigo-500/10 hover:bg-indigo-500/20",
               },
               {
                 icon: Angry,
                 label: "مضطرب",
-                color: "text-red-400",
+                color: "text-red-500 dark:text-red-400",
                 bg: "bg-red-500/10 hover:bg-red-500/20",
               },
             ].map((mood, i) => (
@@ -104,7 +104,7 @@ export function DashboardContent() {
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-[80px] ${mood.bg}`}
               >
                 <mood.icon className={`w-7 h-7 ${mood.color}`} />
-                <span className="text-sm font-medium text-white/90">
+                <span className="text-sm font-medium text-foreground/90">
                   {mood.label}
                 </span>
               </button>
@@ -132,17 +132,17 @@ export function DashboardContent() {
           ].map((stat, i) => (
             <div
               key={i}
-              className="bg-white/5 hover:bg-white/10 transition-colors p-4 rounded-lg"
+              className="bg-muted/50 hover:bg-muted/80 border border-border/80 transition-all p-4 rounded-lg"
             >
-              <div className="flex items-center gap-2 text-white/50 mb-2">
+              <div className="flex items-center gap-2 text-muted-foreground mb-2">
                 <stat.icon className="w-4 h-4" />
                 <span className="text-xs">{stat.label}</span>
               </div>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-white">
+                <span className="text-2xl font-bold text-foreground">
                   {stat.val}
                 </span>
-                <span className="text-xs text-white/40">{stat.suffix}</span>
+                <span className="text-xs text-muted-foreground/80">{stat.suffix}</span>
               </div>
             </div>
           ))}
@@ -151,8 +151,8 @@ export function DashboardContent() {
         {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Radar Chart */}
-          <div className="bg-white/5 rounded-lg p-5">
-            <h3 className="font-semibold text-white mb-4 text-sm">
+          <div className="bg-muted/30 border border-border rounded-lg p-5">
+            <h3 className="font-semibold text-foreground mb-4 text-sm">
               نقشه احساسات (هفته جاری)
             </h3>
             <div className="h-[220px] w-full">
@@ -168,10 +168,10 @@ export function DashboardContent() {
                   outerRadius="70%"
                   data={emotionData}
                 >
-                  <PolarGrid stroke="rgba(255,255,255,0.1)" />
+                  <PolarGrid stroke="hsl(var(--border))" />
                   <PolarAngleAxis
                     dataKey="subject"
-                    tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11 }}
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
                   />
                   <PolarRadiusAxis
                     angle={30}
@@ -192,12 +192,12 @@ export function DashboardContent() {
           </div>
 
           {/* Line Chart */}
-          <div className="md:col-span-2 bg-white/5 rounded-lg p-5">
+          <div className="md:col-span-2 bg-muted/30 border border-border rounded-lg p-5">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-white text-sm">
+              <h3 className="font-semibold text-foreground text-sm">
                 روند تغییرات خلقی
               </h3>
-              <span className="text-xs font-medium px-2 py-1 bg-green-500/10 text-green-400 rounded-full flex items-center gap-1">
+              <span className="text-xs font-medium px-2 py-1 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
                 بهتر از هفته گذشته
               </span>
@@ -216,28 +216,28 @@ export function DashboardContent() {
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="hsl(var(--border))"
                   />
                   <XAxis
                     dataKey="name"
-                    stroke="rgba(255,255,255,0.3)"
+                    stroke="hsl(var(--muted-foreground)/60)"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    stroke="rgba(255,255,255,0.3)"
+                    stroke="hsl(var(--muted-foreground)/60)"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#1a1a1a",
-                      borderColor: "rgba(255,255,255,0.1)",
+                      backgroundColor: "hsl(var(--card))",
+                      borderColor: "hsl(var(--border))",
                       borderRadius: "8px",
                     }}
-                    itemStyle={{ color: "#fff" }}
+                    itemStyle={{ color: "hsl(var(--foreground))" }}
                   />
                   <Line
                     type="monotone"
@@ -259,31 +259,31 @@ export function DashboardContent() {
 
         {/* Recommendations */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-r from-primary/20 to-secondary/10 rounded-lg p-6 flex flex-col justify-between border border-primary/10">
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/5 rounded-lg p-6 flex flex-col justify-between border border-primary/10">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-2 text-sm">
                 <Activity className="w-5 h-5" />
                 <span>پیشنهاد اختصاصی امروز</span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">
+              <h3 className="text-lg font-bold text-foreground mb-2">
                 مدیتیشن رهایی از استرس
               </h3>
-              <p className="text-white/50 text-sm mb-5">
+              <p className="text-muted-foreground text-sm mb-5">
                 با توجه به اینکه اخیراً سطح اضطرابت بالاتر بوده، این تمرین ۱۰
                 دقیقه‌ای تنفسی به تو کمک می‌کند.
               </p>
             </div>
             <Link
               href="/meditation"
-              className="w-fit flex items-center gap-2 bg-white text-black font-semibold px-5 py-2.5 rounded-full text-sm hover:scale-105 transition-transform"
+              className="w-fit flex items-center gap-2 bg-foreground text-background font-semibold px-5 py-2.5 rounded-full text-sm hover:scale-105 transition-transform"
             >
-              <Play className="w-4 h-4 fill-black mr-0.5" />
+              <Play className="w-4 h-4 fill-current mr-0.5" />
               شروع تمرین
             </Link>
           </div>
 
-          <div className="bg-white/5 rounded-lg p-5">
-            <h3 className="font-semibold text-white mb-3 text-sm">
+          <div className="bg-muted/30 border border-border rounded-lg p-5">
+            <h3 className="font-semibold text-foreground mb-3 text-sm">
               تمرین‌های کوتاه
             </h3>
             <div className="space-y-2">
@@ -302,23 +302,23 @@ export function DashboardContent() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-3 hover:bg-white/5 rounded-md transition-colors cursor-pointer group"
+                  className="flex items-center justify-between p-3 hover:bg-muted/40 rounded-md transition-colors cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-md bg-white/5 flex items-center justify-center text-white/50 group-hover:text-white transition-colors">
+                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
                       <Wind className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-white">
+                      <h4 className="font-medium text-sm text-foreground">
                         {item.title}
                       </h4>
-                      <span className="text-xs text-white/40">
+                      <span className="text-xs text-muted-foreground/80">
                         {item.type} • {item.time}
                       </span>
                     </div>
                   </div>
-                  <button className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center">
-                    <Play className="w-3.5 h-3.5 text-white fill-white mr-0.5" />
+                  <button className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                    <Play className="w-3.5 h-3.5 text-primary-foreground fill-current mr-0.5" />
                   </button>
                 </div>
               ))}

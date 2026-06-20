@@ -31,12 +31,12 @@ export function DashboardSidebar() {
   return (
     <aside className="w-[300px] shrink-0 flex flex-col gap-2 hidden md:flex">
       {/* Navigation panel */}
-      <div className="bg-[#121212] rounded-lg p-4 grow">
+      <div className="bg-sidebar rounded-lg p-4 grow border border-sidebar-border">
         <Link href="/" className="flex items-center gap-2 mb-4 px-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
             آ
           </div>
-          <span className="font-bold text-xl tracking-tight text-white">
+          <span className="font-bold text-xl tracking-tight text-sidebar-foreground">
             آراما
           </span>
         </Link>
@@ -49,7 +49,9 @@ export function DashboardSidebar() {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-semibold",
-                  isActive ? "text-white" : "text-white/60 hover:text-white",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-primary"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
                 )}
               >
                 <item.icon className="w-6 h-6" />
@@ -61,7 +63,7 @@ export function DashboardSidebar() {
       </div>
 
       {/* User panel */}
-      <div className="bg-[#121212] rounded-lg p-3 mt-auto">
+      <div className="bg-sidebar rounded-lg p-3 mt-auto border border-sidebar-border">
         <div className="flex items-center gap-3 px-2">
           <Avatar className="h-9 w-9">
             <AvatarImage src="" />
@@ -70,12 +72,12 @@ export function DashboardSidebar() {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-sm font-semibold text-white truncate">
+            <span className="text-sm font-semibold text-sidebar-foreground truncate">
               سارا محمدی
             </span>
-            <span className="text-[11px] text-white/40">کاربر پریمیوم</span>
+            <span className="text-[11px] text-sidebar-foreground/40">کاربر پریمیوم</span>
           </div>
-          <button className="text-white/40 hover:text-white transition-colors p-1">
+          <button className="text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors p-1">
             <LogOut className="w-4 h-4" />
           </button>
         </div>

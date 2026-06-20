@@ -101,8 +101,8 @@ export default function Chat() {
   });
 
   return (
-    <div className="flex flex-row-reverse h-full bg-black gap-2 box-border overflow-hidden">
-      <div className="w-64 bg-[#0a0a0a] border border-white/[0.06] hidden lg:flex flex-col shrink-0 rounded-xl h-full">
+    <div className="flex flex-row-reverse h-full bg-background gap-2 box-border overflow-hidden">
+      <div className="w-64 bg-card border border-border hidden lg:flex flex-col shrink-0 rounded-xl h-full">
         <ConversationList
           conversations={conversations}
           activeId={activeId}
@@ -131,7 +131,7 @@ export default function Chat() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute left-0 top-0 h-full w-72 bg-[#0a0a0a] shadow-2xl rounded-r-xl"
+              className="absolute left-0 top-0 h-full w-72 bg-card border-r border-border shadow-2xl rounded-r-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-start p-3">
@@ -139,7 +139,7 @@ export default function Chat() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setSidebarOpen(false)}
-                  className="text-white/60 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -159,15 +159,15 @@ export default function Chat() {
 
       {/* Main chat area */}
       {/* Removed m-2 to prevent overflow */}
-      <div className="flex-1 flex flex-col h-full min-w-0 bg-[#121212] rounded-xl overflow-hidden">
+      <div className="flex-1 flex flex-col h-full min-w-0 bg-card rounded-xl overflow-hidden border border-border">
         {/* Header */}
-        <header className="h-14 border-b border-white/[0.06] bg-[#181818] flex items-center justify-between px-4 shrink-0">
+        <header className="h-14 border-b border-border bg-muted/40 flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-3">
             {/* Mobile: open conversation list */}
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden h-8 w-8 text-white/60 hover:text-white"
+              className="lg:hidden h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="w-4 h-4" />
@@ -177,13 +177,13 @@ export default function Chat() {
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm shadow">
                 آ
               </div>
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#181818] rounded-full" />
+              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full" />
             </div>
             <div>
-              <h2 className="font-semibold text-white text-sm leading-tight">
+              <h2 className="font-semibold text-foreground text-sm leading-tight">
                 آراما
               </h2>
-              <p className="text-[10px] text-emerald-400 leading-tight">
+              <p className="text-[10px] text-emerald-500 leading-tight">
                 آنلاین
               </p>
             </div>
@@ -197,7 +197,7 @@ export default function Chat() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white/40 pl-13 md:pl-0 hover:text-white h-8 w-8"
+              className="text-muted-foreground pl-13 md:pl-0 hover:text-foreground h-8 w-8"
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -208,7 +208,7 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">
           {/* Date divider */}
           <div className="flex justify-center">
-            <span className="text-[11px] text-white/40 bg-white/[0.04] px-3 py-1 rounded-full">
+            <span className="text-[11px] text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border/50">
               {today}
             </span>
           </div>
@@ -220,10 +220,10 @@ export default function Chat() {
                 <span className="text-3xl">💬</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white mb-1">
+                <h3 className="font-semibold text-foreground mb-1">
                   سلام، اینجام برات
                 </h3>
-                <p className="text-sm text-white/40 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   هر چیزی که دلت می‌خواد بگی، بدون قضاوت گوش می‌دم.
                 </p>
               </div>
@@ -256,7 +256,7 @@ export default function Chat() {
         </div>
 
         {/* Input */}
-        <div className="p-3 sm:p-4 bg-[#181818] border-t border-white/[0.06] shrink-0">
+        <div className="p-3 sm:p-4 bg-muted/40 border-t border-border shrink-0">
           <div className="max-w-3xl mx-auto">
             <ChatInput
               onSend={handleSend}

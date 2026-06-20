@@ -1,53 +1,36 @@
-import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
-import path from "path";
 
-// Helper to get the D1 binding from either process.env or globalThis (Cloudflare global scope)
-function getD1Binding(): any {
-  if (typeof process.env.DB !== "undefined" && process.env.DB !== null) {
-    return process.env.DB;
-  }
-  if (typeof (globalThis as any).DB !== "undefined" && (globalThis as any).DB !== null) {
-    return (globalThis as any).DB;
-  }
-  return null;
-}
+// ---------------------------------------------------------------------------
+// Runtime detection
+// ---------------------------------------------------------------------------
+const isNode =
+  typeof process !== "undefined" &&
+  typeof process.versions !== "undefined" &&
+  typeof process.versions.node !== "undefined";
 
-// Dynamically check if we should run with Cloudflare D1
-function checkIsD1(): boolean {
-  if (process.env.DB_DRIVER === "d1") return true;
-  const binding = getD1Binding();
-  return binding !== null && typeof binding.prepare === "function";
-}
-
+// ---------------------------------------------------------------------------
+// Database initialisation (lazy — only created on first query)
+// ---------------------------------------------------------------------------
 let _db: any = null;
 
-function getDb() {
+function getDb(): any {
   if (_db) return _db;
 
-  if (checkIsD1()) {
-    const d1Binding = getD1Binding();
-    if (!d1Binding) {
-      throw new Error(
-        "Cloudflare D1 database binding 'DB' is not defined in process.env or globalThis. " +
-        "Please ensure you have configured a D1 database binding named 'DB'."
-      );
-    }
-    _db = drizzleD1(d1Binding, { schema });
-  } else {
-    // Dynamically require better-sqlite3 and drizzle-orm/better-sqlite3 to avoid loading them on Cloudflare Edge Runtime
+  if (isNode) {
+    // ── Node.js runtime → better-sqlite3 ──────────────────────────────────
+    const path = require("path");
     const Database = require("better-sqlite3");
-    const { drizzle: drizzleBetter } = require("drizzle-orm/better-sqlite3");
+    const { drizzle } = require("drizzle-orm/better-sqlite3");
 
     const DB_PATH = process.env.DATABASE_URL || "./data/arama.db";
+    const dbPath = DB_PATH.startsWith(":memory:")
+      ? ":memory:"
+      : path.isAbsolute(DB_PATH)
+        ? DB_PATH
+        : path.join(/* turbopackIgnore: true */ process.cwd(), DB_PATH);
 
-    const getDbPath = (): string => {
-      if (DB_PATH.startsWith(":memory:")) return ":memory:";
-      return path.isAbsolute(DB_PATH) ? DB_PATH : path.join(/* turbopackIgnore: true */ process.cwd(), DB_PATH);
-    };
-
-    const sqlite = new Database(getDbPath());
+    const sqlite = new Database(dbPath);
     sqlite.pragma("journal_mode = WAL");
     sqlite.pragma("foreign_keys = ON");
     sqlite.exec(`
@@ -68,15 +51,39 @@ function getDb() {
       CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
     `);
 
-    _db = drizzleBetter(sqlite, { schema });
+    _db = drizzle(sqlite, { schema });
+  } else {
+    // ── Edge / Cloudflare runtime → D1 ────────────────────────────────────
+    // getRequestContext() is provided by @opennextjs/cloudflare and gives
+    // per-request access to the Cloudflare env bindings (including D1).
+    const { getRequestContext } = require("@opennextjs/cloudflare");
+    const { drizzle } = require("drizzle-orm/d1");
+
+    const ctx = getRequestContext();
+    const d1 = ctx?.env?.DB;
+
+    if (!d1) {
+      throw new Error(
+        "Cloudflare D1 binding 'DB' not found. " +
+          "Add a [[d1_databases]] entry named 'DB' in wrangler.toml."
+      );
+    }
+
+    _db = drizzle(d1, { schema });
   }
 
   return _db;
 }
 
-export const db: BetterSQLite3Database<typeof schema> = new Proxy({} as BetterSQLite3Database<typeof schema>, {
-  get(_target, prop, receiver) {
-    const targetDb = getDb();
-    return Reflect.get(targetDb, prop, receiver);
-  },
-});
+// ---------------------------------------------------------------------------
+// Lazy proxy — callers import `db` and use it like a normal Drizzle instance.
+// The underlying driver is resolved on the first query.
+// ---------------------------------------------------------------------------
+export const db: BetterSQLite3Database<typeof schema> = new Proxy(
+  {} as BetterSQLite3Database<typeof schema>,
+  {
+    get(_target, prop, receiver) {
+      return Reflect.get(getDb(), prop, receiver);
+    },
+  }
+);
