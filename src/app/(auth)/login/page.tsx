@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,14 +11,35 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    // TODO: implement auth
-    setTimeout(() => setIsLoading(false), 2000);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "خطا در ورود");
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("خطا در اتصال به سرور");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,6 +65,11 @@ export default function LoginPage() {
 
       {/* Card */}
       <div className="bg-card rounded-2xl border border-border shadow-sm p-8">
+        {error && (
+          <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
           <div className="space-y-2">
@@ -55,6 +82,8 @@ export default function LoginPage() {
                 className="pr-10 bg-background text-left"
                 dir="ltr"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
@@ -70,6 +99,8 @@ export default function LoginPage() {
                 className="pr-10 pl-10 bg-background text-left"
                 dir="ltr"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"

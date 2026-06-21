@@ -109,7 +109,7 @@
   --background: 150 60% 98%; /* Clean ice-mint white (#F4FBF7) */
   --foreground: 160 50% 10%; /* Sharp Midnight Mint Text */
 
-  --card: 0 0% 100%; /* Pure White Panels */
+  --card: 160.8, 27.5%, 82.2%;
   --card-foreground: 160 50% 10%;
   --card-border: 150 30% 90%;
   --border: 150 30% 90%;

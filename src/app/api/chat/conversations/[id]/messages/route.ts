@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { conversations, messages } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+// AvalAI is an OpenAI-compatible proxy that supports multiple providers
+// including Anthropic Claude models via the OpenAI chat completions format.
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: process.env.OPENAI_API_BASE_URL,
@@ -122,9 +124,9 @@ export async function POST(
       };
 
       try {
-        const openaiStream = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          max_completion_tokens: 1024,
+        const aiStream = await openai.chat.completions.create({
+          model: process.env.AI_MODEL || "claude-sonnet-latest",
+          max_tokens: 1024,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...chatMessages,
@@ -132,7 +134,7 @@ export async function POST(
           stream: true,
         });
 
-        for await (const chunk of openaiStream) {
+        for await (const chunk of aiStream) {
           const delta = chunk.choices[0]?.delta?.content;
           if (delta) {
             fullResponse += delta;
@@ -140,17 +142,19 @@ export async function POST(
           }
         }
 
-        // Persist assistant message
-        await db.insert(messages).values({
-          conversationId: convId,
-          role: "assistant",
-          content: fullResponse,
-        });
+        // Only persist assistant message if we got a full response (not on error)
+        if (fullResponse) {
+          await db.insert(messages).values({
+            conversationId: convId,
+            role: "assistant",
+            content: fullResponse,
+          });
+        }
 
         send({ done: true });
         controller.close();
       } catch (err) {
-        console.error("OpenAI streaming error:", err);
+        console.error("AI streaming error:", err);
         send({ error: "خطا در ارتباط با هوش مصنوعی" });
         controller.close();
       }

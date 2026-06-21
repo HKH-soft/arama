@@ -17,7 +17,7 @@ export function useConversations() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${BASE}/openai/conversations`);
+      const res = await fetch(`${BASE}/chat/conversations`);
       if (res.ok) setConversations(await res.json());
     } finally {
       setLoading(false);
@@ -25,7 +25,7 @@ export function useConversations() {
   }, []);
 
   const create = useCallback(async (title: string): Promise<Conversation | null> => {
-    const res = await fetch(`${BASE}/openai/conversations`, {
+    const res = await fetch(`${BASE}/chat/conversations`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
@@ -37,7 +37,7 @@ export function useConversations() {
   }, []);
 
   const remove = useCallback(async (id: number) => {
-    await fetch(`${BASE}/openai/conversations/${id}`, { method: "DELETE" });
+    await fetch(`${BASE}/chat/conversations/${id}`, { method: "DELETE" });
     setConversations((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
@@ -50,7 +50,7 @@ export function useMessages(conversationId: number | null) {
   const abortRef = useRef<AbortController | null>(null);
 
   const load = useCallback(async (id: number) => {
-    const res = await fetch(`${BASE}/openai/conversations/${id}`);
+    const res = await fetch(`${BASE}/chat/conversations/${id}`);
     if (!res.ok) return;
     const data = await res.json();
     setMessages(
@@ -65,8 +65,20 @@ export function useMessages(conversationId: number | null) {
 
   const send = useCallback(
     async (content: string, overrideConvId?: number) => {
+      // We should allow sending if we have either conversationId or overrideConvId
+      // The original logic was correct, but let's add better error handling
       const effectiveId = overrideConvId ?? conversationId;
-      if (!effectiveId || isStreaming) return;
+      
+      // If neither is available, we can't send the message
+      if (!effectiveId) {
+        console.warn("No conversation ID available to send message");
+        return;
+      }
+      
+      if (isStreaming) {
+        console.warn("Already streaming a message, ignoring new send request");
+        return;
+      }
 
       const userMsg: Message = { id: makeId(), role: "user", content };
       setMessages((prev) => [...prev, userMsg]);
@@ -78,7 +90,7 @@ export function useMessages(conversationId: number | null) {
       abortRef.current = new AbortController();
 
       try {
-        const res = await fetch(`${BASE}/openai/conversations/${effectiveId}/messages`, {
+        const res = await fetch(`${BASE}/chat/conversations/${effectiveId}/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content }),

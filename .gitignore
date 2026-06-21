@@ -54,3 +54,6 @@ Thumbs.db
 #Nextjs
 .env*
 .next
+
+# data
+data

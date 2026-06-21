@@ -9,7 +9,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div dir="rtl" className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+    <div
+      dir="rtl"
+      className="h-screen flex flex-col bg-background text-foreground overflow-hidden"
+    >
       {/* Main area: sidebar + content with gap (Spotify seams) */}
       <div className="flex flex-1 gap-2 p-2 min-h-0">
         {/* Desktop sidebar */}
@@ -27,7 +30,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </Sheet>
 
         {/* Main content panel */}
-        <main className="flex-1 bg-card border border-border rounded-lg overflow-y-auto min-w-0 relative">
+        <main className="flex-1 bg-card rounded-lg overflow-y-auto min-w-0 relative">
           {/* Mobile hamburger - floating, non-blocking */}
           <button
             onClick={() => setSidebarOpen(true)}

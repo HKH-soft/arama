@@ -42,7 +42,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-gradient-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
         <h1 className="text-2xl font-bold text-foreground">تنظیمات</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           مدیریت حساب کاربری و تنظیمات برنامه
@@ -53,12 +53,14 @@ export default function SettingsPage() {
         {/* Profile section */}
         <div className="bg-muted/30 border border-border rounded-lg p-5 mt-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-2xl">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-2xl">
               س‌م
             </div>
             <div>
               <h3 className="text-lg font-bold text-foreground">سارا محمدی</h3>
-              <p className="text-muted-foreground/80 text-sm">sara@example.com</p>
+              <p className="text-muted-foreground/80 text-sm">
+                sara@example.com
+              </p>
               <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full mt-1 inline-block">
                 پریمیوم
               </span>

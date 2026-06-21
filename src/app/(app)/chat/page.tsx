@@ -89,6 +89,10 @@ export default function Chat() {
       if (!conv) return;
       convId = conv.id;
       setActiveId(conv.id);
+      
+      // Small delay to ensure the conversation state is updated
+      // before attempting to send the message
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     await send(text, convId !== activeId ? convId : undefined);
@@ -174,7 +178,7 @@ export default function Chat() {
             </Button>
 
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm shadow">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-sm shadow">
                 آ
               </div>
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full" />
@@ -232,6 +236,15 @@ export default function Chat() {
 
           {/* Message list */}
           {messages.map((msg, idx) => {
+            // Skip empty streaming assistant messages (typing indicator shows instead)
+            if (
+              msg.role === "assistant" &&
+              idx === messages.length - 1 &&
+              isStreaming &&
+              !msg.content
+            ) {
+              return null;
+            }
             const isLastAssistant =
               msg.role === "assistant" &&
               idx === messages.length - 1 &&
@@ -245,11 +258,13 @@ export default function Chat() {
             );
           })}
 
-          {/* Typing indicator */}
+          {/* Typing indicator — shown while streaming and assistant message is still empty */}
           <AnimatePresence>
-            {isStreaming && messages[messages.length - 1]?.role === "user" && (
-              <TypingIndicator key="typing" />
-            )}
+            {isStreaming &&
+              messages[messages.length - 1]?.role === "assistant" &&
+              !messages[messages.length - 1]?.content && (
+                <TypingIndicator key="typing" />
+              )}
           </AnimatePresence>
 
           <div ref={messagesEndRef} />

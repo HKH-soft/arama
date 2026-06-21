@@ -51,11 +51,15 @@ export function DashboardContent() {
   return (
     <>
       {/* Gradient header */}
-      <div className="bg-gradient-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-gradient-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
         <header className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">سلام، سارا جان 👋</h1>
-            <p className="text-muted-foreground mt-1 text-sm">امروز ۲۴ مهر ۱۴۰۳</p>
+            <h1 className="text-2xl font-bold text-foreground">
+              سلام، سارا جان 👋
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              امروز ۲۴ مهر ۱۴۰۳
+            </p>
           </div>
         </header>
       </div>
@@ -142,7 +146,9 @@ export function DashboardContent() {
                 <span className="text-2xl font-bold text-foreground">
                   {stat.val}
                 </span>
-                <span className="text-xs text-muted-foreground/80">{stat.suffix}</span>
+                <span className="text-xs text-muted-foreground/80">
+                  {stat.suffix}
+                </span>
               </div>
             </div>
           ))}
@@ -171,7 +177,10 @@ export function DashboardContent() {
                   <PolarGrid stroke="hsl(var(--border))" />
                   <PolarAngleAxis
                     dataKey="subject"
-                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 11,
+                    }}
                   />
                   <PolarRadiusAxis
                     angle={30}

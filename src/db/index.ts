@@ -34,8 +34,17 @@ function getDb(): any {
     sqlite.pragma("journal_mode = WAL");
     sqlite.pragma("foreign_keys = ON");
     sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
       CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         title TEXT NOT NULL,
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
@@ -49,14 +58,36 @@ function getDb(): any {
       );
 
       CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
     `);
+
+    // Add user_id column to existing conversations table if it was created before auth
+    try {
+      sqlite.exec(`ALTER TABLE conversations ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`);
+    } catch {
+      // Column already exists — safe to ignore
+    }
+
+    // Index created AFTER ALTER TABLE so user_id is guaranteed to exist
+    sqlite.exec(`CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id)`);
 
     _db = drizzle(sqlite, { schema });
   } else {
     // ── Edge / Cloudflare runtime → D1 ────────────────────────────────────
     // getRequestContext() is provided by @opennextjs/cloudflare and gives
     // per-request access to the Cloudflare env bindings (including D1).
-    const { getRequestContext } = require("@opennextjs/cloudflare");
+    let getRequestContext: () => any;
+    // Dynamic require hidden from Turbopack's static NFT tracing.
+    // The module is only available in Cloudflare edge deployments.
+    const openNextCf = ["@opennextjs", "cloudflare"].join("/");
+    try {
+      ({ getRequestContext } = require(openNextCf));
+    } catch {
+      throw new Error(
+        "Running in edge runtime but @opennextjs/cloudflare is not installed. " +
+          "Install it with: npm install @opennextjs/cloudflare"
+      );
+    }
     const { drizzle } = require("drizzle-orm/d1");
 
     const ctx = getRequestContext();

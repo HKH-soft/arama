@@ -93,7 +93,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             placeholder="احساست رو بنویس..."
             rows={1}
             disabled={disabled}
-            className="w-full resize-none bg-[#1e1e1e] border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-white/30 disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
+            className="w-full resize-none bg-background border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-white/30 disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
             data-testid="input-message"
           />
         </div>
@@ -112,7 +112,8 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
       </form>
 
       <p className="text-center text-[10px] text-white/25">
-        آراما ممکن است اشتباه کند. در بحران‌های جدی با اورژانس اجتماعی ۱۲۳ تماس بگیرید.
+        آراما ممکن است اشتباه کند. در بحران‌های جدی با اورژانس اجتماعی ۱۲۳ تماس
+        بگیرید.
       </p>
     </div>
   );

@@ -42,7 +42,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
         className={`max-w-[85%] sm:max-w-[72%] px-4 py-3 text-sm leading-7 rounded-2xl shadow-sm
           ${
             isAI
-              ? "bg-[#1e1e1e] text-white/90 rounded-bl-sm"
+              ? "bg-background text-foreground rounded-bl-sm"
               : "bg-primary text-primary-foreground rounded-br-sm"
           }
           ${isStreaming ? "animate-pulse" : ""}

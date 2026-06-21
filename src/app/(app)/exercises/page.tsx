@@ -56,9 +56,9 @@ export default function ExercisesPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-b from-emerald-900/40 via-[#1a1a2e] to-[#121212] px-6 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-white">تمرینات</h1>
-        <p className="text-white/50 mt-1 text-sm">
+      <div className="bg-gradient-to-b from-emerald-900/40 via-card to-card px-6 pt-6 pb-4">
+        <h1 className="text-2xl font-bold text-foreground">تمرینات</h1>
+        <p className="text-foreground/50 mt-1 text-sm">
           تمرین‌های آرام‌سازی و ذهن‌آگاهی برای سلامت روان
         </p>
       </div>
@@ -66,20 +66,18 @@ export default function ExercisesPage() {
       <div className="px-6 pb-6 space-y-6">
         {/* Filter chips */}
         <div className="flex gap-2 flex-wrap">
-          {["همه", "تنفسی", "مدیتیشن", "حرکتی", "ذهن‌آگاهی"].map(
-            (chip, i) => (
-              <button
-                key={i}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  i === 0
-                    ? "bg-white text-black"
-                    : "bg-white/5 text-white/70 hover:bg-white/10"
-                }`}
-              >
-                {chip}
-              </button>
-            )
-          )}
+          {["همه", "تنفسی", "مدیتیشن", "حرکتی", "ذهن‌آگاهی"].map((chip, i) => (
+            <button
+              key={i}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                i === 0
+                  ? "bg-white text-black"
+                  : "bg-white/5 text-foreground/70 hover:bg-white/10"
+              }`}
+            >
+              {chip}
+            </button>
+          ))}
         </div>
 
         {/* Exercise grid */}
@@ -91,25 +89,25 @@ export default function ExercisesPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                  <ex.icon className="w-5 h-5 text-white/70" />
+                  <ex.icon className="w-5 h-5 text-foreground/70" />
                 </div>
-                <span className="text-[11px] text-white/40 bg-white/5 px-2 py-1 rounded-full">
+                <span className="text-[11px] text-foreground/40 bg-white/5 px-2 py-1 rounded-full">
                   {ex.difficulty}
                 </span>
               </div>
-              <h3 className="text-base font-bold text-white mb-1">
+              <h3 className="text-base font-bold text-foreground mb-1">
                 {ex.title}
               </h3>
-              <p className="text-white/50 text-sm mb-4 leading-relaxed">
+              <p className="text-foreground/50 text-sm mb-4 leading-relaxed">
                 {ex.desc}
               </p>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-white/40 text-xs">
+                <span className="flex items-center gap-1.5 text-foreground/40 text-xs">
                   <Clock className="w-3.5 h-3.5" />
                   {ex.time}
                 </span>
                 <button className="w-9 h-9 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg shadow-primary/30">
-                  <Play className="w-4 h-4 text-white fill-white mr-0.5" />
+                  <Play className="w-4 h-4 text-foreground fill-white mr-0.5" />
                 </button>
               </div>
             </div>
