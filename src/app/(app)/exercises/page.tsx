@@ -56,7 +56,7 @@ export default function ExercisesPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-b from-emerald-900/40 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-emerald-900/40 via-card to-card px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground">تمرینات</h1>
         <p className="text-foreground/50 mt-1 text-sm">
           تمرین‌های آرام‌سازی و ذهن‌آگاهی برای سلامت روان
@@ -85,7 +85,7 @@ export default function ExercisesPage() {
           {exercises.map((ex, i) => (
             <div
               key={i}
-              className={`bg-gradient-to-br ${ex.color} rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all group cursor-pointer`}
+              className={`bg-linear-to-br ${ex.color} rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all group cursor-pointer`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">

@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql://arama:arama@db:5432/arama
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: http://localhost:8080
+      NEXTAUTH_SECRET: development-secret
+      SMTP_HOST: maildev
+      SMTP_PORT: 1025
+      SMTP_USER: ''
+      SMTP_PASS: ''
+      EMAIL_FROM: noreply@arama.app
+      APP_URL: http://localhost:8080
+      CRON_AUTH_TOKEN: dev-cron-token
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: arama
+      POSTGRES_USER: arama
+      POSTGRES_PASSWORD: arama
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    restart: unless-stopped
+
+  cron:
+    build:
+      context: .
+      target: runner
+    command: node server.js
+    environment:
+      DATABASE_URL: postgresql://arama:arama@db:5432/arama
+      REDIS_URL: redis://redis:6379
+      NEXTAUTH_URL: http://localhost:8080
+      NEXTAUTH_SECRET: development-secret
+      SMTP_HOST: maildev
+      SMTP_PORT: 1025
+      SMTP_USER: ''
+      SMTP_PASS: ''
+      EMAIL_FROM: noreply@arama.app
+      APP_URL: http://localhost:8080
+      CRON_AUTH_TOKEN: dev-cron-token
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

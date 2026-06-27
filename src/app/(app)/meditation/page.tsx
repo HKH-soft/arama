@@ -160,7 +160,7 @@ export default function MeditationPage() {
         `}</style>
 
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950 via-green-900/80 to-emerald-950" />
+        <div className="absolute inset-0 bg-linear-to-b from-emerald-950 via-green-900/80 to-emerald-950" />
 
         {/* Ambient Floating particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -194,7 +194,7 @@ export default function MeditationPage() {
           <div className="flex items-center gap-3 text-foreground/50 text-xs">
             <span>{breathCount} تنفس</span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span className="inline-block min-w-[35px] tabular-nums" dir="ltr">
+            <span className="inline-block min-w-8.75 tabular-nums" dir="ltr">
               {formatTimer(elapsed)}
             </span>
           </div>
@@ -205,7 +205,9 @@ export default function MeditationPage() {
           <h2 className="text-lg font-bold text-foreground/90">
             {selectedTrack.title}
           </h2>
-          <p className="text-xs text-foreground/40 mt-0.5">{selectedTrack.artist}</p>
+          <p className="text-xs text-foreground/40 mt-0.5">
+            {selectedTrack.artist}
+          </p>
         </div>
 
         {/* Breathing orb */}
@@ -251,8 +253,8 @@ export default function MeditationPage() {
               />
               <div className="relative z-10 flex flex-col items-center gap-2">
                 <div className="flex items-center gap-6">
-                  <div className="w-4 h-[2px] bg-emerald-900/60 rounded-full" />
-                  <div className="w-4 h-[2px] bg-emerald-900/60 rounded-full" />
+                  <div className="w-4 h-0.5 bg-emerald-900/60 rounded-full" />
+                  <div className="w-4 h-0.5 bg-emerald-900/60 rounded-full" />
                 </div>
                 <div className="w-6 h-3 border-b-2 border-emerald-900/40 rounded-b-full" />
               </div>
@@ -389,7 +391,7 @@ export default function MeditationPage() {
         <div className="relative z-10 flex items-center justify-center gap-6 px-6 pb-6 pt-2">
           <button
             onClick={toggleMute}
-            className="w-11 h-11 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
+            className="w-11 h-11 rounded-full bg-white/6 border border-white/8 flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
           >
             {muted || player.volume === 0 ? (
               <VolumeX className="w-4 h-4" />
@@ -400,7 +402,7 @@ export default function MeditationPage() {
 
           <button
             onClick={player.playPrev}
-            className="w-11 h-11 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
+            className="w-11 h-11 rounded-full bg-white/6 border border-white/8 flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
           >
             <SkipBack className="w-4 h-4 rtl:rotate-180" />
           </button>
@@ -421,14 +423,14 @@ export default function MeditationPage() {
 
           <button
             onClick={player.playNext}
-            className="w-11 h-11 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
+            className="w-11 h-11 rounded-full bg-white/6 border border-white/8 flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
           >
             <SkipForward className="w-4 h-4 rtl:rotate-180" />
           </button>
 
           <button
             onClick={() => setShowTimerPicker(true)}
-            className="w-11 h-11 rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
+            className="w-11 h-11 rounded-full bg-white/6 border border-white/8 flex items-center justify-center text-foreground/50 hover:text-foreground/80 transition-all"
             title="تنظیم زمان"
           >
             <Timer className="w-4 h-4" />
@@ -452,7 +454,7 @@ export default function MeditationPage() {
   // ════════════════════════════════════════════════════
   return (
     <div className="font-vazirmatn min-h-screen bg-card text-foreground pb-12">
-      <div className="bg-gradient-to-b from-violet-900/40 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-violet-900/40 via-card to-card px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground">مدیتیشن</h1>
         <p className="text-foreground/50 mt-1 text-sm">
           یک مدیتیشن انتخاب کن و در حالت ذِن آرامش پیدا کن
@@ -461,7 +463,7 @@ export default function MeditationPage() {
 
       <div className="px-6 pb-6 space-y-6">
         {queue.length > 0 && (
-          <div className="bg-gradient-to-r from-violet-500/20 via-purple-500/10 to-transparent rounded-xl p-6 border border-violet-500/10">
+          <div className="bg-linear-to-r from-violet-500/20 via-purple-500/10 to-transparent rounded-xl p-6 border border-violet-500/10">
             <div className="flex items-center gap-2 text-violet-400 text-sm font-medium mb-2">
               <Sparkles className="w-4 h-4" />
               <span>پیشنهاد امروز</span>
@@ -512,14 +514,14 @@ export default function MeditationPage() {
               <button
                 key={track.id}
                 onClick={() => selectMeditation(track)}
-                className="bg-gradient-to-br from-emerald-500/15 to-teal-500/5 rounded-xl p-5 border border-white/5 hover:border-emerald-500/20 transition-all group cursor-pointer text-start w-full"
+                className="bg-linear-to-br from-emerald-500/15 to-teal-500/5 rounded-xl p-5 border border-white/5 hover:border-emerald-500/20 transition-all group cursor-pointer text-start w-full"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
                     <Headphones className="w-5 h-5 text-foreground/60" />
                   </div>
                   {isCurrent && player.isPlaying && (
-                    <div className="flex items-end gap-[2px] h-4">
+                    <div className="flex items-end gap-0.5 h-4">
                       <span className="w-[3px] bg-emerald-400 rounded-full animate-[equalizer_0.8s_ease-in-out_infinite_alternate] h-2" />
                       <span className="w-[3px] bg-emerald-400 rounded-full animate-[equalizer_0.6s_ease-in-out_infinite_alternate_0.2s] h-4" />
                       <span className="w-[3px] bg-emerald-400 rounded-full animate-[equalizer_0.7s_ease-in-out_infinite_alternate_0.4s] h-3" />

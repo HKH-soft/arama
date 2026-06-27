@@ -1,71 +1,125 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { hashPassword, signSession, setSessionCookie } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth-helpers-no-auth";
+import db from "@/lib/db"; // Updated to use Drizzle
+import { 
+  users,
+  userRoles,
+  roles,
+  subscriptions,
+  subscriptionPlans
+} from "@/db/schema"; // Import Drizzle tables
+import { eq, and } from 'drizzle-orm'; // Import Drizzle operators
+import { sendVerificationEmail } from "@/lib/email";
+import { logAudit, getClientInfo } from "@/lib/audit";
+import { z } from "zod";
+import { randomUUID } from 'crypto';
+
+const registerSchema = z.object({
+  name: z.string().min(1, "نام الزامی است").max(100),
+  email: z.string().email("فرمت ایمیل نامعتبر است").max(255),
+  password: z.string().min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد"),
+  phone: z.string().max(20).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
+    const clientInfo = getClientInfo(request);
+    
     const body = await request.json();
-    const { name, email, password } = body;
-
-    // ── Validation ──────────────────────────────────────────────────────────
-    if (!name || typeof name !== "string" || !name.trim()) {
-      return NextResponse.json({ error: "نام الزامی است" }, { status: 400 });
-    }
-    if (!email || typeof email !== "string" || !email.trim()) {
-      return NextResponse.json({ error: "ایمیل الزامی است" }, { status: 400 });
-    }
-    if (!password || typeof password !== "string" || password.length < 8) {
+    const parsed = registerSchema.safeParse(body);
+    
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "رمز عبور باید حداقل ۸ کاراکتر باشد" },
-        { status: 400 },
+        { error: "ورودی نامعتبر", details: parsed.error.issues },
+        { status: 400 }
       );
     }
-
-    // ── Check for existing user ──────────────────────────────────────────────
-    const existing = await db
-      .select({ id: users.id })
+    
+    const { name, email, password, phone } = parsed.data;
+    
+    // Check if user already exists
+    const existingUser = await db.select()
       .from(users)
-      .where(eq(users.email, email.trim().toLowerCase()))
-      .limit(1);
-
-    if (existing.length > 0) {
+      .where(eq(users.email, email));
+    
+    if (existingUser.length > 0) {
       return NextResponse.json(
-        { error: "این ایمیل قبلاً ثبت شده است" },
-        { status: 409 },
+        { error: "کاربری با این ایمیل قبلاً ثبت نام کرده است" },
+        { status: 400 }
       );
     }
-
-    // ── Create user ──────────────────────────────────────────────────────────
-    const passwordHash = await hashPassword(password);
-
-    const [user] = await db
-      .insert(users)
-      .values({
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        passwordHash,
-      })
-      .returning({ id: users.id, name: users.name, email: users.email });
-
-    // ── Set session cookie ───────────────────────────────────────────────────
-    const token = await signSession({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
+    
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+    
+    // Start transaction - create user, assign default role, and create free subscription
+    const newUserResult = await db.insert(users).values({
+      id: randomUUID(),
+      name,
+      email,
+      passwordHash: hashedPassword,
+      phone,
+      isActive: true,
+      emailVerified: null, // User needs to verify email
+    }).returning();
+    
+    const newUser = newUserResult[0];
+    
+    // Assign default USER role
+    const userRole = await db.select()
+      .from(roles)
+      .where(eq(roles.name, "USER"));
+    
+    if (userRole.length > 0) {
+      await db.insert(userRoles).values({
+        id: randomUUID(),
+        userId: newUser.id,
+        roleId: userRole[0].id,
+      });
+    }
+    
+    // Create FREE subscription
+    const freePlan = await db.select()
+      .from(subscriptionPlans)
+      .where(and(
+        eq(subscriptionPlans.name, "FREE"),
+        eq(subscriptionPlans.isActive, true)
+      ));
+    
+    if (freePlan.length > 0) {
+      await db.insert(subscriptions).values({
+        id: randomUUID(),
+        userId: newUser.id,
+        planId: freePlan[0].id,
+        status: "ACTIVE",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + freePlan[0].durationDays * 24 * 60 * 60 * 1000),
+      });
+    }
+    
+    // Send verification email
+    await sendVerificationEmail(newUser.id, email);
+    
+    // Log audit
+    await logAudit({
+      userId: newUser.id,
+      action: "USER_REGISTERED",
+      entity: "user",
+      entityId: newUser.id,
+      metadata: { email },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
     });
-    await setSessionCookie(token);
-
+    
+    return NextResponse.json({
+      message: "ثبت نام با موفقیت انجام شد. لطفاً ایمیل خود را برای تأیید بررسی کنید.",
+      userId: newUser.id,
+    });
+  } catch (err) {
+    console.error("Registration error:", err);
     return NextResponse.json(
-      { user: { id: user.id, name: user.name, email: user.email } },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error("Register error:", error);
-    return NextResponse.json(
-      { error: "خطا در ثبت‌نام. لطفاً دوباره تلاش کنید." },
-      { status: 500 },
+      { error: "خطا در ثبت نام", details: err instanceof Error ? err.message : "خطای ناشناخته" },
+      { status: 500 }
     );
   }
 }

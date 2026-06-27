@@ -9,16 +9,30 @@ import {
   Globe,
   Moon,
   ChevronLeft,
+  Sun,
+  Volume2,
+  Key,
+  Mail,
+  Monitor,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const { theme, setTheme } = useTheme();
+
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
   const Toggle = ({
     checked,
     onChange,
@@ -42,7 +56,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-linear-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
         <h1 className="text-2xl font-bold text-foreground">تنظیمات</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           مدیریت حساب کاربری و تنظیمات برنامه
@@ -53,16 +67,16 @@ export default function SettingsPage() {
         {/* Profile section */}
         <div className="bg-muted/30 border border-border rounded-lg p-5 mt-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-2xl">
-              س‌م
+            <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-2xl">
+              س‌ا
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground">سارا محمدی</h3>
+              <h3 className="text-lg font-bold text-foreground">سروش احمدی</h3>
               <p className="text-muted-foreground/80 text-sm">
-                sara@example.com
+                ahmadi@example.com
               </p>
               <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full mt-1 inline-block">
-                پریمیوم
+                ماهانه
               </span>
             </div>
           </div>
@@ -71,65 +85,161 @@ export default function SettingsPage() {
         {/* Settings groups */}
         <div className="space-y-4">
           {/* Notifications */}
-          <div className="bg-muted/30 border border-border rounded-lg divide-y divide-border">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm text-foreground">اعلان‌ها</span>
-              </div>
-              <Toggle
-                checked={notifications}
-                onChange={() => setNotifications(!notifications)}
-              />
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm text-foreground">حالت تاریک</span>
-              </div>
-              <Toggle checked={theme === "dark"} onChange={toggleTheme} />
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Globe className="w-5 h-5 text-muted-foreground" />
-                <span className="text-sm text-foreground">صدا و صوت</span>
-              </div>
-              <Toggle
-                checked={soundEnabled}
-                onChange={() => setSoundEnabled(!soundEnabled)}
-              />
-            </div>
-          </div>
-
-          {/* Navigation items */}
-          <div className="bg-muted/30 border border-border rounded-lg divide-y divide-border">
-            {[
-              { icon: Shield, label: "حریم خصوصی و امنیت" },
-              { icon: Palette, label: "شخصی‌سازی ظاهر" },
-              { icon: User, label: "ویرایش پروفایل" },
-            ].map((item, i) => (
-              <button
-                key={i}
-                className="flex items-center justify-between p-4 w-full hover:bg-muted/20 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <item.icon className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-sm text-foreground">{item.label}</span>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="w-5 h-5" />
+                اعلان‌ها
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">اعلان‌های وب</Label>
+                  <p className="text-xs text-muted-foreground">
+                    دریافت اعلان‌ها در مرورگر
+                  </p>
                 </div>
-                <ChevronLeft className="w-4 h-4 text-muted-foreground/50" />
-              </button>
-            ))}
-          </div>
+                <Toggle
+                  checked={notifications}
+                  onChange={() => setNotifications(!notifications)}
+                />
+              </div>
 
-          {/* Danger zone */}
-          <div className="bg-muted/30 border border-border rounded-lg p-4 space-y-3">
-            <button className="w-full text-right text-sm text-red-500 hover:text-red-400 transition-colors py-2">
-              حذف تمام گفتگوها
-            </button>
-            <button className="w-full text-right text-sm text-red-500 hover:text-red-400 transition-colors py-2">
-              حذف حساب کاربری
-            </button>
-          </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">صدا</Label>
+                  <p className="text-xs text-muted-foreground">
+                    پخش صدای اعلان‌ها
+                  </p>
+                </div>
+                <Toggle
+                  checked={soundEnabled}
+                  onChange={() => setSoundEnabled(!soundEnabled)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">ایمیل</Label>
+                  <p className="text-xs text-muted-foreground">
+                    دریافت اعلان‌ها از طریق ایمیل
+                  </p>
+                </div>
+                <Toggle
+                  checked={emailNotifications}
+                  onChange={() => setEmailNotifications(!emailNotifications)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Privacy & Security */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                حریم خصوصی و امنیت
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">
+                    احراز هویت دو مرحله‌ای
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    افزایش امنیت حساب
+                  </p>
+                </div>
+                <Toggle
+                  checked={twoFactorAuth}
+                  onChange={() => setTwoFactorAuth(!twoFactorAuth)}
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button variant="outline" className="w-full">
+                  <Key className="w-4 h-4 ml-2" />
+                  تغییر رمز عبور
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Appearance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="w-5 h-5" />
+                ظاهر
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">حالت تیره</Label>
+                  <p className="text-xs text-muted-foreground">
+                    تغییر حالت نمایش
+                  </p>
+                </div>
+                <Toggle checked={theme === "dark"} onChange={toggleTheme} />
+              </div>
+
+              <div className="pt-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant={theme === "light" ? "default" : "outline"}
+                    onClick={() => setTheme("light")}
+                    className="flex-1"
+                  >
+                    <Sun className="w-4 h-4 ml-2" />
+                    روشن
+                  </Button>
+                  <Button
+                    variant={theme === "dark" ? "default" : "outline"}
+                    onClick={() => setTheme("dark")}
+                    className="flex-1"
+                  >
+                    <Moon className="w-4 h-4 ml-2" />
+                    تاریک
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5" />
+                حساب کاربری
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">حذف حساب</Label>
+                  <p className="text-xs text-muted-foreground">
+                    حذف دائمی حساب کاربری
+                  </p>
+                </div>
+                <Button variant="destructive" size="sm">
+                  حذف
+                </Button>
+              </div>
+
+              <Separator />
+
+              <div className="pt-2">
+                <Button variant="outline" className="w-full">
+                  <Monitor className="w-4 h-4 ml-2" />
+                  مدیریت نشست‌ها
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>

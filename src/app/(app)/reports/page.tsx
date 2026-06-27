@@ -38,7 +38,7 @@ export default function ReportsPage() {
 
   return (
     <>
-      <div className="bg-gradient-to-b from-amber-900/30 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-amber-900/30 via-card to-card px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground">گزارش‌ها</h1>
         <p className="text-foreground/50 mt-1 text-sm">
           مشاهده پیشرفت و تاریخچه فعالیت‌های شما
@@ -88,7 +88,9 @@ export default function ReportsPage() {
 
         {/* Report list */}
         <div className="space-y-3">
-          <h3 className="font-semibold text-foreground text-sm">گزارش‌های شما</h3>
+          <h3 className="font-semibold text-foreground text-sm">
+            گزارش‌های شما
+          </h3>
           {reports.map((report, i) => (
             <div
               key={i}
@@ -103,7 +105,9 @@ export default function ReportsPage() {
                     {report.title}
                   </h4>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-foreground/40">{report.date}</span>
+                    <span className="text-xs text-foreground/40">
+                      {report.date}
+                    </span>
                     <span className="text-[10px] bg-white/10 text-foreground/50 px-1.5 py-0.5 rounded">
                       {report.type}
                     </span>

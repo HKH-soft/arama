@@ -1,12 +1,6 @@
-"use client";
-
-import dynamic from "next/dynamic";
-
-const DashboardContent = dynamic(
-  () => import("@/components/DashboardContent").then((m) => m.DashboardContent),
-  { ssr: false }
-);
-
-export default function DashboardCatchAll() {
-  return <DashboardContent />;
+import { getCurrentUser } from "@/lib/auth-helpers";
+import { DashboardPageClient } from "@/components/DashboardPageClient";
+export default async function DashboardCatchAll() {
+  const user = await getCurrentUser();
+  return <DashboardPageClient user={user} />;
 }

@@ -62,7 +62,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
                 setValue(prompt);
                 textareaRef.current?.focus();
               }}
-              className="text-xs px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-full border border-white/8 bg-white/[0.04] hover:bg-white/8 text-white/50 hover:text-white/80 transition-colors"
               data-testid={`prompt-${prompt}`}
             >
               {prompt}
@@ -93,7 +93,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             placeholder="احساست رو بنویس..."
             rows={1}
             disabled={disabled}
-            className="w-full resize-none bg-background border border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-white/30 disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
+            className="w-full resize-none bg-background border border-white/8 rounded-2xl px-4 py-3 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-white/30 disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
             data-testid="input-message"
           />
         </div>

@@ -1,171 +1,91 @@
-import { NextRequest } from "next/server";
-import OpenAI from "openai";
-import { db } from "@/db";
-import { conversations, messages } from "@/db/schema";
-import { eq } from "drizzle-orm";
-
-// AvalAI is an OpenAI-compatible proxy that supports multiple providers
-// including Anthropic Claude models via the OpenAI chat completions format.
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_API_BASE_URL,
-});
-
-// Arama system prompt — empathetic Persian mental wellness AI
-const SYSTEM_PROMPT = `تو آراما هستی، یک دستیار هوشمند سلامت روان ایرانی. مأموریت تو این است که با همدلی، گرمی و بدون هیچ قضاوتی به کاربر گوش بدهی و کمک کنی.
-
-قوانین مهم:
-- همیشه به زبان فارسی پاسخ بده
-- لحن تو باید گرم، مهربان، آرام و همدلانه باشد
-- هرگز تشخیص بالینی نده و جایگزین روانپزشک یا روانشناس نشو
-- در صورت بحران یا خطر، حتماً کمک حرفه‌ای را توصیه کن
-- از تکنیک‌های CBT، ذهن‌آگاهی و تنفس در پاسخ‌هایت استفاده کن
-- پاسخ‌هایت کوتاه و تأثیرگذار باشند، نه طولانی
-- سعی کن با سؤال‌های باز، کاربر را تشویق به بیان احساساتش کنی`;
-
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
-  const convId = parseInt(id, 10);
-
-  if (isNaN(convId)) {
-    return new Response(JSON.stringify({ error: "Invalid id" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  try {
-    const msgs = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.conversationId, convId))
-      .orderBy(messages.createdAt);
-
-    return new Response(JSON.stringify(msgs), {
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Failed to fetch messages:", error);
-    return new Response(JSON.stringify({ error: "Failed to fetch messages" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-}
+import { NextRequest, NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth-helpers";
+import db from "@/lib/prisma"; // Updated to use Drizzle
+import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
+import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import Anthropic from "@anthropic-ai/sdk";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const convId = parseInt(id, 10);
+  try {
+    const user = await requireAuth();
+    const { id } = await params;
+    const { content } = await request.json();
 
-  if (isNaN(convId)) {
-    return new Response(JSON.stringify({ error: "Invalid id" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
+    if (!content || typeof content !== "string" || !content.trim()) {
+      return NextResponse.json({ error: "content is required" }, { status: 400 });
+    }
+
+    // Check if conversation exists and belongs to user
+    const conversationResult = await db.select()
+      .from(conversations)
+      .where(and(
+        eq(conversations.id, id),
+        eq(conversations.userId, user.id)
+      ));
+      
+    if (conversationResult.length === 0) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+    }
+
+    // Create user message
+    const userMessageResult = await db.insert(messages).values({
+      id: crypto.randomUUID(),
+      conversationId: id,
+      content: content.trim(),
+      role: "user",
+    }).returning();
+
+    // Get all messages in the conversation for context
+    const allMessages = await db.select()
+      .from(messages)
+      .where(eq(messages.conversationId, id))
+      .orderBy(asc(messages.createdAt));
+
+    // Prepare messages for AI
+    const aiMessages = allMessages.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+    }));
+
+    // Initialize Anthropic client
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
-  }
 
-  const body = await request.json();
-  const { content } = body as { content?: string };
-
-  if (!content?.trim()) {
-    return new Response(JSON.stringify({ error: "content is required" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
+    // Call AI to generate response
+    const aiResponse = await anthropic.messages.create({
+      model: process.env.AI_MODEL || "claude-3-haiku-20240307",
+      max_tokens: 1024,
+      temperature: 0.7,
+      system: "You are a helpful mental health support assistant. Provide supportive, empathetic responses focused on emotional wellbeing.",
+      messages: aiMessages as any, // Type assertion due to compatibility
     });
-  }
 
-  // Verify conversation exists
-  const conv = await db
-    .select()
-    .from(conversations)
-    .where(eq(conversations.id, convId))
-    .limit(1);
+    // Create AI response message
+    const aiMessageResult = await db.insert(messages).values({
+      id: crypto.randomUUID(),
+      conversationId: id,
+      content: aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : "I couldn't process that message.",
+      role: "assistant",
+    }).returning();
 
-  if (!conv.length) {
-    return new Response(JSON.stringify({ error: "Conversation not found" }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
+    // Update conversation last message timestamp
+    await db.update(conversations)
+      .set({ updatedAt: new Date() }) // Changed from lastMessageAt to updatedAt
+      .where(eq(conversations.id, id));
+
+    return NextResponse.json({
+      userMessage: userMessageResult[0],
+      aiMessage: aiMessageResult[0],
     });
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    return NextResponse.json(
+      { error: "Failed to send message" },
+      { status: 500 },
+    );
   }
-
-  // Persist user message
-  await db.insert(messages).values({
-    conversationId: convId,
-    role: "user",
-    content: content.trim(),
-  });
-
-  // Load full conversation history
-  const history = await db
-    .select()
-    .from(messages)
-    .where(eq(messages.conversationId, convId))
-    .orderBy(messages.createdAt);
-
-  const chatMessages = history.map((m) => ({
-    role: m.role as "user" | "assistant" | "system",
-    content: m.content,
-  }));
-
-  // Create SSE stream
-  const encoder = new TextEncoder();
-  let fullResponse = "";
-
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (data: object) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
-      };
-
-      try {
-        const aiStream = await openai.chat.completions.create({
-          model: process.env.AI_MODEL || "claude-sonnet-latest",
-          max_tokens: 1024,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT },
-            ...chatMessages,
-          ],
-          stream: true,
-        });
-
-        for await (const chunk of aiStream) {
-          const delta = chunk.choices[0]?.delta?.content;
-          if (delta) {
-            fullResponse += delta;
-            send({ content: delta });
-          }
-        }
-
-        // Only persist assistant message if we got a full response (not on error)
-        if (fullResponse) {
-          await db.insert(messages).values({
-            conversationId: convId,
-            role: "assistant",
-            content: fullResponse,
-          });
-        }
-
-        send({ done: true });
-        controller.close();
-      } catch (err) {
-        console.error("AI streaming error:", err);
-        send({ error: "خطا در ارتباط با هوش مصنوعی" });
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    },
-  });
 }

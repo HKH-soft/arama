@@ -1,12 +1,14 @@
-"use client";
+import { getCurrentUser } from "@/lib/auth-helpers";
+import { redirect } from "next/navigation";
+import { DashboardPageClient } from "@/components/DashboardPageClient";
 
-import dynamic from "next/dynamic";
-
-const DashboardContent = dynamic(
-  () => import("@/components/DashboardContent").then((m) => m.DashboardContent),
-  { ssr: false }
-);
-
-export default function DashboardPage() {
-  return <DashboardContent />;
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    // Redirect to login if user is not authenticated
+    redirect('/login');
+  }
+  
+  return <DashboardPageClient user={user} />;
 }

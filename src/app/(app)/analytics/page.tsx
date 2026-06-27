@@ -5,7 +5,7 @@ import { BarChart2, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 export default function AnalyticsPage() {
   return (
     <>
-      <div className="bg-gradient-to-b from-indigo-900/40 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-indigo-900/40 via-card to-card px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground">تحلیل احساسات</h1>
         <p className="text-foreground/50 mt-1 text-sm">
           بررسی روند تغییرات احساسات شما در طول زمان
@@ -49,7 +49,9 @@ export default function AnalyticsPage() {
                 <stat.icon className="w-4 h-4" />
                 <span className="text-xs">{stat.label}</span>
               </div>
-              <span className="text-2xl font-bold text-foreground">{stat.val}</span>
+              <span className="text-2xl font-bold text-foreground">
+                {stat.val}
+              </span>
             </div>
           ))}
         </div>
@@ -84,8 +86,10 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Weekly insight */}
-        <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/10 rounded-lg p-6 border border-indigo-500/10">
-          <h3 className="font-semibold text-foreground mb-2 text-sm">تحلیل هفته</h3>
+        <div className="bg-linear-to-r from-indigo-500/20 to-purple-500/10 rounded-lg p-6 border border-indigo-500/10">
+          <h3 className="font-semibold text-foreground mb-2 text-sm">
+            تحلیل هفته
+          </h3>
           <p className="text-foreground/60 text-sm leading-relaxed">
             این هفته سطح آرامش شما ۱۵٪ بهتر از هفته گذشته بوده. تمرینات تنفسی که
             انجام دادید تأثیر مثبتی روی کاهش اضطراب داشته. ادامه بدید!

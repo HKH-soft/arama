@@ -1,12 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import type { AuthUser } from "@/types/auth";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  user,
+  children,
+}: {
+  user: AuthUser | null;
+  children: React.ReactNode;
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
+
+  // If user is null (not authenticated), redirect to login
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
 
   return (
     <div
@@ -16,16 +31,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Main area: sidebar + content with gap (Spotify seams) */}
       <div className="flex flex-1 gap-2 p-2 min-h-0">
         {/* Desktop sidebar */}
-        <DashboardSidebar />
+        <DashboardSidebar user={user} />
 
         {/* Mobile sidebar sheet */}
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetContent
             side="right"
-            className="bg-card border-none p-0 w-[300px] [&>button]:hidden [&_aside]:!flex [&_aside]:h-full text-foreground"
+            className="bg-card border-none p-0 w-75 [&>button]:hidden [&_aside]:!flex [&_aside]:h-full text-foreground"
           >
             <SheetTitle className="sr-only">منو</SheetTitle>
-            <DashboardSidebar />
+            <DashboardSidebar user={user} />
           </SheetContent>
         </Sheet>
 

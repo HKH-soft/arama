@@ -1,12 +1,14 @@
-"use client";
+import { getCurrentUser } from "@/lib/auth-helpers";
+import { redirect } from "next/navigation";
+import { AppLayoutClient } from "@/components/AppLayoutClient";
 
-import dynamic from "next/dynamic";
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
 
-const DashboardShell = dynamic(
-  () => import("@/components/DashboardShell").then((m) => m.DashboardShell),
-  { ssr: false },
-);
+  // If user is not authenticated, redirect to login page
+  if (!user) {
+    redirect('/login');
+  }
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return <AppLayoutClient user={user}>{children}</AppLayoutClient>;
 }

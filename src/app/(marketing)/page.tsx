@@ -60,7 +60,7 @@ export default function Landing() {
           <BackgroundRenderer isDark={isDark} />
         </div>
         {/* Smooth fade at bottom to blend with page bg */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-b from-transparent via-background/60 to-background -z-[5] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-b from-transparent via-background/60 to-background -z-[5] pointer-events-none" />
 
         {/* Foreground Content Wrapper */}
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-36">
@@ -386,7 +386,7 @@ export default function Landing() {
                 style={{ zIndex: i + 1 }}
               >
                 <div
-                  className={`w-full h-full bg-gradient-to-br ${item.bg} bg-card`}
+                  className={`w-full h-full bg-linear-to-br ${item.bg} bg-card`}
                 >
                   <div className="w-full h-full flex flex-col md:flex-row items-center">
                     {/* Text half */}
@@ -438,7 +438,7 @@ export default function Landing() {
 
                         {/* Center icon */}
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-2xl">
+                          <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-3xl bg-linear-to-br from-primary to-secondary flex items-center justify-center shadow-2xl">
                             <item.icon className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-primary-foreground" />
                           </div>
                         </div>
@@ -738,7 +738,7 @@ export default function Landing() {
 
       {/* Final CTA */}
       <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-background -z-10" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-secondary/10 to-background -z-10" />
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

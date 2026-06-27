@@ -1,79 +1,118 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { conversations, messages } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { requireAuth } from "@/lib/auth-helpers";
+import db from "@/lib/prisma"; // Updated to use Drizzle
+import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
+import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const convId = parseInt(id, 10);
-
-  if (isNaN(convId)) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
-  }
-
   try {
-    const conv = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.id, convId))
-      .limit(1);
+    const user = await requireAuth();
+    const { id } = await params;
 
-    if (!conv.length) {
-      return NextResponse.json(
-        { error: "Conversation not found" },
-        { status: 404 }
-      );
+    // Check if conversation exists and belongs to user
+    const conversationResult = await db.select()
+      .from(conversations)
+      .where(and(
+        eq(conversations.id, id),
+        eq(conversations.userId, user.id)
+      ));
+      
+    if (conversationResult.length === 0) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
     }
 
-    const msgs = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.conversationId, convId))
-      .orderBy(messages.createdAt);
+    const conversation = conversationResult[0];
 
-    return NextResponse.json({ ...conv[0], messages: msgs });
+    // Get messages for the conversation
+    const messageResults = await db.select()
+      .from(messages)
+      .where(eq(messages.conversationId, id))
+      .orderBy(asc(messages.createdAt));
+
+    return NextResponse.json({ ...conversation, messages: messageResults });
   } catch (error) {
     console.error("Failed to fetch conversation:", error);
     return NextResponse.json(
       { error: "Failed to fetch conversation" },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const user = await requireAuth();
+    const { id } = await params;
+    const body = await request.json();
+    const { title } = body;
+
+    if (!title || typeof title !== "string" || !title.trim()) {
+      return NextResponse.json({ error: "title is required" }, { status: 400 });
+    }
+
+    // Check if conversation exists and belongs to user
+    const conversationResult = await db.select()
+      .from(conversations)
+      .where(and(
+        eq(conversations.id, id),
+        eq(conversations.userId, user.id)
+      ));
+      
+    if (conversationResult.length === 0) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+    }
+
+    // Update conversation
+    const updatedConversationResult = await db.update(conversations)
+      .set({ title: title.trim() })
+      .where(eq(conversations.id, id))
+      .returning();
+
+    return NextResponse.json(updatedConversationResult[0]);
+  } catch (error) {
+    console.error("Failed to update conversation:", error);
+    return NextResponse.json(
+      { error: "Failed to update conversation" },
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
-  const convId = parseInt(id, 10);
-
-  if (isNaN(convId)) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
-  }
-
   try {
-    const deleted = await db
-      .delete(conversations)
-      .where(eq(conversations.id, convId))
-      .returning();
+    const user = await requireAuth();
+    const { id } = await params;
 
-    if (!deleted.length) {
-      return NextResponse.json(
-        { error: "Conversation not found" },
-        { status: 404 }
-      );
+    // Check if conversation exists and belongs to user
+    const conversationResult = await db.select()
+      .from(conversations)
+      .where(and(
+        eq(conversations.id, id),
+        eq(conversations.userId, user.id)
+      ));
+      
+    if (conversationResult.length === 0) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
     }
 
-    return new NextResponse(null, { status: 204 });
+    // Delete conversation and its messages
+    await db.delete(conversations).where(eq(conversations.id, id));
+
+    return NextResponse.json({ message: "Conversation deleted" });
   } catch (error) {
     console.error("Failed to delete conversation:", error);
     return NextResponse.json(
       { error: "Failed to delete conversation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

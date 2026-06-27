@@ -89,10 +89,10 @@ export default function Chat() {
       if (!conv) return;
       convId = conv.id;
       setActiveId(conv.id);
-      
+
       // Small delay to ensure the conversation state is updated
       // before attempting to send the message
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     await send(text, convId !== activeId ? convId : undefined);
@@ -178,7 +178,7 @@ export default function Chat() {
             </Button>
 
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-sm shadow">
+              <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-sm shadow">
                 آ
               </div>
               <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full" />
@@ -220,7 +220,7 @@ export default function Chat() {
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center justify-center h-[50vh] text-center gap-4 px-6">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                 <span className="text-3xl">💬</span>
               </div>
               <div>

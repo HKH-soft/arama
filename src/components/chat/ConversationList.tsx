@@ -41,12 +41,12 @@ export function ConversationList({
 }: ConversationListProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-white/[0.06] flex justify-between items-center shrink-0">
+      <div className="p-4 border-b border-white/6 flex justify-between items-center shrink-0">
         <h2 className="font-semibold text-white text-sm">گفتگوهای من</h2>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/[0.06]"
+          className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/6"
           onClick={onCreate}
           disabled={isCreating}
           data-testid="button-new-conversation"
@@ -71,21 +71,27 @@ export function ConversationList({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               className={`group relative p-3 rounded-lg cursor-pointer transition-colors flex flex-col gap-0.5
-                ${conv.id === activeId
-                  ? "bg-white/[0.08]"
-                  : "hover:bg-white/[0.04]"
+                ${
+                  conv.id === activeId ? "bg-white/8" : "hover:bg-white/[0.04]"
                 }`}
               onClick={() => onSelect(conv.id)}
               data-testid={`conversation-item-${conv.id}`}
             >
-              <span className={`text-xs font-medium truncate pl-5 ${conv.id === activeId ? "text-white" : "text-white/70"}`}>
+              <span
+                className={`text-xs font-medium truncate pl-5 ${conv.id === activeId ? "text-white" : "text-white/70"}`}
+              >
                 {conv.title}
               </span>
-              <span className="text-[10px] text-white/30">{relativeTime(conv.createdAt)}</span>
+              <span className="text-[10px] text-white/30">
+                {relativeTime(conv.createdAt)}
+              </span>
 
               <button
                 className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-white/30 hover:text-red-400 p-1 rounded"
-                onClick={(e) => { e.stopPropagation(); onDelete(conv.id); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(conv.id);
+                }}
                 data-testid={`button-delete-${conv.id}`}
                 title="حذف"
               >

@@ -28,11 +28,11 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
     >
       {/* Avatar */}
       {isAI ? (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
+        <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
           <Brain className="w-4 h-4" />
         </div>
       ) : (
-        <div className="w-8 h-8 rounded-full bg-white/[0.08] border border-white/[0.06] flex items-center justify-center text-[10px] font-medium text-white/60 shrink-0">
+        <div className="w-8 h-8 rounded-full bg-white/8 border border-white/6 flex items-center justify-center text-[10px] font-medium text-white/60 shrink-0">
           شما
         </div>
       )}

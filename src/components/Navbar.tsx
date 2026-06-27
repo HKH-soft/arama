@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, LogOut } from "lucide-react";
 import { useTheme } from "./theme-provider";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export function Navbar() {
+type SessionPayload = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+export function Navbar({ user }: { user: SessionPayload | null }) {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -20,6 +28,11 @@ export function Navbar() {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
   };
 
   const navLinks = [
@@ -40,7 +53,7 @@ export function Navbar() {
         <div className="absolute inset-0 rounded-2xl bg-white/90 dark:bg-neutral-900/[0.45] backdrop-blur-[32px] saturate-[210%] transition-colors duration-300" />
 
         {/* Liquid Fluid Gloss/Sheen Surface Injection */}
-        <div className="absolute inset-0 rounded-2xl pointer-events-none bg-gradient-to-b from-white/35 dark:from-white/[0.08] via-white/[0.03] dark:via-transparent to-transparent" />
+        <div className="absolute inset-0 rounded-2xl pointer-events-none bg-linear-to-b from-white/35 dark:from-white/8 via-white/[0.03] dark:via-transparent to-transparent" />
 
         {/* Dynamic Micro-Refraction Borders (Crisp Specular Edge Highlight) */}
         <div className="absolute inset-0 rounded-2xl border-0 pointer-events-none mix-blend-overlay dark:mix-blend-normal" />
@@ -81,24 +94,55 @@ export function Navbar() {
                 className="text-neutral-600 dark:text-neutral-300 hover:bg-neutral-950/5 dark:hover:bg-white/10 rounded-xl"
               >
                 {mounted && theme === "dark" ? (
-                  <Sun className="w-[18px] h-[18px]" />
+                  <Sun className="w-4.5 h-4.5" />
                 ) : (
-                  <Moon className="w-[18px] h-[18px]" />
+                  <Moon className="w-4.5 h-4.5" />
                 )}
               </Button>
-              <Button
-                variant="ghost"
-                className=" rounded-full text-sm text-neutral-700 dark:text-neutral-200 border-0 hover:bg-neutral-950/5 dark:hover:bg-white/10"
-                asChild
-              >
-                <Link href="/login">ورود</Link>
-              </Button>
-              <Button
-                className="bg-primary rounded-full  hover:bg-primary/50 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border-0 font-medium shadow-sm transition-all"
-                asChild
-              >
-                <Link href="/signup">شروع رایگان</Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    className="rounded-full text-sm text-neutral-700 dark:text-neutral-200 border-0 hover:bg-neutral-950/5 dark:hover:bg-white/10 gap-2"
+                    asChild
+                  >
+                    <Link href="/dashboard">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src="" />
+                        <AvatarFallback className="bg-primary/30 text-primary text-[10px] font-bold">
+                          {user.name ? user.name.slice(0, 2) : "کاربر"}
+                        </AvatarFallback>
+                      </Avatar>
+                      داشبورد
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="text-neutral-600 dark:text-neutral-300 hover:bg-neutral-950/5 dark:hover:bg-white/10 rounded-xl"
+                    title="خروج"
+                  >
+                    <LogOut className="w-4.5 h-4.5" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="ghost"
+                    className="rounded-full text-sm text-neutral-700 dark:text-neutral-200 border-0 hover:bg-neutral-950/5 dark:hover:bg-white/10"
+                    asChild
+                  >
+                    <Link href="/login">ورود</Link>
+                  </Button>
+                  <Button
+                    className="bg-primary rounded-full hover:bg-primary/50 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border-0 font-medium shadow-sm transition-all"
+                    asChild
+                  >
+                    <Link href="/signup">شروع رایگان</Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Action Trigger */}
@@ -110,9 +154,9 @@ export function Navbar() {
                 className="text-neutral-600 dark:text-neutral-300 rounded-xl"
               >
                 {mounted && theme === "dark" ? (
-                  <Sun className="w-[18px] h-[18px]" />
+                  <Sun className="w-4.5 h-4.5" />
                 ) : (
-                  <Moon className="w-[18px] h-[18px]" />
+                  <Moon className="w-4.5 h-4.5" />
                 )}
               </Button>
               <Button
@@ -158,19 +202,59 @@ export function Navbar() {
                 </Link>
               ))}
               <div className="pt-3 flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-center rounded-xl bg-transparent border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200"
-                  asChild
-                >
-                  <Link href="/login">ورود</Link>
-                </Button>
-                <Button
-                  className="w-full justify-center rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black shadow-sm"
-                  asChild
-                >
-                  <Link href="/signup">شروع رایگان</Link>
-                </Button>
+                {user ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center rounded-xl bg-transparent border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200"
+                      asChild
+                    >
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        داشبورد
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-center rounded-xl text-neutral-800 dark:text-neutral-200 hover:bg-neutral-950/5 dark:hover:bg-white/5"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleLogout();
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 ml-2" />
+                      خروج
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center rounded-xl bg-transparent border-neutral-300 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200"
+                      asChild
+                    >
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        ورود
+                      </Link>
+                    </Button>
+                    <Button
+                      className="w-full justify-center rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black shadow-sm"
+                      asChild
+                    >
+                      <Link
+                        href="/signup"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        شروع رایگان
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

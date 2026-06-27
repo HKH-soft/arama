@@ -29,6 +29,14 @@ import {
 
 import Link from "next/link";
 
+type SessionPayload = {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  roles?: string[];
+};
+
 const emotionData = [
   { subject: "شادی", A: 40, fullMark: 100 },
   { subject: "آرامش", A: 70, fullMark: 100 },
@@ -47,15 +55,17 @@ const weeklyData = [
   { name: "جمعه", score: 90 },
 ];
 
-export function DashboardContent() {
+export function DashboardContent({ user }: { user: SessionPayload | null }) {
+  const firstName = user?.name?.split(/\s+/)[0] || "کاربر";
+
   return (
     <>
       {/* Gradient header */}
-      <div className="bg-gradient-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-linear-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              سلام، سارا جان 👋
+              سلام، {firstName} جان 👋
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
               امروز ۲۴ مهر ۱۴۰۳
@@ -105,7 +115,7 @@ export function DashboardContent() {
             ].map((mood, i) => (
               <button
                 key={i}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-[80px] ${mood.bg}`}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-20 ${mood.bg}`}
               >
                 <mood.icon className={`w-7 h-7 ${mood.color}`} />
                 <span className="text-sm font-medium text-foreground/90">
@@ -161,7 +171,7 @@ export function DashboardContent() {
             <h3 className="font-semibold text-foreground mb-4 text-sm">
               نقشه احساسات (هفته جاری)
             </h3>
-            <div className="h-[220px] w-full">
+            <div className="h-55 w-full">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -211,7 +221,7 @@ export function DashboardContent() {
                 بهتر از هفته گذشته
               </span>
             </div>
-            <div className="h-[220px] w-full">
+            <div className="h-55 w-full">
               <ResponsiveContainer
                 width="100%"
                 height="100%"
@@ -268,7 +278,7 @@ export function DashboardContent() {
 
         {/* Recommendations */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-r from-primary/10 to-secondary/5 rounded-lg p-6 flex flex-col justify-between border border-primary/10">
+          <div className="bg-linear-to-r from-primary/10 to-secondary/5 rounded-lg p-6 flex flex-col justify-between border border-primary/10">
             <div>
               <div className="flex items-center gap-2 text-primary font-medium mb-2 text-sm">
                 <Activity className="w-5 h-5" />
