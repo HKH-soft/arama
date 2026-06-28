@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ecb810e4-ae31-4241-9101-eb79b281de5a",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "98760c11-cb14-49a9-9ac7-7ccba392ee96",
+  "prevId": "ecb810e4-ae31-4241-9101-eb79b281de5a",
   "tables": {
     "account": {
       "name": "account",
@@ -94,10 +94,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "account_user_id_users_id_fk": {
-          "name": "account_user_id_users_id_fk",
+        "account_user_id_user_id_fk": {
+          "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -182,10 +182,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "audit_logs_user_id_users_id_fk": {
-          "name": "audit_logs_user_id_users_id_fk",
+        "audit_logs_user_id_user_id_fk": {
+          "name": "audit_logs_user_id_user_id_fk",
           "tableFrom": "audit_logs",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -243,10 +243,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "conversations_user_id_users_id_fk": {
-          "name": "conversations_user_id_users_id_fk",
+        "conversations_user_id_user_id_fk": {
+          "name": "conversations_user_id_user_id_fk",
           "tableFrom": "conversations",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -318,10 +318,10 @@
         }
       },
       "foreignKeys": {
-        "email_verification_tokens_user_id_users_id_fk": {
-          "name": "email_verification_tokens_user_id_users_id_fk",
+        "email_verification_tokens_user_id_user_id_fk": {
+          "name": "email_verification_tokens_user_id_user_id_fk",
           "tableFrom": "email_verification_tokens",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -461,10 +461,10 @@
         }
       },
       "foreignKeys": {
-        "password_reset_tokens_user_id_users_id_fk": {
-          "name": "password_reset_tokens_user_id_users_id_fk",
+        "password_reset_tokens_user_id_user_id_fk": {
+          "name": "password_reset_tokens_user_id_user_id_fk",
           "tableFrom": "password_reset_tokens",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -580,10 +580,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "payments_user_id_users_id_fk": {
-          "name": "payments_user_id_users_id_fk",
+        "payments_user_id_user_id_fk": {
+          "name": "payments_user_id_user_id_fk",
           "tableFrom": "payments",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -749,10 +749,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "role_permissions_assigned_by_users_id_fk": {
-          "name": "role_permissions_assigned_by_users_id_fk",
+        "role_permissions_assigned_by_user_id_fk": {
+          "name": "role_permissions_assigned_by_user_id_fk",
           "tableFrom": "role_permissions",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "assigned_by"
           ],
@@ -879,10 +879,10 @@
         }
       },
       "foreignKeys": {
-        "session_user_id_users_id_fk": {
-          "name": "session_user_id_users_id_fk",
+        "session_user_id_user_id_fk": {
+          "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1097,10 +1097,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "subscriptions_user_id_users_id_fk": {
-          "name": "subscriptions_user_id_users_id_fk",
+        "subscriptions_user_id_user_id_fk": {
+          "name": "subscriptions_user_id_user_id_fk",
           "tableFrom": "subscriptions",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1170,10 +1170,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_roles_user_id_users_id_fk": {
-          "name": "user_roles_user_id_users_id_fk",
+        "user_roles_user_id_user_id_fk": {
+          "name": "user_roles_user_id_user_id_fk",
           "tableFrom": "user_roles",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
@@ -1196,10 +1196,10 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "user_roles_assigned_by_users_id_fk": {
-          "name": "user_roles_assigned_by_users_id_fk",
+        "user_roles_assigned_by_user_id_fk": {
+          "name": "user_roles_assigned_by_user_id_fk",
           "tableFrom": "user_roles",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "assigned_by"
           ],
@@ -1214,8 +1214,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "users": {
-      "name": "users",
+    "user": {
+      "name": "user",
       "columns": {
         "id": {
           "name": "id",
@@ -1350,8 +1350,8 @@
         }
       },
       "indexes": {
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "user_email_unique": {
+          "name": "user_email_unique",
           "columns": [
             "email"
           ],
