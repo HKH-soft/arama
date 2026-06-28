@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db"; // Updated to use Drizzle
-import { 
+import {
   roles,
   userRoles,
   permissions,
@@ -30,16 +30,16 @@ export async function GET(
     const roleResult = await db.select()
       .from(roles)
       .where(eq(roles.id, id));
-      
+
     if (roleResult.length === 0) {
       return NextResponse.json(
         { error: "نقش یافت نشد" },
         { status: 404 }
       );
     }
-    
+
     const role = roleResult[0];
-    
+
     // Get permissions for this role
     const rolePermissionsResult = await db.select({
       id: permissions.id,
@@ -47,10 +47,10 @@ export async function GET(
       displayName: permissions.displayName,
       description: permissions.description,
     })
-    .from(rolePermissions)
-    .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-    .where(eq(rolePermissions.roleId, id));
-    
+      .from(rolePermissions)
+      .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+      .where(eq(rolePermissions.roleId, id));
+
     return NextResponse.json({
       ...role,
       permissions: rolePermissionsResult,
@@ -71,31 +71,31 @@ export async function PUT(
   try {
     const currentUser = await requirePermission("roles:write");
     const { id } = await params;
-    
+
     const body = await request.json();
     const parsed = updateRoleSchema.safeParse(body);
-    
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: "ورودی نامعتبر", details: parsed.error.issues },
         { status: 400 }
       );
     }
-    
+
     const { displayName, description, isActive, permissionIds } = parsed.data;
-    
+
     // Check if role exists
     const existingRoleResult = await db.select()
       .from(roles)
       .where(eq(roles.id, id));
-      
+
     if (existingRoleResult.length === 0) {
       return NextResponse.json(
         { error: "نقش یافت نشد" },
         { status: 404 }
       );
     }
-    
+
     // Update role
     const updatedRoleResult = await db.update(roles)
       .set({
@@ -106,14 +106,14 @@ export async function PUT(
       })
       .where(eq(roles.id, id))
       .returning();
-    
+
     const updatedRole = updatedRoleResult[0];
-    
+
     // If permissions are provided, update them
     if (permissionIds) {
       // First, remove all existing permissions for this role
       await db.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
-      
+
       // Then add the new permissions
       if (permissionIds.length > 0) {
         const permissionValues = permissionIds.map(permissionId => ({
@@ -121,11 +121,11 @@ export async function PUT(
           roleId: id,
           permissionId
         }));
-        
+
         await db.insert(rolePermissions).values(permissionValues);
       }
     }
-    
+
     // Log audit
     const clientInfo = getClientInfo(request);
     await logAudit({
@@ -137,21 +137,27 @@ export async function PUT(
       ipAddress: clientInfo.ipAddress,
       userAgent: clientInfo.userAgent,
     });
-    
-    // Get updated permissions for response
-    const rolePermissionsResult = await db.select({
-      id: permissions.id,
-      name: permissions.name,
-      displayName: permissions.displayName,
-      description: permissions.description,
+
+    // Return the updated role with its permissions
+    const roleWithPermissions = await db.select({
+      id: roles.id,
+      name: roles.name,
+      displayName: roles.displayName,
+      description: roles.description,
+      isActive: roles.isActive,
+      createdAt: roles.createdAt,
+      updatedAt: roles.updatedAt,
+      permissions: sql<string[]>`array_agg(${permissions.name})`.as('permissions')
     })
-    .from(rolePermissions)
-    .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-    .where(eq(rolePermissions.roleId, id));
-    
+      .from(roles)
+      .leftJoin(rolePermissions, eq(roles.id, rolePermissions.roleId))
+      .leftJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+      .where(eq(roles.id, id))
+      .groupBy(roles.id);
+
     return NextResponse.json({
-      ...updatedRole,
-      permissions: rolePermissionsResult
+      ...roleWithPermissions[0],
+      permissions: roleWithPermissions[0].permissions.filter(p => p !== null)
     });
   } catch (err) {
     console.error("Admin role update error:", err);
@@ -174,14 +180,14 @@ export async function DELETE(
     const existingRoleResult = await db.select()
       .from(roles)
       .where(eq(roles.id, id));
-      
+
     if (existingRoleResult.length === 0) {
       return NextResponse.json(
         { error: "نقش یافت نشد" },
         { status: 404 }
       );
     }
-    
+
     // Don't allow deletion of built-in roles
     if (["SUPER_ADMIN", "ADMIN", "USER"].includes(existingRoleResult[0].name)) {
       return NextResponse.json(
@@ -189,22 +195,22 @@ export async function DELETE(
         { status: 400 }
       );
     }
-    
+
     // Check if users have this role
     const usersWithRoleResult = await db.select({ count: sql<number>`count(*)::int` })
       .from(userRoles)
       .where(eq(userRoles.roleId, id));
-      
+
     if (usersWithRoleResult[0].count > 0) {
       return NextResponse.json(
         { error: "امکان حذف نقش دارای کاربر وجود ندارد" },
         { status: 400 }
       );
     }
-    
+
     // Delete the role
     await db.delete(roles).where(eq(roles.id, id));
-    
+
     return NextResponse.json({ message: "نقش با موفقیت حذف شد" });
   } catch (err) {
     console.error("Admin role deletion error:", err);

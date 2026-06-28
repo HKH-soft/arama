@@ -1,8 +1,29 @@
 import { defineConfig } from "drizzle-kit";
 import * as dotenv from "dotenv";
+import path from "path";
 
-// Load environment variables
-dotenv.config({ path: ".env.local" });
+// Define the possible values for NODE_ENV
+type NodeEnv = 'development' | 'production' | 'test' | 'staging';
+
+// Determine environment and load appropriate .env file
+const nodeEnv: NodeEnv = (process.env.NODE_ENV as NodeEnv) || "development";
+let envFileName = ".env";
+
+switch (nodeEnv) {
+  case "production":
+    envFileName = ".env.production";
+    break;
+  case "staging":
+    envFileName = ".env.staging";
+    break;
+  case "test":
+    envFileName = ".env.test";
+    break;
+  default:
+    envFileName = ".env.local"; // Default for development
+}
+
+dotenv.config({ path: envFileName });
 
 export default defineConfig({
   schema: "./src/db/schema.ts",

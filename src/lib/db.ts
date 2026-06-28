@@ -5,8 +5,28 @@ import * as path from "path";
 import * as fs from "fs";
 import * as dotenv from "dotenv";
 
-// Load environment variables
-dotenv.config({ path: ".env.local" });
+// Define the possible values for NODE_ENV
+type NodeEnv = 'development' | 'production' | 'test' | 'staging';
+
+// Determine environment and load appropriate .env file
+const nodeEnv: NodeEnv = (process.env.NODE_ENV as NodeEnv) || "development";
+let envFileName = ".env";
+
+switch (nodeEnv) {
+  case "production":
+    envFileName = ".env.production";
+    break;
+  case "staging":
+    envFileName = ".env.staging";
+    break;
+  case "test":
+    envFileName = ".env.test";
+    break;
+  default:
+    envFileName = ".env.local"; // Default for development
+}
+
+dotenv.config({ path: envFileName });
 
 // Initialize the database - use the same path as in drizzle.config.ts and seed.ts
 const dbPath =

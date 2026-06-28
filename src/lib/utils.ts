@@ -1,6 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+// Define the possible values for NODE_ENV
+export type NodeEnv = 'development' | 'production' | 'test' | 'staging';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -27,4 +30,32 @@ export function formatDateTime(date: Date | string | number) {
 export function truncate(str: string, length: number) {
   if (str.length <= length) return str;
   return str.slice(0, length) + "...";
+}
+
+/**
+ * Determines the appropriate .env file to load based on the NODE_ENV environment variable
+ * @returns The filename of the environment file to load
+ */
+export function getEnvFileName(): string {
+  // Determine environment and return appropriate .env file
+  const nodeEnv: NodeEnv = (process.env.NODE_ENV as NodeEnv) || "development";
+  
+  switch (nodeEnv) {
+    case "production":
+      return ".env.production";
+    case "staging":
+      return ".env.staging";
+    case "test":
+      return ".env.test";
+    default:
+      return ".env.local"; // Default for development
+  }
+}
+
+/**
+ * Loads the appropriate environment file based on NODE_ENV
+ */
+export function loadEnvironment(): void {
+  const envFileName = getEnvFileName();
+  require('dotenv').config({ path: envFileName });
 }
