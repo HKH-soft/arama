@@ -1,4 +1,4 @@
-import db from "./prisma";
+import db from "./db";
 import { 
   userRoles,
   roles,

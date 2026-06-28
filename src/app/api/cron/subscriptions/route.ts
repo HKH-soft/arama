@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   subscriptions,
   users,
   subscriptionPlans
 } from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc, sql, lte, gte } from 'drizzle-orm'; // Import Drizzle operators
+import { eq, and, asc, desc, sql, lte, gt, gte } from 'drizzle-orm'; // Import Drizzle operators
 import { logAudit } from "@/lib/audit";
 
 // This endpoint should be called by a scheduled job (cron) to handle subscription expirations

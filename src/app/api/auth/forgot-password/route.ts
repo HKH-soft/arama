@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   users,
   passwordResetTokens
 } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import { sendPasswordResetEmail } from "@/lib/email";
 import { logAudit, getClientInfo } from "@/lib/audit";
 import { z } from "zod";
-import { sendPasswordResetEmail } from "@/lib/email";
 import { randomUUID } from 'crypto';
 
 const forgotPasswordSchema = z.object({

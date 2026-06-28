@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   subscriptions,
   subscriptionPlans
 } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
 import { logAudit, getClientInfo } from "@/lib/audit";
+import { z } from "zod";
+
+const renewSubscriptionSchema = z.object({
+  planId: z.string().optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {

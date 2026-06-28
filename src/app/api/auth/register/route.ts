@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { hashPassword } from "@/lib/auth-helpers-no-auth";
 import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   users,
-  userRoles,
+  emailVerificationTokens,
   roles,
-  subscriptions,
-  subscriptionPlans
+  userRoles,
+  subscriptionPlans,
+  subscriptions
 } from "@/db/schema"; // Import Drizzle tables
-import { eq, and } from 'drizzle-orm'; // Import Drizzle operators
+import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import { hashPassword } from "@/lib/auth-helpers-no-auth";
 import { sendVerificationEmail } from "@/lib/email";
 import { logAudit, getClientInfo } from "@/lib/audit";
 import { z } from "zod";

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   subscriptionPlans,
   subscriptions

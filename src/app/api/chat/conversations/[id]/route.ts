@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
 

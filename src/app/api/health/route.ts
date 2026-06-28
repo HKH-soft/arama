@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { sql } from 'drizzle-orm'; // Import Drizzle operators
 
 export async function GET(request: NextRequest) {

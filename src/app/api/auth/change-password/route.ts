@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
 import db from "@/lib/db"; // Updated to use Drizzle
-import { users } from "@/db/schema"; // Import Drizzle tables
-import { eq } from 'drizzle-orm'; // Import Drizzle operators
+import { 
+  users
+} from "@/db/schema"; // Import Drizzle tables
+import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import { hashPassword, verifyPassword } from "@/lib/auth-helpers-no-auth";
 import { logAudit, getClientInfo } from "@/lib/audit";
-import { hashPassword } from "@/lib/auth-helpers-no-auth";
 import { z } from "zod";
 
 const changePasswordSchema = z.object({

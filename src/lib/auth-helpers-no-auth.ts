@@ -47,3 +47,13 @@ export async function hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 12);
   }
 }
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  try {
+    // Try Argon2 first
+    return await argon2.verify(hash, password);
+  } catch (error) {
+    // Fallback to bcrypt
+    return await bcrypt.compare(password, hash);
+  }
+}

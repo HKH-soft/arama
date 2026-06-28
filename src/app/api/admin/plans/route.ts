@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle abstraction layer
 import { 
   subscriptionPlans
 } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc, sql } from 'drizzle-orm'; // Import Drizzle operators
 import { z } from "zod";
 import { randomUUID } from 'crypto';
+import { logAudit, getClientInfo } from "@/lib/audit";
 
 const getPlansSchema = z.object({
   page: z.coerce.number().default(1),
@@ -48,25 +49,45 @@ export async function GET(request: NextRequest) {
     
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     
-    const [plans, total] = await Promise.all([
-      db.select()
-        .from(subscriptionPlans)
-        .where(whereClause)
-        .orderBy(sortOrder === "asc" ? asc(subscriptionPlans[sortBy]) : desc(subscriptionPlans[sortBy]))
-        .offset(skip)
-        .limit(limit),
-      db.select({ count: sql<number>`count(*)::int` })
-        .from(subscriptionPlans)
-        .where(whereClause)
-    ]);
+    // Build the order by clause based on the allowed sort fields
+    let orderByClause;
+    switch (sortBy) {
+      case 'createdAt':
+        orderByClause = sortOrder === 'asc' ? asc(subscriptionPlans.createdAt) : desc(subscriptionPlans.createdAt);
+        break;
+      case 'name':
+        orderByClause = sortOrder === 'asc' ? asc(subscriptionPlans.name) : desc(subscriptionPlans.name);
+        break;
+      case 'price':
+        orderByClause = sortOrder === 'asc' ? asc(subscriptionPlans.price) : desc(subscriptionPlans.price);
+        break;
+      case 'durationDays':
+        orderByClause = sortOrder === 'asc' ? asc(subscriptionPlans.durationDays) : desc(subscriptionPlans.durationDays);
+        break;
+      default:
+        orderByClause = desc(subscriptionPlans.createdAt);
+    }
+    
+    const plans = await db.select()
+      .from(subscriptionPlans)
+      .where(whereClause)
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(skip);
+    
+    // Count total plans
+    const totalQuery = await db.select({ count: { count: subscriptionPlans.id } })
+      .from(subscriptionPlans)
+      .where(whereClause);
+    const total = totalQuery.length > 0 ? Number(totalQuery[0].count) : 0;
     
     return NextResponse.json({
       data: plans,
       pagination: {
-        total: total[0].count,
+        total,
         page,
         limit,
-        totalPages: Math.ceil(total[0].count / limit),
+        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (err) {
@@ -80,24 +101,23 @@ export async function GET(request: NextRequest) {
 
 // Create new plan
 const createPlanSchema = z.object({
-  name: z.string().min(1, "نام الزامی است").max(100),
-  displayName: z.string().min(1, "عنوان نمایشی الزامی است").max(100),
-  description: z.string().max(500).optional(),
-  price: z.number().nonnegative("قیمت نباید منفی باشد"),
+  name: z.string().min(1, "نام الزامی است"),
+  displayName: z.string().min(1, "نام نمایشی الزامی است").optional(),
+  description: z.string().optional(),
+  price: z.number().positive("قیمت باید مثبت باشد"),
   durationDays: z.number().positive("مدت زمان باید مثبت باشد"),
-  features: z.array(z.string()).nonempty("ویژگی‌ها الزامی است").optional(),
-  maxConversations: z.number().nonnegative().optional(),
-  maxMessagesPerDay: z.number().nonnegative().optional(),
+  features: z.array(z.string()).optional(),
   isActive: z.boolean().default(true),
-  sortOrder: z.number().default(0),
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const currentUser = await requirePermission("plans:write");
-    const body = await request.json();
+    const user = await requirePermission("plans:write");
+    const clientInfo = getClientInfo(request);
     
+    const body = await request.json();
     const parsed = createPlanSchema.safeParse(body);
+    
     if (!parsed.success) {
       return NextResponse.json(
         { error: "ورودی نامعتبر", details: parsed.error.issues },
@@ -105,47 +125,35 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { 
-      name, 
-      displayName, 
-      description, 
-      price, 
-      durationDays, 
-      features, 
-      maxConversations, 
-      maxMessagesPerDay, 
-      isActive, 
-      sortOrder 
-    } = parsed.data;
+    const { name, displayName, description, price, durationDays, features, isActive } = parsed.data;
     
-    // Check if plan name already exists
-    const existingPlanResult = await db.select()
-      .from(subscriptionPlans)
-      .where(eq(subscriptionPlans.name, name));
-      
-    if (existingPlanResult.length > 0) {
-      return NextResponse.json(
-        { error: "پلن با این نام از قبل وجود دارد" },
-        { status: 409 }
-      );
-    }
+    const newPlan = await db.insert(subscriptionPlans)
+      .values({
+        id: randomUUID(),
+        name,
+        displayName: displayName || name, // Use name as fallback if displayName not provided
+        description: description || null,
+        price,
+        durationDays,
+        features: features || [],
+        isActive: isActive || false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
     
-    // Create plan
-    const planResult = await db.insert(subscriptionPlans).values({
-      id: randomUUID(),
-      name,
-      displayName,
-      description: description || null,
-      price,
-      durationDays,
-      features: features || null, // Store as array, Drizzle will convert to JSON
-      maxConversations: maxConversations || null,
-      maxMessagesPerDay: maxMessagesPerDay || null,
-      isActive,
-      sortOrder,
-    }).returning();
+    // Log audit
+    await logAudit({
+      userId: user.id,
+      action: "PLAN_CREATED",
+      entity: "subscription_plan",
+      entityId: newPlan[0].id,
+      metadata: { planName: name },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
     
-    return NextResponse.json(planResult[0]);
+    return NextResponse.json(newPlan[0], { status: 201 });
   } catch (err) {
     console.error("Admin plan creation error:", err);
     return NextResponse.json(

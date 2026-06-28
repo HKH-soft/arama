@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   users,
   passwordResetTokens
 } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
 import { logAudit, getClientInfo } from "@/lib/audit";
-import * as argon2 from "argon2";
+import { hashPassword } from "@/lib/auth-helpers-no-auth";
 import { z } from "zod";
 
 const resetPasswordSchema = z.object({
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Hash new password
-    const hashedPassword = await argon2.hash(password);
+    const hashedPassword = await hashPassword(password);
     
     // Update user password
     await db.update(users)

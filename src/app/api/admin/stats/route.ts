@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   users,
   subscriptions,
   payments,
-  subscriptionPlans
+  conversations
 } from "@/db/schema"; // Import Drizzle tables
 import { 
   eq, 
@@ -14,8 +14,7 @@ import {
   desc, 
   gte, 
   lte,
-  sql,
-  ilike
+  sql
 } from 'drizzle-orm'; // Import Drizzle operators
 
 export async function GET(request: NextRequest) {

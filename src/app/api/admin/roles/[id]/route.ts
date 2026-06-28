@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   roles,
-  permissions,
-  rolePermissions,
   userRoles,
-  users
+  permissions,
+  rolePermissions
 } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc, sql } from 'drizzle-orm'; // Import Drizzle operators
 import { logAudit, getClientInfo } from "@/lib/audit";
@@ -139,26 +138,20 @@ export async function PUT(
       userAgent: clientInfo.userAgent,
     });
     
-    // Return the updated role with its permissions
-    const roleWithPermissions = await db.select({
-      id: roles.id,
-      name: roles.name,
-      displayName: roles.displayName,
-      description: roles.description,
-      isActive: roles.isActive,
-      createdAt: roles.createdAt,
-      updatedAt: roles.updatedAt,
-      permissions: sql<string[]>`array_agg(${permissions.name})`.as('permissions')
+    // Get updated permissions for response
+    const rolePermissionsResult = await db.select({
+      id: permissions.id,
+      name: permissions.name,
+      displayName: permissions.displayName,
+      description: permissions.description,
     })
-    .from(roles)
-    .leftJoin(rolePermissions, eq(roles.id, rolePermissions.roleId))
-    .leftJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
-    .where(eq(roles.id, id))
-    .groupBy(roles.id);
+    .from(rolePermissions)
+    .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+    .where(eq(rolePermissions.roleId, id));
     
     return NextResponse.json({
-      ...roleWithPermissions[0],
-      permissions: roleWithPermissions[0].permissions.filter(p => p !== null)
+      ...updatedRole,
+      permissions: rolePermissionsResult
     });
   } catch (err) {
     console.error("Admin role update error:", err);

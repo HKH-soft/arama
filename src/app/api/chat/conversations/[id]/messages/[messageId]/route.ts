@@ -1,8 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
-import db from "@/lib/prisma"; // Updated to use Drizzle
+import db from "@/lib/db"; // Updated to use Drizzle
 import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string; messageId: string }> },
+) {
+  try {
+    const user = await requireAuth();
+    const { id, messageId } = await params;
+
+    // Check if conversation exists and belongs to user
+    const conversationResult = await db.select()
+      .from(conversations)
+      .where(and(
+        eq(conversations.id, id),
+        eq(conversations.userId, user.id)
+      ));
+      
+    if (conversationResult.length === 0) {
+      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+    }
+
+    // Check if message exists and belongs to the conversation
+    const messageResult = await db.select()
+      .from(messages)
+      .where(and(
+        eq(messages.id, messageId),
+        eq(messages.conversationId, id)
+      ));
+      
+    if (messageResult.length === 0) {
+      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(messageResult[0]);
+  } catch (error) {
+    console.error("Failed to fetch message:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch message" },
+      { status: 500 },
+    );
+  }
+}
 
 export async function PATCH(
   request: NextRequest,
