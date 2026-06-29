@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/lib/auth-helpers";
+import { AdminLayoutClient } from "@/components/AdminLayoutClient";
 
 export default async function AdminLayout({
   children,
@@ -7,14 +8,15 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // Check if user has admin permissions
+  let user: any;
   try {
-    const user = await requirePermission("users:read"); // Basic admin permission
-    
+    user = await requirePermission("users:read"); // Basic admin permission
+
     // If user doesn't have admin role, redirect
     const hasAdminRole = user.roles.some(
       (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
     );
-    
+
     if (!hasAdminRole) {
       redirect("/dashboard");
     }
@@ -24,11 +26,8 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-muted">
-      {/* Sidebar would go here */}
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
-    </div>
+    <AdminLayoutClient user={user}>
+      {children}
+    </AdminLayoutClient>
   );
 }
