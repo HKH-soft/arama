@@ -39,7 +39,7 @@ export function truncate(str: string, length: number) {
 export function getEnvFileName(): string {
   // Determine environment and return appropriate .env file
   const nodeEnv: NodeEnv = (process.env.NODE_ENV as NodeEnv) || "development";
-  
+
   switch (nodeEnv) {
     case "production":
       return ".env.production";
@@ -53,9 +53,14 @@ export function getEnvFileName(): string {
 }
 
 /**
- * Loads the appropriate environment file based on NODE_ENV
+ * Loads the appropriate environment file(s) based on NODE_ENV
+ * First loads .env (base), then environment-specific file (overrides)
  */
 export function loadEnvironment(): void {
+  // Load base .env file first (lowest priority)
+  require('dotenv').config({ path: '.env' });
+
+  // Load environment-specific file (higher priority, overrides .env)
   const envFileName = getEnvFileName();
   require('dotenv').config({ path: envFileName });
 }

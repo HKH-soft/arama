@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
-import * as argon2 from "argon2";
+import bcrypt from "bcryptjs";
 import {
   permissions,
   roles,
@@ -37,6 +37,10 @@ switch (nodeEnv) {
     envFileName = ".env.local"; // Default for development
 }
 
+// Load base .env file first (lowest priority)
+dotenv.config({ path: ".env" });
+
+// Load environment-specific file (higher priority, overrides .env)
 dotenv.config({ path: envFileName });
 
 // Use the same database path logic as db.ts
@@ -359,7 +363,7 @@ async function main() {
         process.env.SUPER_ADMIN_EMAIL || "superadmin@arama.app";
       const superAdminPassword =
         process.env.SUPER_ADMIN_PASSWORD || "Admin123!@#";
-      const hashedPassword = await argon2.hash(superAdminPassword);
+      const hashedPassword = await bcrypt.hash(superAdminPassword, 12);
 
       const superAdminResult = await db
         .insert(users)

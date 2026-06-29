@@ -1,21 +1,14 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "98760c11-cb14-49a9-9ac7-7ccba392ee96",
-  "prevId": "ecb810e4-ae31-4241-9101-eb79b281de5a",
+  "id": "ac1d71d2-66b3-40d9-bd78-b9d9354b22fa",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
       "name": "account",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -35,8 +28,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "provider_account_id": {
-          "name": "provider_account_id",
+        "providerAccountId": {
+          "name": "providerAccountId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -94,21 +87,29 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "account_user_id_user_id_fk": {
-          "name": "account_user_id_user_id_fk",
+        "account_userId_user_id_fk": {
+          "name": "account_userId_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "account_provider_providerAccountId_pk": {
+          "columns": [
+            "provider",
+            "providerAccountId"
+          ],
+          "name": "account_provider_providerAccountId_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
@@ -840,22 +841,15 @@
     "session": {
       "name": "session",
       "columns": {
-        "id": {
-          "name": "id",
+        "sessionToken": {
+          "name": "sessionToken",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
-        "session_token": {
-          "name": "session_token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -869,27 +863,19 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "session_session_token_unique": {
-          "name": "session_session_token_unique",
-          "columns": [
-            "session_token"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "session_user_id_user_id_fk": {
-          "name": "session_user_id_user_id_fk",
+        "session_userId_user_id_fk": {
+          "name": "session_userId_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -1238,8 +1224,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "email_verified": {
-          "name": "email_verified",
+        "emailVerified": {
+          "name": "emailVerified",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

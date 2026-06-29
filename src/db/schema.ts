@@ -3,16 +3,17 @@ import {
   text,
   integer,
   real,
-  blob,
   primaryKey,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 export const users = sqliteTable("user", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "timestamp" }),
+  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
   image: text("image"),
   passwordHash: text("password_hash"),
   phone: text("phone"),
@@ -34,40 +35,43 @@ export const users = sqliteTable("user", {
 });
 
 export const sessions = sqliteTable("session", {
-  // Changed from "sessions" to "session" for Auth.js
-  id: text("id").primaryKey(),
-  sessionToken: text("session_token").notNull().unique(),
-  userId: text("user_id")
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
     .notNull()
-    .references(() => users.id),
-  expires: integer("expires", { mode: "timestamp" }).notNull(),
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
 });
 
-export const accounts = sqliteTable("account", {
-  // Changed from "accounts" to "account" for Auth.js
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  type: text("type").notNull(),
-  provider: text("provider").notNull(),
-  providerAccountId: text("provider_account_id").notNull(),
-  refresh_token: text("refresh_token"),
-  access_token: text("access_token"),
-  expires_at: integer("expires_at"),
-  token_type: text("token_type"),
-  scope: text("scope"),
-  id_token: text("id_token"),
-  session_state: text("session_state"),
-});
+export const accounts = sqliteTable(
+  "account",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => ({
+    compositePk: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
+  }),
+);
 
 export const verificationTokens = sqliteTable(
   "verificationToken",
   {
-    // Changed from "verificationTokens" to "verificationToken" for Auth.js
     identifier: text("identifier").notNull(),
     token: text("token").notNull().unique(),
-    expires: integer("expires", { mode: "timestamp" }).notNull(),
+    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
   },
   (vt) => ({
     pk: primaryKey(vt.identifier, vt.token),
@@ -105,9 +109,9 @@ export const passwordResetTokens = sqliteTable("password_reset_tokens", {
 
 export const roles = sqliteTable("roles", {
   id: text("id").primaryKey(),
-  name: text("name").notNull().unique(), // e.g., "ADMIN", "USER", "MODERATOR"
-  displayName: text("display_name").notNull(), // e.g., "مدیر", "کاربر"
-  description: text("description"), // Optional description
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
@@ -119,9 +123,9 @@ export const roles = sqliteTable("roles", {
 
 export const permissions = sqliteTable("permissions", {
   id: text("id").primaryKey(),
-  name: text("name").notNull().unique(), // e.g., "users.read", "users.write"
-  displayName: text("display_name").notNull(), // e.g., "مشاهده کاربران", "ویرایش کاربران"
-  description: text("description"), // Optional description
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
@@ -161,14 +165,14 @@ export const rolePermissions = sqliteTable("role_permissions", {
 
 export const subscriptionPlans = sqliteTable("subscription_plans", {
   id: text("id").primaryKey(),
-  name: text("name").notNull().unique(), // Internal name like "basic_monthly"
-  displayName: text("display_name").notNull(), // Display name like "پلن پایه"
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
   description: text("description"),
   price: real("price").notNull(),
-  durationDays: integer("duration_days").notNull(), // How many days the subscription lasts
-  features: text("features", { mode: "json" }).$type<string[]>(), // Array of feature strings
-  maxConversations: integer("max_conversations"), // Max conversations per period
-  maxMessagesPerDay: integer("max_messages_per_day"), // Max messages per day
+  durationDays: integer("duration_days").notNull(),
+  features: text("features", { mode: "json" }).$type<string[]>(),
+  maxConversations: integer("max_conversations"),
+  maxMessagesPerDay: integer("max_messages_per_day"),
   isActive: integer("is_active", { mode: "boolean" }).default(true),
   sortOrder: integer("sort_order").default(0),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
@@ -196,7 +200,7 @@ export const subscriptions = sqliteTable("subscriptions", {
   endDate: integer("end_date", { mode: "timestamp" }).notNull(),
   cancelledAt: integer("cancelled_at", { mode: "timestamp" }),
   autoRenew: integer("auto_renew", { mode: "boolean" }).default(true),
-  paymentGatewayRef: text("payment_gateway_ref"), // Reference to payment transaction
+  paymentGatewayRef: text("payment_gateway_ref"),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ),
@@ -212,16 +216,16 @@ export const payments = sqliteTable("payments", {
     .references(() => users.id, { onDelete: "cascade" }),
   subscriptionId: text("subscription_id").references(() => subscriptions.id, {
     onDelete: "set null",
-  }), // Not all payments are for subscriptions
+  }),
   amount: real("amount").notNull(),
-  currency: text("currency").notNull().default("IRR"), // Currency code
+  currency: text("currency").notNull().default("IRR"),
   status: text("status", { enum: ["PENDING", "SUCCESS", "FAILED", "REFUNDED"] })
     .notNull()
     .default("PENDING"),
-  gatewayName: text("gateway_name").notNull(), // Name of the payment gateway
-  gatewayRefId: text("gateway_ref_id"), // Reference ID from the payment gateway
+  gatewayName: text("gateway_name").notNull(),
+  gatewayRefId: text("gateway_ref_id"),
   description: text("description"),
-  callbackUrl: text("callback_url"), // URL to redirect after payment
+  callbackUrl: text("callback_url"),
   paidAt: integer("paid_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
@@ -262,13 +266,13 @@ export const messages = sqliteTable("messages", {
 
 export const auditLogs = sqliteTable("audit_logs", {
   id: text("id").primaryKey(),
-  userId: text("user_id").references(() => users.id), // Can be null for unauthenticated actions
-  action: text("action").notNull(), // Action performed (e.g., "USER_LOGIN", "DATA_EXPORT")
-  entity: text("entity"), // Entity type (e.g., "user", "post", "comment")
-  entityId: text("entity_id"), // ID of the entity
-  metadata: text("metadata", { mode: "json" }).$type<Record<string, any>>(), // Additional data about the action
-  ipAddress: text("ip_address"), // IP address of the user
-  userAgent: text("user_agent"), // User agent string
+  userId: text("user_id").references(() => users.id),
+  action: text("action").notNull(),
+  entity: text("entity"),
+  entityId: text("entity_id"),
+  metadata: text("metadata", { mode: "json" }).$type<Record<string, any>>(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
   timestamp: integer("timestamp", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
   ),

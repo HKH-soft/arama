@@ -1,9 +1,8 @@
 CREATE TABLE `account` (
-	`id` text PRIMARY KEY NOT NULL,
-	`user_id` text NOT NULL,
+	`userId` text NOT NULL,
 	`type` text NOT NULL,
 	`provider` text NOT NULL,
-	`provider_account_id` text NOT NULL,
+	`providerAccountId` text NOT NULL,
 	`refresh_token` text,
 	`access_token` text,
 	`expires_at` integer,
@@ -11,7 +10,8 @@ CREATE TABLE `account` (
 	`scope` text,
 	`id_token` text,
 	`session_state` text,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	PRIMARY KEY(`provider`, `providerAccountId`),
+	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `audit_logs` (
@@ -24,7 +24,7 @@ CREATE TABLE `audit_logs` (
 	`ip_address` text,
 	`user_agent` text,
 	`timestamp` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `conversations` (
@@ -33,7 +33,7 @@ CREATE TABLE `conversations` (
 	`title` text NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
 	`updated_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `email_verification_tokens` (
@@ -43,7 +43,7 @@ CREATE TABLE `email_verification_tokens` (
 	`expires_at` integer NOT NULL,
 	`used_at` integer,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `email_verification_tokens_token_unique` ON `email_verification_tokens` (`token`);--> statement-breakpoint
@@ -64,7 +64,7 @@ CREATE TABLE `password_reset_tokens` (
 	`expires_at` integer NOT NULL,
 	`used_at` integer,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `password_reset_tokens_token_unique` ON `password_reset_tokens` (`token`);--> statement-breakpoint
@@ -82,7 +82,7 @@ CREATE TABLE `payments` (
 	`paid_at` integer,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
 	`updated_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
@@ -105,7 +105,7 @@ CREATE TABLE `role_permissions` (
 	`assigned_by` text,
 	FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`permission_id`) REFERENCES `permissions`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`assigned_by`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`assigned_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `roles` (
@@ -120,14 +120,12 @@ CREATE TABLE `roles` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX `roles_name_unique` ON `roles` (`name`);--> statement-breakpoint
 CREATE TABLE `session` (
-	`id` text PRIMARY KEY NOT NULL,
-	`session_token` text NOT NULL,
-	`user_id` text NOT NULL,
+	`sessionToken` text PRIMARY KEY NOT NULL,
+	`userId` text NOT NULL,
 	`expires` integer NOT NULL,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `session_session_token_unique` ON `session` (`session_token`);--> statement-breakpoint
 CREATE TABLE `subscription_plans` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -157,7 +155,7 @@ CREATE TABLE `subscriptions` (
 	`payment_gateway_ref` text,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
 	`updated_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`plan_id`) REFERENCES `subscription_plans`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -167,16 +165,16 @@ CREATE TABLE `user_roles` (
 	`role_id` text NOT NULL,
 	`assigned_at` integer DEFAULT (strftime('%s', 'now')),
 	`assigned_by` text,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`assigned_by`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`assigned_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `users` (
+CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`email` text NOT NULL,
-	`email_verified` integer,
+	`emailVerified` integer,
 	`image` text,
 	`password_hash` text,
 	`phone` text,
@@ -193,7 +191,7 @@ CREATE TABLE `users` (
 	`updated_at` integer DEFAULT (strftime('%s', 'now'))
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
+CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
 CREATE TABLE `verificationToken` (
 	`identifier` text NOT NULL,
 	`token` text NOT NULL,

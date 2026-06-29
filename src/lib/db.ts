@@ -26,6 +26,10 @@ switch (nodeEnv) {
     envFileName = ".env.local"; // Default for development
 }
 
+// Load base .env file first (lowest priority)
+dotenv.config({ path: ".env" });
+
+// Load environment-specific file (higher priority, overrides .env)
 dotenv.config({ path: envFileName });
 
 // Initialize the database - use the same path as in drizzle.config.ts and seed.ts

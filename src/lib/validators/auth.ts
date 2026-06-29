@@ -10,18 +10,18 @@ export const passwordSchema = z
   .regex(/[^a-zA-Z0-9]/, "رمز عبور باید شامل کاراکتر ویژه باشد");
 
 export const loginSchema = z.object({
-  email: z.string().email("ایمیل معتبر نیست").trim().toLowerCase(),
+  email: z.string().trim().email("ایمیل معتبر نیست").toLowerCase(),
   password: z.string().min(1, "رمز عبور الزامی است"),
 });
 
 export const registerSchema = z.object({
   name: z.string().min(2, "نام باید حداقل ۲ کاراکتر باشد").trim(),
-  email: z.string().email("ایمیل معتبر نیست").trim().toLowerCase(),
+  email: z.string().trim().email("ایمیل معتبر نیست").toLowerCase(),
   password: passwordSchema,
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("ایمیل معتبر نیست").trim().toLowerCase(),
+  email: z.string().trim().email("ایمیل معتبر نیست").toLowerCase(),
 });
 
 export const resetPasswordSchema = z.object({

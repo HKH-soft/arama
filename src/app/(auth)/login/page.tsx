@@ -24,19 +24,60 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+
+  const validateForm = (): boolean => {
+    const errors: { email?: string; password?: string } = {};
+    let isValid = true;
+
+    if (!email.trim()) {
+      errors.email = "ایمیل الزامی است";
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      errors.email = "فرمت ایمیل نامعتبر است";
+      isValid = false;
+    }
+
+    if (!password) {
+      errors.password = "رمز عبور الزامی است";
+      isValid = false;
+    } else if (password.length < 8) {
+      errors.password = "رمز عبور باید حداقل ۸ کاراکتر باشد";
+      isValid = false;
+    }
+
+    setFieldErrors(errors);
+    return isValid;
+  };
+
+  const getErrorMessage = (errorCode: string): string => {
+    const errorMap: Record<string, string> = {
+      "CredentialsSignin": "ایمیل یا رمز عبور اشتباه است",
+      "invalid_credentials": "ایمیل یا رمز عبور اشتباه است",
+      "user_not_found": "کاربری با این ایمیل یافت نشد",
+      "account_disabled": "حساب کاربری شما غیرفعال شده است. لطفاً با پشتیبانی تماس بگیرید",
+    };
+    return errorMap[errorCode] || "خطا در ورود به سیستم. لطفاً دوباره تلاش کنید";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
-        email,
+        email: email.trim(),
         password,
         redirect: false,
       });
       if (result?.error) {
-        setError(result.error);
+        setError(getErrorMessage(result.error));
         return;
       }
       router.push(callbackUrl);
@@ -92,6 +133,9 @@ function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-xs text-destructive mt-1">{fieldErrors.email}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -116,6 +160,9 @@ function LoginForm() {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {fieldErrors.password && (
+              <p className="text-xs text-destructive mt-1">{fieldErrors.password}</p>
+            )}
           </div>
 
           {/* Remember + Forgot */}

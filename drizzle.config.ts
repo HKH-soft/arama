@@ -23,6 +23,10 @@ switch (nodeEnv) {
     envFileName = ".env.local"; // Default for development
 }
 
+// Load base .env file first (lowest priority)
+dotenv.config({ path: ".env" });
+
+// Load environment-specific file (higher priority, overrides .env)
 dotenv.config({ path: envFileName });
 
 export default defineConfig({
