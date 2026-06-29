@@ -33,7 +33,7 @@ export async function logAudit({
       userAgent: userAgent || null,
     });
   } catch (error) {
-    console.error("Error logging audit:", error);
+    console.error(`Error logging audit for action '${action}':`, error);
     // Don't throw error as audit logging shouldn't break main functionality
   }
 }
@@ -52,7 +52,7 @@ export async function getAuditLogs(filters?: {
     return [];
   } catch (error) {
     console.error("Error fetching audit logs:", error);
-    throw error;
+    throw new Error(`Failed to fetch audit logs: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 }
 

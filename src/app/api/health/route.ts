@@ -13,13 +13,17 @@ export async function GET(request: NextRequest) {
       database: "connected"
     });
   } catch (error) {
-    console.error("Health check failed:", error);
+    console.error("بررسی سلامت انجام نشد:", error);
     return NextResponse.json(
       { 
         status: "unhealthy", 
         timestamp: new Date().toISOString(),
         database: "disconnected",
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        } : "خطای ناشناخته در زمان بررسی سلامت رخ داد"
       },
       { status: 503 }
     );

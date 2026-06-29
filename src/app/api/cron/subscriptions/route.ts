@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   // Verify this is coming from a trusted source (e.g., via a secret header)
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_AUTH_TOKEN}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "غیرمجاز" }, { status: 401 });
   }
 
   try {
@@ -167,14 +167,14 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: "Subscription maintenance completed",
+      message: "نگهداری اشتراک تکمیل شد",
       expiredCount: expiredSubscriptions.length,
       expiringSoonCount: expiringSubscriptions.length,
     });
   } catch (error) {
-    console.error("Cron job failed:", error);
+    console.error("کار Cron انجام نشد:", error);
     return NextResponse.json(
-      { error: "Cron job failed", details: error instanceof Error ? error.message : "Unknown error" },
+      { error: "کار Cron انجام نشد", details: error instanceof Error ? error.message : "خطای ناشناخته" },
       { status: 500 }
     );
   }

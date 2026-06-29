@@ -21,7 +21,7 @@ export async function GET(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json({ error: "Conversation not found or does not belong to the authenticated user" }, { status: 404 });
     }
 
     const conversation = conversationResult[0];
@@ -36,7 +36,7 @@ export async function GET(
   } catch (error) {
     console.error("Failed to fetch conversation:", error);
     return NextResponse.json(
-      { error: "Failed to fetch conversation" },
+      { error: "Failed to fetch conversation", details: error instanceof Error ? error.message : "Unknown error occurred" },
       { status: 500 },
     );
   }
@@ -53,7 +53,7 @@ export async function PATCH(
     const { title } = body;
 
     if (!title || typeof title !== "string" || !title.trim()) {
-      return NextResponse.json({ error: "title is required" }, { status: 400 });
+      return NextResponse.json({ error: "Title is required and must be a non-empty string" }, { status: 400 });
     }
 
     // Check if conversation exists and belongs to user
@@ -65,7 +65,7 @@ export async function PATCH(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json({ error: "Conversation not found or does not belong to the authenticated user" }, { status: 404 });
     }
 
     // Update conversation
@@ -78,7 +78,7 @@ export async function PATCH(
   } catch (error) {
     console.error("Failed to update conversation:", error);
     return NextResponse.json(
-      { error: "Failed to update conversation" },
+      { error: "Failed to update conversation", details: error instanceof Error ? error.message : "Unknown error occurred" },
       { status: 500 },
     );
   }
@@ -86,7 +86,7 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await requireAuth();
@@ -101,17 +101,17 @@ export async function DELETE(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json({ error: "مکالمه یافت نشد یا متعلق به کاربر احراز هویت شده نیست" }, { status: 404 });
     }
 
     // Delete conversation and its messages
     await db.delete(conversations).where(eq(conversations.id, id));
 
-    return NextResponse.json({ message: "Conversation deleted" });
+    return NextResponse.json({ message: "مکالمه با موفقیت حذف شد" });
   } catch (error) {
-    console.error("Failed to delete conversation:", error);
+    console.error("حذف مکالمه انجام نشد:", error);
     return NextResponse.json(
-      { error: "Failed to delete conversation" },
+      { error: "حذف مکالمه انجام نشد", details: error instanceof Error ? error.message : "خطای ناشناخته رخ داده است" },
       { status: 500 },
     );
   }

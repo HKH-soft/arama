@@ -15,7 +15,7 @@ export async function POST(
     const { content } = await request.json();
 
     if (!content || typeof content !== "string" || !content.trim()) {
-      return NextResponse.json({ error: "content is required" }, { status: 400 });
+      return NextResponse.json({ error: "محتوا نمی‌تواند خالی باشد" }, { status: 400 });
     }
 
     // Check if conversation exists and belongs to user
@@ -27,7 +27,7 @@ export async function POST(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json({ error: "مکالمه یافت نشد یا متعلق به شما نیست" }, { status: 404 });
     }
 
     // Create user message
@@ -50,6 +50,11 @@ export async function POST(
       content: msg.content,
     }));
 
+    // Check if Anthropic API key is available
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error("کلید API Anthropic تنظیم نشده است");
+    }
+
     // Initialize Anthropic client
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
@@ -60,7 +65,7 @@ export async function POST(
       model: process.env.AI_MODEL || "claude-3-haiku-20240307",
       max_tokens: 1024,
       temperature: 0.7,
-      system: "You are a helpful mental health support assistant. Provide supportive, empathetic responses focused on emotional wellbeing.",
+      system: "شما یک دستیار روان‌شناسی به نام آراما هستید. فارسی صحبت می‌کنید و به کاربران در حل مشکلات روانی و احساسی کمک می‌کنید. صمیمی اما حرفه‌ای باشید.",
       messages: aiMessages as any, // Type assertion due to compatibility
     });
 
@@ -68,7 +73,7 @@ export async function POST(
     const aiMessageResult = await db.insert(messages).values({
       id: crypto.randomUUID(),
       conversationId: id,
-      content: aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : "I couldn't process that message.",
+      content: aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : "نمی توانم این پیام را پردازش کنم.",
       role: "assistant",
     }).returning();
 
@@ -82,9 +87,15 @@ export async function POST(
       aiMessage: aiMessageResult[0],
     });
   } catch (error) {
-    console.error("Failed to send message:", error);
+    console.error("ارسال پیام انجام نشد:", error);
     return NextResponse.json(
-      { error: "Failed to send message" },
+      { 
+        error: "ارسال پیام انجام نشد", 
+        details: error instanceof Error ? {
+          message: error.message,
+          name: error.name
+        } : "خطای ناشناخته رخ داده است"
+      },
       { status: 500 },
     );
   }

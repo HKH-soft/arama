@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
-import db from "@/lib/db"; // Updated to use Drizzle
-import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import db from "@/lib/db";
+import { conversations, messages } from "@/db/schema";
+import { eq, and } from 'drizzle-orm';
+import { logAudit, getClientInfo } from "@/lib/audit";
+import { z } from "zod";
+
+const updateMessageSchema = z.object({
+  content: z.string().min(1, "محتوا نمی‌تواند خالی باشد").max(10000, "محتوا نباید بیش از ۱۰۰۰۰ کاراکتر باشد"),
+});
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string; messageId: string }> },
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string; messageId: string }> }
 ) {
   try {
     const user = await requireAuth();
@@ -21,7 +27,10 @@ export async function GET(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "مکالمه یافت نشد یا متعلق به شما نیست" }, 
+        { status: 404 }
+      );
     }
 
     // Check if message exists and belongs to the conversation
@@ -33,32 +42,30 @@ export async function GET(
       ));
       
     if (messageResult.length === 0) {
-      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "پیام در مکالمه مورد نظر یافت نشد" }, 
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(messageResult[0]);
   } catch (error) {
-    console.error("Failed to fetch message:", error);
+    console.error("دریافت پیام انجام نشد:", error);
     return NextResponse.json(
-      { error: "Failed to fetch message" },
+      { error: "خطا در دریافت پیام", details: error instanceof Error ? error.message : "خطای ناشناخته" },
       { status: 500 },
     );
   }
 }
 
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; messageId: string }> },
+  { params }: { params: Promise<{ id: string; messageId: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const clientInfo = getClientInfo(request);
     const { id, messageId } = await params;
-    const body = await request.json();
-    const { content } = body;
-
-    if (!content || typeof content !== "string" || !content.trim()) {
-      return NextResponse.json({ error: "content is required" }, { status: 400 });
-    }
 
     // Check if conversation exists and belongs to user
     const conversationResult = await db.select()
@@ -69,7 +76,10 @@ export async function PATCH(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "مکالمه یافت نشد یا متعلق به شما نیست" }, 
+        { status: 404 }
+      );
     }
 
     // Check if message exists and belongs to the conversation
@@ -81,20 +91,49 @@ export async function PATCH(
       ));
       
     if (messageResult.length === 0) {
-      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "پیام در مکالمه مورد نظر یافت نشد" }, 
+        { status: 404 }
+      );
     }
+
+    const body = await request.json();
+    const parsed = updateMessageSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "ورودی نامعتبر", details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { content } = parsed.data;
 
     // Update message
     const updatedMessageResult = await db.update(messages)
-      .set({ content: content.trim() })
+      .set({ 
+        content: content.trim(),
+        updatedAt: new Date() 
+      })
       .where(eq(messages.id, messageId))
       .returning();
 
+    // Log audit
+    await logAudit({
+      userId: user.id,
+      action: "MESSAGE_UPDATED",
+      entity: "message",
+      entityId: messageId,
+      metadata: { updatedContentLength: content.length },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
+
     return NextResponse.json(updatedMessageResult[0]);
   } catch (error) {
-    console.error("Failed to update message:", error);
+    console.error("به‌روزرسانی پیام انجام نشد:", error);
     return NextResponse.json(
-      { error: "Failed to update message" },
+      { error: "خطا در به‌روزرسانی پیام", details: error instanceof Error ? error.message : "خطای ناشناخته" },
       { status: 500 },
     );
   }
@@ -102,10 +141,11 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string; messageId: string }> },
+  { params }: { params: Promise<{ id: string; messageId: string }> }
 ) {
   try {
     const user = await requireAuth();
+    const clientInfo = getClientInfo(_request);
     const { id, messageId } = await params;
 
     // Check if conversation exists and belongs to user
@@ -117,7 +157,10 @@ export async function DELETE(
       ));
       
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "مکالمه یافت نشد یا متعلق به شما نیست" }, 
+        { status: 404 }
+      );
     }
 
     // Check if message exists and belongs to the conversation
@@ -129,17 +172,31 @@ export async function DELETE(
       ));
       
     if (messageResult.length === 0) {
-      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "پیام در مکالمه مورد نظر یافت نشد" }, 
+        { status: 404 }
+      );
     }
 
     // Delete message
     await db.delete(messages).where(eq(messages.id, messageId));
 
-    return NextResponse.json({ message: "Message deleted" });
+    // Log audit
+    await logAudit({
+      userId: user.id,
+      action: "MESSAGE_DELETED",
+      entity: "message",
+      entityId: messageId,
+      metadata: {},
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
+
+    return NextResponse.json({ message: "پیام با موفقیت حذف شد" });
   } catch (error) {
-    console.error("Failed to delete message:", error);
+    console.error("حذف پیام انجام نشد:", error);
     return NextResponse.json(
-      { error: "Failed to delete message" },
+      { error: "خطا در حذف پیام", details: error instanceof Error ? error.message : "خطای ناشناخته" },
       { status: 500 },
     );
   }

@@ -30,13 +30,13 @@ export async function requireAuth(request?: NextRequest) {
   const session = await auth();
   
   if (!session?.user?.email) {
-    throw new Error("Unauthorized");
+    throw new Error("احراز هویت الزامی: کاربر وارد نشده است");
   }
   
   const user = await getUserByEmail(session.user.email);
   
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("کاربر یافت نشد: حساب کاربری احراز هویت شده وجود ندارد");
   }
   
   return user;
@@ -45,17 +45,17 @@ export async function requireAuth(request?: NextRequest) {
 export async function requirePermission(permission: string) {
   const session = await auth();
   if (!session?.user?.email) {
-    throw new Error("Unauthorized");
+    throw new Error("احراز هویت الزامی: کاربر وارد نشده است");
   }
   
   const user = await getUserByEmail(session.user.email);
   if (!user) {
-    throw new Error("User not found");
+    throw new Error("کاربر یافت نشد: حساب کاربری احراز هویت شده وجود ندارد");
   }
   
   const permitted = await checkPermission(user.id, permission);
   if (!permitted) {
-    throw new Error("Forbidden");
+    throw new Error(`دسترسی ممنوع: کاربر مجوز لازم '${permission}' را ندارد`);
   }
   
   const roles = await getUserRoles(user.id);
