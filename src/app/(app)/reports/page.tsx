@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   FileText,
   Download,
@@ -8,33 +9,38 @@ import {
   BarChart2,
 } from "lucide-react";
 
+interface Report {
+  id: string;
+  userId: string;
+  title: string;
+  description: string;
+  type: "weekly" | "monthly";
+  reportDate: number;
+  createdAt: number;
+}
+
 export default function ReportsPage() {
-  const reports = [
-    {
-      title: "گزارش ماهانه - خرداد ۱۴۰۴",
-      desc: "خلاصه عملکرد و پیشرفت روانی شما",
-      date: "۱ تیر ۱۴۰۴",
-      type: "ماهانه",
-    },
-    {
-      title: "گزارش ماهانه - اردیبهشت ۱۴۰۴",
-      desc: "خلاصه عملکرد و پیشرفت روانی شما",
-      date: "۱ خرداد ۱۴۰۴",
-      type: "ماهانه",
-    },
-    {
-      title: "گزارش هفتگی - هفته چهارم خرداد",
-      desc: "تحلیل احساسات و تمرینات انجام شده",
-      date: "۳۱ خرداد ۱۴۰۴",
-      type: "هفتگی",
-    },
-    {
-      title: "گزارش هفتگی - هفته سوم خرداد",
-      desc: "تحلیل احساسات و تمرینات انجام شده",
-      date: "۲۴ خرداد ۱۴۰۴",
-      type: "هفتگی",
-    },
-  ];
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const res = await fetch("/api/reports");
+        const data = await res.json();
+        setReports(data);
+      } catch (err) {
+        console.error("Error fetching reports:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
+  }, []);
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString("fa-IR");
+  };
 
   return (
     <>
@@ -63,7 +69,7 @@ export default function ReportsPage() {
             },
             {
               label: "تعداد گزارش‌ها",
-              val: "۸",
+              val: reports.length > 0 ? reports.length.toString() : "۰",
               change: "این ماه",
               icon: BarChart2,
             },
@@ -91,34 +97,40 @@ export default function ReportsPage() {
           <h3 className="font-semibold text-foreground text-sm">
             گزارش‌های شما
           </h3>
-          {reports.map((report, i) => (
-            <div
-              key={i}
-              className="bg-white/5 hover:bg-white/10 transition-colors rounded-lg p-4 flex items-center justify-between group cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-foreground/50">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">
-                    {report.title}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-foreground/40">
-                      {report.date}
-                    </span>
-                    <span className="text-[10px] bg-white/10 text-foreground/50 px-1.5 py-0.5 rounded">
-                      {report.type}
-                    </span>
+          {loading ? (
+            <p className="text-foreground/50">در حال بارگذاری...</p>
+          ) : reports.length > 0 ? (
+            reports.map((report) => (
+              <div
+                key={report.id}
+                className="bg-white/5 hover:bg-white/10 transition-colors rounded-lg p-4 flex items-center justify-between group cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-foreground/50">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground">
+                      {report.title}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-foreground/40">
+                        {formatDate(report.reportDate)}
+                      </span>
+                      <span className="text-[10px] bg-white/10 text-foreground/50 px-1.5 py-0.5 rounded">
+                        {report.type === "monthly" ? "ماهانه" : "هفتگی"}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-white/10">
+                  <Download className="w-4 h-4 text-foreground/60" />
+                </button>
               </div>
-              <button className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-white/10">
-                <Download className="w-4 h-4 text-foreground/60" />
-              </button>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-foreground/50">گزارشی یافت نشد</p>
+          )}
         </div>
       </div>
     </>

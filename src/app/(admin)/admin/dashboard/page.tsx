@@ -91,38 +91,28 @@ export default function AdminDashboardPage() {
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Simulate fetching data
+  // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setStats({
-          totalUsers: "1,240",
-          monthlyRevenue: "12,400,000 تومان",
-          activeSubscriptions: "342",
-          successRate: "98.2%",
-          newUsers: "+42",
-          expiringSubscriptions: "18",
-        });
+      try {
+        const res = await fetch("/api/admin/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data.stats);
 
-        setRecentActivities([
-          { user: "علی رضایی", action: "ورود به سیستم", time: "۵ دقیقه پیش" },
-          {
-            user: "مریم حسینی",
-            action: "خرید اشتراک سالانه",
-            time: "۱۲ دقیقه پیش",
-          },
-          {
-            user: "رضا محمدی",
-            action: "تغییر نقش به مدیر",
-            time: "۱ ساعت پیش",
-          },
-          { user: "نگین کریمی", action: "ثبت نام جدید", time: "۲ ساعت پیش" },
-          { user: "سینا احمدی", action: "لغو اشتراک", time: "۳ ساعت پیش" },
-        ]);
-
+          // Convert recent users to activities format
+          const activities = data.recentUsers.map((u: any, i: number) => ({
+            user: u.name,
+            action: "ثبت نام جدید",
+            time: i === 0 ? "الان" : `${i + 1} روز پیش`,
+          }));
+          setRecentActivities(activities);
+        }
+      } catch (err) {
+        console.error("Error fetching admin stats:", err);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
 
     fetchData();
@@ -171,7 +161,7 @@ export default function AdminDashboardPage() {
                 </CardContent>
               </Card>
             ))
-          ) : (
+          ) : stats ? (
             <>
               <StatCard
                 title="کل کاربران"
@@ -202,7 +192,7 @@ export default function AdminDashboardPage() {
                 changeType="positive"
               />
             </>
-          )}
+          ) : null}
         </div>
 
         {/* Main Content Grid */}

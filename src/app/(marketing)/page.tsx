@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/accordion";
 import { BackgroundRenderer } from "@/components/BackgroundSelector";
 import TextType from "@/components/TextType";
-import { useTheme } from "@/components/theme-provider";
 import { useState, useEffect } from "react";
 import MagneticButton from "@/components/MagneticButton";
 import MagicBento from "@/components/MagicBento";
@@ -42,22 +41,51 @@ const staggerContainer = {
   },
 };
 
+interface Plan {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  price: number;
+  durationDays: number;
+  features: string[];
+  isActive: boolean;
+  sortOrder: number;
+}
+
 export default function Landing() {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch("/api/plans");
+        if (res.ok) {
+          const data = await res.json();
+          setPlans(data);
+        }
+      } catch (err) {
+        console.error("Error fetching plans:", err);
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+    fetchPlans();
   }, []);
 
-  const isDark = mounted ? resolvedTheme === "dark" : true;
+  const formatPrice = (price: number) => {
+    if (price === 0) return "۰";
+    return price.toLocaleString('fa-IR');
+  };
+
   return (
     <>
       {/* Hero Section */}
       <section className="relative isolate overflow-hidden -mt-20 pt-0 pb-32 lg:pb-40">
         {/* Dynamic Background — extends behind navbar */}
         <div className="absolute inset-0 -z-10 pointer-events-none">
-          <BackgroundRenderer isDark={isDark} />
+          <BackgroundRenderer />
         </div>
         {/* Smooth fade at bottom to blend with page bg */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-b from-transparent via-background/60 to-background -z-[5] pointer-events-none" />
@@ -581,104 +609,60 @@ export default function Landing() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Free Plan */}
-            <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
-              <h3 className="text-2xl font-bold text-foreground mb-2">
-                رایگان
-              </h3>
-              <p className="text-muted-foreground mb-6">برای آشنایی با آراما</p>
-              <div className="mb-8">
-                <span className="text-4xl font-black text-foreground">۰</span>
-                <span className="text-muted-foreground mr-1">تومان</span>
+            {loadingPlans ? (
+              <div className="md:col-span-3 text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
               </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> گفتگوی محدود
-                  روزانه
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> تحلیل پایه
-                  احساسات
-                </li>
-                <li className="flex items-center gap-3 text-muted-foreground">
-                  <XCircle className="w-5 h-5 opacity-50" /> تحلیل صوتی
-                </li>
-              </ul>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/dashboard">شروع رایگان</Link>
-              </Button>
-            </div>
-
-            {/* Premium Plan */}
-            <div className="bg-card border-2 border-primary rounded-3xl p-8 shadow-lg relative transform md:-translate-y-4">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-bold">
-                محبوب‌ترین
+            ) : plans.length > 0 ? (
+              plans.map((plan, index) => (
+                <div
+                  key={plan.id}
+                  className={`relative bg-card border rounded-3xl p-8 shadow-sm ${index === 1 ? "border-2 border-primary transform md:-translate-y-4 shadow-lg" : "border-border"
+                    }`}
+                >
+                  {index === 1 && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-bold">
+                      محبوب‌ترین
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    {plan.displayName}
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    {plan.description}
+                  </p>
+                  <div className="mb-8">
+                    <span className="text-4xl font-black text-foreground">
+                      {formatPrice(plan.price)}
+                    </span>
+                    <span className="text-muted-foreground mr-1">
+                      {plan.price === 0 ? "تومان" : `تومان / ${plan.durationDays === 30 ? "ماه" : plan.durationDays === 365 ? "سال" : ""}`}
+                    </span>
+                  </div>
+                  <ul className="space-y-4 mb-8">
+                    {(plan.features || []).map((feature, i) => (
+                      <li key={i} className="flex items-center gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-primary" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className={`w-full ${index === 1 ? "bg-primary hover:bg-primary/90" : ""}`}
+                    variant={index === 1 ? "default" : "outline"}
+                    asChild
+                  >
+                    <Link href="/dashboard">
+                      {plan.price === 0 ? "شروع رایگان" : "خرید اشتراک"}
+                    </Link>
+                  </Button>
+                </div>
+              ))
+            ) : (
+              <div className="md:col-span-3 text-center text-muted-foreground">
+                پلنی یافت نشد
               </div>
-              <h3 className="text-2xl font-bold text-foreground mb-2">
-                پریمیوم
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                دسترسی کامل به تمام امکانات
-              </p>
-              <div className="mb-8">
-                <span className="text-4xl font-black text-foreground">
-                  ۱۴۹,۰۰۰
-                </span>
-                <span className="text-muted-foreground mr-1">تومان / ماه</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> گفتگوی
-                  نامحدود
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> تحلیل
-                  پیشرفته احساسات
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> ارتباط صوتی
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> گزارش‌های
-                  ماهانه
-                </li>
-              </ul>
-              <Button className="w-full bg-primary hover:bg-primary/90" asChild>
-                <Link href="/dashboard">خرید اشتراک</Link>
-              </Button>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
-              <h3 className="text-2xl font-bold text-foreground mb-2">
-                سازمانی
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                برای تیم‌ها و شرکت‌ها
-              </p>
-              <div className="mb-8">
-                <span className="text-3xl font-bold text-foreground">
-                  تماس بگیرید
-                </span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> مدیریت
-                  کاربران
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> گزارش‌های
-                  تیمی
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-primary" /> پشتیبانی
-                  اختصاصی
-                </li>
-              </ul>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/contact">تماس با ما</Link>
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       </section>

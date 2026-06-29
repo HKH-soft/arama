@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Play,
   Activity,
@@ -37,7 +38,18 @@ type SessionPayload = {
   roles?: string[];
 };
 
-const emotionData = [
+interface EmotionStat {
+  emotion: string;
+  avgScore: number;
+  count: number;
+}
+
+interface DailyStat {
+  day: string;
+  avgScore: number;
+}
+
+const emotionDataStatic = [
   { subject: "شادی", A: 40, fullMark: 100 },
   { subject: "آرامش", A: 70, fullMark: 100 },
   { subject: "اضطراب", A: 30, fullMark: 100 },
@@ -45,7 +57,7 @@ const emotionData = [
   { subject: "امید", A: 60, fullMark: 100 },
 ];
 
-const weeklyData = [
+const weeklyDataStatic = [
   { name: "شنبه", score: 65 },
   { name: "یک", score: 59 },
   { name: "دو", score: 80 },
@@ -57,18 +69,74 @@ const weeklyData = [
 
 export function DashboardContent({ user }: { user: SessionPayload | null }) {
   const firstName = user?.name?.split(/\s+/)[0] || "کاربر";
+  const [mounted, setMounted] = useState(false);
+  const [emotionStats, setEmotionStats] = useState<EmotionStat[]>([]);
+  const [dailyStats, setDailyStats] = useState<DailyStat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const res = await fetch("/api/analytics");
+        if (res.ok) {
+          const data = await res.json();
+          setEmotionStats(data.emotionBreakdown || []);
+          setDailyStats(data.weeklyTrend || []);
+        }
+      } catch (err) {
+        console.error("Error fetching analytics:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
+  const today = mounted ? new Date().toLocaleDateString("fa-IR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }) : "";
+
+  // Calculate stats from real data
+  const avgMood = emotionStats.length > 0
+    ? Math.round(emotionStats.reduce((sum, e) => sum + e.avgScore, 0) / emotionStats.length)
+    : 0;
+
+  const totalSessions = emotionStats.reduce((sum, e) => sum + e.count, 0);
+
+  // Convert emotion stats to chart format
+  const emotionChartData = emotionStats.length > 0
+    ? emotionStats.map(e => ({
+      subject: e.emotion,
+      A: Math.round(e.avgScore),
+      fullMark: 100,
+    }))
+    : emotionDataStatic;
+
+  // Convert daily stats to chart format
+  const weeklyChartData = dailyStats.length > 0
+    ? dailyStats.map((d, i) => ({
+      name: ["شنبه", "یک", "دو", "سه", "چهار", "پنج", "جمعه"][i % 7],
+      score: Math.round(d.avgScore),
+    }))
+    : weeklyDataStatic;
 
   return (
     <>
       {/* Gradient header */}
-      <div className="bg-linear-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-linear-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pt-6 pb-4 border-b border-border/50">
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
               سلام، {firstName} جان 👋
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              امروز ۲۴ مهر ۱۴۰۳
+              {today}
             </p>
           </div>
         </header>
@@ -85,39 +153,38 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
               {
                 icon: Smile,
                 label: "عالی",
-                color: "text-green-500 dark:text-green-400",
-                bg: "bg-green-500/10 hover:bg-green-500/20",
+                colorVar: "var(--mood-great)",
               },
               {
                 icon: Heart,
                 label: "آرام",
-                color: "text-blue-500 dark:text-blue-400",
-                bg: "bg-blue-500/10 hover:bg-blue-500/20",
+                colorVar: "var(--mood-calm)",
               },
               {
                 icon: Meh,
                 label: "معمولی",
-                color: "text-yellow-600 dark:text-yellow-400",
-                bg: "bg-yellow-500/10 hover:bg-yellow-500/20",
+                colorVar: "var(--mood-normal)",
               },
               {
                 icon: Frown,
                 label: "غمگین",
-                color: "text-indigo-500 dark:text-indigo-400",
-                bg: "bg-indigo-500/10 hover:bg-indigo-500/20",
+                colorVar: "var(--mood-sad)",
               },
               {
                 icon: Angry,
                 label: "مضطرب",
-                color: "text-red-500 dark:text-red-400",
-                bg: "bg-red-500/10 hover:bg-red-500/20",
+                colorVar: "var(--mood-anxious)",
               },
             ].map((mood, i) => (
               <button
                 key={i}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-20 ${mood.bg}`}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl transition-all flex-1 min-w-20"
+                style={{
+                  color: `hsl(${mood.colorVar})`,
+                  backgroundColor: `hsl(${mood.colorVar} / 0.1)`,
+                }}
               >
-                <mood.icon className={`w-7 h-7 ${mood.color}`} />
+                <mood.icon className="w-7 h-7" style={{ color: `hsl(${mood.colorVar})` }} />
                 <span className="text-sm font-medium text-foreground/90">
                   {mood.label}
                 </span>
@@ -132,11 +199,11 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
             { label: "روزهای پیاپی", val: "۱۲", suffix: "روز", icon: Activity },
             {
               label: "جلسات این ماه",
-              val: "۲۴",
+              val: totalSessions > 0 ? totalSessions.toString() : "۲۴",
               suffix: "جلسه",
               icon: CalendarIcon,
             },
-            { label: "میانگین خلق", val: "۷۲", suffix: "٪", icon: TrendingUp },
+            { label: "میانگین خلق", val: `${avgMood || 72}`, suffix: "٪", icon: TrendingUp },
             {
               label: "تمرین‌های انجام شده",
               val: "۳۸",
@@ -182,7 +249,7 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
                   cx="50%"
                   cy="50%"
                   outerRadius="70%"
-                  data={emotionData}
+                  data={emotionChartData}
                 >
                   <PolarGrid stroke="hsl(var(--border))" />
                   <PolarAngleAxis
@@ -216,7 +283,10 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
               <h3 className="font-semibold text-foreground text-sm">
                 روند تغییرات خلقی
               </h3>
-              <span className="text-xs font-medium px-2 py-1 bg-green-500/10 text-green-600 dark:text-green-400 rounded-full flex items-center gap-1">
+              <span className="text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1" style={{
+                backgroundColor: `hsl(var(--mood-great) / 0.1)`,
+                color: `hsl(var(--mood-great))`,
+              }}>
                 <TrendingUp className="w-3 h-3" />
                 بهتر از هفته گذشته
               </span>
@@ -229,7 +299,7 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
                 minHeight={0}
               >
                 <LineChart
-                  data={weeklyData}
+                  data={weeklyChartData}
                   margin={{ top: 5, right: 5, bottom: 5, left: -20 }}
                 >
                   <CartesianGrid

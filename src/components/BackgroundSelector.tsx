@@ -1,21 +1,21 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 
 const Aurora = dynamic(() => import("@/components/Aurora"), { ssr: false });
 
-interface BackgroundRendererProps {
-  isDark: boolean;
-}
+export function BackgroundRenderer() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
-export function BackgroundRenderer({ isDark }: BackgroundRendererProps) {
+  const colors = isDark
+    ? ["#064e3b", "#022c22", "#064e3b"]
+    : ["#b8dbcf", "#c6f0e2", "#b8dbcf"];
+
   return (
     <Aurora
-      colorStops={
-        isDark
-          ? ["#064e3b", "#022c22", "#064e3b"] // Dark Mode: Deep, rich crisp emerald depths
-          : ["#b8dbcf", "#10b77f", "#b8dbcf"] // Light Mode: Soft premium warm cream shifts
-      }
+      colorStops={colors}
       amplitude={1.0}
       blend={0.5}
       speed={1.0}

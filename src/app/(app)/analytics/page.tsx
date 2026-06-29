@@ -1,8 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { BarChart2, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 
+interface EmotionData {
+  emotion: string;
+  avgScore: number;
+  count: number;
+}
+
+interface WeeklyData {
+  day: string;
+  avgScore: number;
+}
+
 export default function AnalyticsPage() {
+  const [emotionBreakdown, setEmotionBreakdown] = useState<EmotionData[]>([]);
+  const [weeklyTrend, setWeeklyTrend] = useState<WeeklyData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const res = await fetch("/api/analytics");
+        const data = await res.json();
+        setEmotionBreakdown(data.emotionBreakdown || []);
+        setWeeklyTrend(data.weeklyTrend || []);
+      } catch (err) {
+        console.error("Error fetching analytics:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
   return (
     <>
       <div className="bg-linear-to-b from-indigo-900/40 via-card to-card px-6 pt-6 pb-4">
@@ -18,19 +50,19 @@ export default function AnalyticsPage() {
           {[
             {
               label: "میانگین خلق هفتگی",
-              val: "۷۲٪",
+              val: weeklyTrend.length > 0 ? `${Math.round(weeklyTrend.reduce((sum, d) => sum + d.avgScore, 0) / weeklyTrend.length)}٪` : "۰٪",
               trend: "up",
               icon: TrendingUp,
             },
             {
               label: "بیشترین احساس",
-              val: "آرامش",
+              val: emotionBreakdown.length > 0 ? emotionBreakdown.reduce((max, e) => e.avgScore > max.avgScore ? e : max, emotionBreakdown[0]).emotion : "نامعلوم",
               trend: null,
               icon: BarChart2,
             },
             {
               label: "جلسات این ماه",
-              val: "۲۴",
+              val: emotionBreakdown.length > 0 ? emotionBreakdown.reduce((sum, e) => sum + e.count, 0).toString() : "۰",
               trend: "up",
               icon: Calendar,
             },
@@ -62,26 +94,36 @@ export default function AnalyticsPage() {
             توزیع احساسات این هفته
           </h3>
           <div className="space-y-3">
-            {[
-              { label: "آرامش", pct: 70, color: "bg-blue-400" },
-              { label: "شادی", pct: 55, color: "bg-green-400" },
-              { label: "امید", pct: 60, color: "bg-yellow-400" },
-              { label: "اضطراب", pct: 30, color: "bg-red-400" },
-              { label: "غم", pct: 20, color: "bg-indigo-400" },
-            ].map((e, i) => (
-              <div key={i}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-foreground/80">{e.label}</span>
-                  <span className="text-foreground/50">{e.pct}٪</span>
-                </div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${e.color}`}
-                    style={{ width: `${e.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+            {loading ? (
+              <p className="text-foreground/50">در حال بارگذاری...</p>
+            ) : emotionBreakdown.length > 0 ? (
+              emotionBreakdown.map((e, i) => {
+                const colors: Record<string, string> = {
+                  "آرامش": "bg-blue-400",
+                  "شادی": "bg-green-400",
+                  "امید": "bg-yellow-400",
+                  "اضطراب": "bg-red-400",
+                  "غم": "bg-indigo-400",
+                };
+                const colorClass = colors[e.emotion] || "bg-gray-400";
+                return (
+                  <div key={i}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-foreground/80">{e.emotion}</span>
+                      <span className="text-foreground/50">{Math.round(e.avgScore)}٪</span>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${colorClass}`}
+                        style={{ width: `${e.avgScore}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-foreground/50">داده‌ای یافت نشد</p>
+            )}
           </div>
         </div>
 
@@ -91,8 +133,9 @@ export default function AnalyticsPage() {
             تحلیل هفته
           </h3>
           <p className="text-foreground/60 text-sm leading-relaxed">
-            این هفته سطح آرامش شما ۱۵٪ بهتر از هفته گذشته بوده. تمرینات تنفسی که
-            انجام دادید تأثیر مثبتی روی کاهش اضطراب داشته. ادامه بدید!
+            {weeklyTrend.length >= 2
+              ? `این هفته سطح احساسات شما ${Math.round(weeklyTrend[weeklyTrend.length - 1].avgScore - weeklyTrend[0].avgScore)}٪ تغییر داشته. ادامه کنیم!`
+              : "در حال جمع‌آوری داده‌های هفته جاری..."}
           </p>
         </div>
       </div>

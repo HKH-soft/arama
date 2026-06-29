@@ -28,11 +28,11 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
     >
       {/* Avatar */}
       {isAI ? (
-        <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-md">
+        <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0 shadow-md">
           <Brain className="w-4 h-4" />
         </div>
       ) : (
-        <div className="w-8 h-8 rounded-full bg-white/8 border border-white/6 flex items-center justify-center text-[10px] font-medium text-white/60 shrink-0">
+        <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-[10px] font-medium text-muted-foreground shrink-0">
           شما
         </div>
       )}
@@ -40,10 +40,9 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       {/* Bubble */}
       <div
         className={`max-w-[85%] sm:max-w-[72%] px-4 py-3 text-sm leading-7 rounded-2xl shadow-sm
-          ${
-            isAI
-              ? "bg-background text-foreground rounded-bl-sm"
-              : "bg-primary text-primary-foreground rounded-br-sm"
+          ${isAI
+            ? "bg-background text-foreground rounded-bl-sm"
+            : "bg-primary text-primary-foreground rounded-br-sm"
           }
           ${isStreaming ? "animate-pulse" : ""}
         `}

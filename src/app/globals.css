@@ -106,25 +106,30 @@
   --elevate-1: rgba(16, 185, 129, 0.03);
   --elevate-2: rgba(16, 185, 129, 0.08);
 
-  --background: 150 60% 98%; /* Clean ice-mint white (#F4FBF7) */
-  --foreground: 160 50% 10%; /* Sharp Midnight Mint Text */
+  --background: 150 60% 98%;
+  /* Clean ice-mint white (#F4FBF7) */
+  --foreground: 160 50% 10%;
+  /* Sharp Midnight Mint Text */
 
-  --card: 160.8, 27.5%, 82.2%;
+  --card: 160 100% 99%;
   --card-foreground: 160 50% 10%;
   --card-border: 150 30% 90%;
   --border: 150 30% 90%;
   --input: 150 30% 90%;
 
-  --primary: 160 84% 39%; /* Iconic Tailwind Emerald 600 (#10B981) */
+  --primary: 160 84% 39%;
+  /* Iconic Tailwind Emerald 600 (#10B981) */
   --primary-foreground: 150 60% 98%;
 
-  --secondary: 150 40% 88%; /* Soft Mint Surfaces */
+  --secondary: 150 40% 88%;
+  /* Soft Mint Surfaces */
   --secondary-foreground: 160 84% 39%;
 
   --muted: 150 30% 95%;
   --muted-foreground: 160 25% 40%;
 
-  --accent: 160 75% 46%; /* Tailwind Emerald 500 */
+  --accent: 160 75% 46%;
+  /* Tailwind Emerald 500 */
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 50%;
@@ -135,7 +140,8 @@
   --popover-foreground: 160 50% 10%;
   --popover-border: 150 30% 90%;
 
-  --sidebar: 165 70% 6%; /* Deep Techno-Mint Sidebar */
+  --sidebar: 165 70% 6%;
+  /* Deep Techno-Mint Sidebar */
   --sidebar-foreground: 150 40% 92%;
   --sidebar-border: 165 40% 14%;
   --sidebar-primary: 160 84% 39%;
@@ -149,6 +155,24 @@
   --chart-3: 160 75% 46%;
   --chart-4: 165 80% 30%;
   --chart-5: 142 70% 60%;
+
+  --emotion-anxiety: 25 95% 53%;
+  --emotion-stress: 0 84% 50%;
+  --emotion-sadness: 217 91% 60%;
+  --emotion-loneliness: 173 58% 42%;
+  --emotion-joy: 45 93% 47%;
+  --emotion-calmness: 160 84% 39%;
+  --emotion-hope: 199 89% 48%;
+
+  --mood-great: 160 84% 39%;
+  --mood-calm: 199 89% 48%;
+  --mood-normal: 45 93% 47%;
+  --mood-sad: 217 91% 60%;
+  --mood-anxious: 0 84% 50%;
+
+  --gradient-start: #10b77f;
+  --gradient-mid: #b8dbcf;
+  --gradient-end: #064e3b;
 
   --app-font-sans: var(--font-vazirmatn), sans-serif;
   --app-font-serif: Georgia, serif;
@@ -177,34 +201,13 @@
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
-  --sidebar-primary-border: hsl(
-    from hsl(var(--sidebar-primary)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-  --sidebar-accent-border: hsl(
-    from hsl(var(--sidebar-accent)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-  --primary-border: hsl(
-    from hsl(var(--primary)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-  --secondary-border: hsl(
-    from hsl(var(--secondary)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-  --muted-border: hsl(
-    from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) /
-      alpha
-  );
-  --accent-border: hsl(
-    from hsl(var(--accent)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
-  --destructive-border: hsl(
-    from hsl(var(--destructive)) h s
-      calc(l + var(--opaque-button-border-intensity)) / alpha
-  );
+  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 /* DARK MODE - Cyber Neon Emerald & Dark Slate Depths */
@@ -212,21 +215,29 @@
   --button-outline: rgba(255, 255, 255, 0.08);
   --badge-outline: rgba(255, 255, 255, 0.04);
 
+  --gradient-start: #022c22;
+  --gradient-mid: #064e3b;
+  --gradient-end: #064e3b;
+
   --opaque-button-border-intensity: 9;
 
   --elevate-1: rgba(255, 255, 255, 0.04);
   --elevate-2: rgba(255, 255, 255, 0.08);
 
-  --background: 165 45% 6%; /* Deep slate green canvas */
-  --foreground: 150 40% 94%; /* Near-white mint text */
+  --background: 165 45% 6%;
+  /* Deep slate green canvas */
+  --foreground: 150 40% 94%;
+  /* Near-white mint text */
 
-  --card: 165 30% 10%; /* Clean slate structural frames */
+  --card: 165 30% 10%;
+  /* Clean slate structural frames */
   --card-foreground: 150 40% 94%;
   --card-border: 165 20% 16%;
   --border: 165 20% 16%;
   --input: 165 20% 16%;
 
-  --primary: 150 76% 43%; /* Glowing Tailwind Emerald 400 (#34D399) */
+  --primary: 150 76% 43%;
+  /* Glowing Tailwind Emerald 400 (#34D399) */
   --primary-foreground: 165 45% 6%;
 
   --secondary: 165 15% 18%;
@@ -261,6 +272,20 @@
   --chart-4: 165 40% 25%;
   --chart-5: 140 50% 60%;
 
+  --emotion-anxiety: 25 95% 65%;
+  --emotion-stress: 0 84% 65%;
+  --emotion-sadness: 217 91% 70%;
+  --emotion-loneliness: 173 58% 60%;
+  --emotion-joy: 45 93% 60%;
+  --emotion-calmness: 160 84% 60%;
+  --emotion-hope: 199 89% 65%;
+
+  --mood-great: 160 84% 60%;
+  --mood-calm: 199 89% 65%;
+  --mood-normal: 45 93% 60%;
+  --mood-sad: 217 91% 70%;
+  --mood-anxious: 0 84% 65%;
+
   /* Dark mode black tracking shadows */
   --shadow-2xs: 0px 2px 0px 0px rgba(0, 0, 0, 0.6);
   --shadow-xs: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
@@ -291,15 +316,18 @@
   [class*="bg-[#121212]"] ::-webkit-scrollbar {
     width: 8px;
   }
+
   .bg-\[\#121212\]::-webkit-scrollbar-track,
   [class*="bg-[#121212]"] ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .bg-\[\#121212\]::-webkit-scrollbar-thumb,
   [class*="bg-[#121212]"] ::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.15);
     border-radius: 4px;
   }
+
   .bg-\[\#121212\]::-webkit-scrollbar-thumb:hover,
   [class*="bg-[#121212]"] ::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.3);
@@ -310,12 +338,14 @@
   0% {
     height: 4px;
   }
+
   100% {
     height: 16px;
   }
 }
 
 @layer utilities {
+
   /* Hide search cancel buttons on webkit browsers */
   input[type="search"]::-webkit-search-cancel-button {
     @apply hidden;

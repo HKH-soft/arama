@@ -277,3 +277,75 @@ export const auditLogs = sqliteTable("audit_logs", {
     sql`(strftime('%s', 'now'))`,
   ),
 });
+
+// New tables for demo data
+
+export const exercises = sqliteTable("exercises", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  duration: text("duration").notNull(),
+  difficulty: text("difficulty").notNull(),
+  category: text("category").notNull(),
+  icon: text("icon").notNull(),
+  color: text("color").notNull(),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});
+
+export const reports = sqliteTable("reports", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: text("type", { enum: ["weekly", "monthly"] }).notNull(),
+  reportDate: integer("report_date", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});
+
+export const emotionLogs = sqliteTable("emotion_logs", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  emotion: text("emotion").notNull(),
+  score: integer("score").notNull(),
+  loggedAt: integer("logged_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});
+
+export const moodEntries = sqliteTable("mood_entries", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  mood: text("mood").notNull(),
+  loggedAt: integer("logged_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});
+
+export const meditationTracks = sqliteTable("meditation_tracks", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  artist: text("artist").notNull(),
+  duration: integer("duration").notNull(),
+  category: text("category").notNull(),
+  audioUrl: text("audio_url").notNull(),
+  coverImageUrl: text("cover_image_url"),
+  isActive: integer("is_active", { mode: "boolean" }).default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: integer("created_at", { mode: "timestamp" }).default(
+    sql`(strftime('%s', 'now'))`,
+  ),
+});

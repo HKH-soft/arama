@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Bell,
@@ -22,12 +22,60 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  bio: string;
+  avatarUrl: string | null;
+  createdAt: number;
+  lastLoginAt: number;
+  isActive: boolean;
+}
+
+interface Subscription {
+  plan: {
+    displayName: string;
+  };
+}
+
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loading, setLoading] = useState(true);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profileRes, subscriptionRes] = await Promise.all([
+          fetch("/api/profile"),
+          fetch("/api/subscriptions/current"),
+        ]);
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          setUserData(profileData);
+        }
+
+        if (subscriptionRes.ok) {
+          const subscriptionData = await subscriptionRes.json();
+          setSubscription(subscriptionData.subscription);
+        }
+      } catch (err) {
+        console.error("Error fetching settings data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -42,21 +90,19 @@ export default function SettingsPage() {
   }) => (
     <button
       onClick={onChange}
-      className={`relative w-11 h-6 rounded-full transition-colors ${
-        checked ? "bg-primary" : "bg-muted-foreground/30"
-      }`}
+      className={`relative w-11 h-6 rounded-full transition-colors ${checked ? "bg-primary" : "bg-muted-foreground/30"
+        }`}
     >
       <div
-        className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${
-          checked ? "right-0.5" : "left-0.5"
-        }`}
+        className={`absolute top-0.5 w-5 h-5 rounded-full bg-primary shadow transition-all ${checked ? "right-0.5" : "left-0.5"
+          }`}
       />
     </button>
   );
 
   return (
     <>
-      <div className="bg-linear-to-b from-primary/25  via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-linear-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
         <h1 className="text-2xl font-bold text-foreground">تنظیمات</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           مدیریت حساب کاربری و تنظیمات برنامه
@@ -66,20 +112,32 @@ export default function SettingsPage() {
       <div className="px-6 pb-6 space-y-6">
         {/* Profile section */}
         <div className="bg-muted/30 border border-border rounded-lg p-5 mt-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-2xl">
-              س‌ا
+          {loading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
+              <div className="space-y-2">
+                <div className="h-5 w-32 bg-muted rounded animate-pulse" />
+                <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-foreground">سروش احمدی</h3>
-              <p className="text-muted-foreground/80 text-sm">
-                ahmadi@example.com
-              </p>
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full mt-1 inline-block">
-                ماهانه
-              </span>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-2xl">
+                {userData?.name ? userData.name.split(' ').map(n => n[0]).join('') : '?'}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">
+                  {userData?.name || 'کاربر'}
+                </h3>
+                <p className="text-muted-foreground/80 text-sm">
+                  {userData?.email || '-'}
+                </p>
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full mt-1 inline-block">
+                  {subscription?.plan?.displayName || 'رایگان'}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Settings groups */}

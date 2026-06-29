@@ -9,8 +9,14 @@ import {
   users,
   userRoles,
   subscriptions,
+  payments,
+  exercises,
+  reports,
+  emotionLogs,
+  moodEntries,
+  meditationTracks,
 } from "../src/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import * as path from "path";
 import * as fs from "fs";
@@ -55,6 +61,11 @@ if (!fs.existsSync(dbDir)) {
 
 const sqlite = new Database(dbPath);
 const db = drizzle(sqlite);
+
+// Helper to get timestamp for date calculations
+const now = Math.floor(Date.now() / 1000);
+const daysAgo = (days: number) => now - days * 24 * 60 * 60;
+const hoursAgo = (hours: number) => now - hours * 60 * 60;
 
 async function main() {
   console.log("Seeding database...");
@@ -270,7 +281,7 @@ async function main() {
       name: "YEARLY",
       displayName: "سالانه",
       description: "اشتراک یک ساله آراما — ۴۰٪ تخفیف",
-      price: 1070000, // Effectively ~89000/month with discount
+      price: 1070000,
       durationDays: 365,
       features: [
         "تمام امکانات ماهانه",
@@ -304,27 +315,34 @@ async function main() {
     },
   ];
 
+  const planIds: Record<string, string> = {};
+
   for (const plan of plansData) {
     const existingPlan = await db
       .select()
       .from(subscriptionPlans)
       .where(eq(subscriptionPlans.name, plan.name));
+    let planId: string;
     if (existingPlan.length === 0) {
-      await db.insert(subscriptionPlans).values({
-        id: randomUUID(),
-        name: plan.name,
-        displayName: plan.displayName,
-        description: plan.description,
-        price: plan.price,
-        durationDays: plan.durationDays,
-        features: plan.features,
-        maxConversations: plan.maxConversations,
-        maxMessagesPerDay: plan.maxMessagesPerDay,
-        isActive: plan.isActive,
-        sortOrder: plan.sortOrder,
-      });
+      const result = await db
+        .insert(subscriptionPlans)
+        .values({
+          id: randomUUID(),
+          name: plan.name,
+          displayName: plan.displayName,
+          description: plan.description,
+          price: plan.price,
+          durationDays: plan.durationDays,
+          features: plan.features,
+          maxConversations: plan.maxConversations,
+          maxMessagesPerDay: plan.maxMessagesPerDay,
+          isActive: plan.isActive,
+          sortOrder: plan.sortOrder,
+        })
+        .returning();
+      planId = result[0].id;
     } else {
-      // Update existing plan
+      planId = existingPlan[0].id;
       await db
         .update(subscriptionPlans)
         .set({
@@ -340,11 +358,365 @@ async function main() {
         })
         .where(eq(subscriptionPlans.name, plan.name));
     }
+    planIds[plan.name] = planId;
   }
 
   console.log("Subscription plans created");
 
-  // Create a super admin user if none exists
+  // Create demo user: سارا محمدی
+  const demoUserEmail = "sara_mohammadi@gmail.com";
+  const demoUserPassword = "sara_mohammadi";
+  const hashedDemoPassword = await bcrypt.hash(demoUserPassword, 12);
+
+  let demoUserId: string;
+
+  const existingDemoUser = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, demoUserEmail));
+
+  if (existingDemoUser.length === 0) {
+    const demoUserResult = await db
+      .insert(users)
+      .values({
+        id: randomUUID(),
+        name: "سارا محمدی",
+        email: demoUserEmail,
+        passwordHash: hashedDemoPassword,
+        phone: "09123456789",
+        bio: "کاربر فعال سیستم آراما",
+        isActive: true,
+      })
+      .returning();
+    demoUserId = demoUserResult[0].id;
+    console.log(`Demo user created: ${demoUserEmail}`);
+  } else {
+    demoUserId = existingDemoUser[0].id;
+    await db
+      .update(users)
+      .set({
+        name: "سارا محمدی",
+        passwordHash: hashedDemoPassword,
+        phone: "09123456789",
+        bio: "کاربر فعال سیستم آراما",
+      })
+      .where(eq(users.id, demoUserId));
+    console.log(`Demo user updated: ${demoUserEmail}`);
+  }
+
+  // Assign USER role to demo user
+  const userRole = await db.select().from(roles).where(eq(roles.name, "USER"));
+  if (userRole.length > 0) {
+    const existingUserRole = await db
+      .select()
+      .from(userRoles)
+      .where(eq(userRoles.userId, demoUserId));
+    if (existingUserRole.length === 0) {
+      await db.insert(userRoles).values({
+        id: randomUUID(),
+        userId: demoUserId,
+        roleId: userRole[0].id,
+      });
+    }
+  }
+
+  // Create demo subscription (MONTHLY)
+  const monthlyPlanId = planIds["MONTHLY"];
+  if (monthlyPlanId) {
+    const existingSub = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.userId, demoUserId));
+    if (existingSub.length === 0) {
+      await db.insert(subscriptions).values({
+        id: randomUUID(),
+        userId: demoUserId,
+        planId: monthlyPlanId,
+        status: "ACTIVE",
+        startDate: new Date(daysAgo(15) * 1000),
+        endDate: new Date(daysAgo(-15) * 1000),
+        autoRenew: true,
+      });
+      console.log("Demo subscription created");
+    }
+  }
+
+  // Seed exercises
+  const exercisesData = [
+    {
+      title: "تنفس ۴-۷-۸",
+      description: "تکنیک آرام‌سازی سریع با تنفس عمیق",
+      duration: "۵ دقیقه",
+      difficulty: "آسان",
+      category: "تنفسی",
+      icon: "Wind",
+      color: "from-blue-500/20 to-cyan-500/10",
+      sortOrder: 1,
+    },
+    {
+      title: "مدیتیشن بدن‌آگاهی",
+      description: "اسکن بدن از سر تا پا برای رهایی از تنش",
+      duration: "۱۵ دقیقه",
+      difficulty: "متوسط",
+      category: "مدیتیشن",
+      icon: "Activity",
+      color: "from-purple-500/20 to-pink-500/10",
+      sortOrder: 2,
+    },
+    {
+      title: "تنفس جعبه‌ای",
+      description: "تنفس ۴ مرحله‌ای برای تمرکز و آرامش",
+      duration: "۱۰ دقیقه",
+      difficulty: "آسان",
+      category: "تنفسی",
+      icon: "Wind",
+      color: "from-green-500/20 to-emerald-500/10",
+      sortOrder: 3,
+    },
+    {
+      title: "یوگای صبحگاهی",
+      description: "حرکات کششی ساده برای شروع روز پرانرژی",
+      duration: "۲۰ دقیقه",
+      difficulty: "متوسط",
+      category: "حرکتی",
+      icon: "Activity",
+      color: "from-orange-500/20 to-yellow-500/10",
+      sortOrder: 4,
+    },
+    {
+      title: "آرامش عضلانی",
+      description: "انقباض و رهاسازی عضلات برای کاهش تنش فیزیکی",
+      duration: "۱۲ دقیقه",
+      difficulty: "آسان",
+      category: "مدیتیشن",
+      icon: "Wind",
+      color: "from-indigo-500/20 to-violet-500/10",
+      sortOrder: 5,
+    },
+    {
+      title: "ذهن‌آگاهی در حرکت",
+      description: "پیاده‌روی آگاهانه با تمرکز بر لحظه حال",
+      duration: "۲۵ دقیقه",
+      difficulty: "پیشرفته",
+      category: "ذهن‌آگاهی",
+      icon: "Activity",
+      color: "from-rose-500/20 to-red-500/10",
+      sortOrder: 6,
+    },
+  ];
+
+  for (const ex of exercisesData) {
+    const existing = await db
+      .select()
+      .from(exercises)
+      .where(eq(exercises.title, ex.title));
+    if (existing.length === 0) {
+      await db.insert(exercises).values({
+        id: randomUUID(),
+        ...ex,
+        isActive: true,
+      });
+    }
+  }
+
+  console.log("Exercises seeded");
+
+  // Seed meditation tracks
+  const tracksData = [
+    {
+      title: "آرامش صبحگاهی",
+      artist: "موسیقی آرام‌بخش",
+      duration: 600,
+      category: "آرامش",
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      coverImageUrl: null,
+      sortOrder: 1,
+    },
+    {
+      title: "مدیتیشن خداحافظی",
+      artist: "صدای مراقب",
+      duration: 900,
+      category: "خواب",
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      coverImageUrl: null,
+      sortOrder: 2,
+    },
+    {
+      title: "تنفس عمیق",
+      artist: "راهنمای تنفسی",
+      duration: 300,
+      category: "تنفسی",
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+      coverImageUrl: null,
+      sortOrder: 3,
+    },
+    {
+      title: "ذهن‌آگاهی روزانه",
+      artist: "گروه روانشناسی مثبت",
+      duration: 720,
+      category: "ذهن‌آگاهی",
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+      coverImageUrl: null,
+      sortOrder: 4,
+    },
+  ];
+
+  for (const track of tracksData) {
+    const existing = await db
+      .select()
+      .from(meditationTracks)
+      .where(eq(meditationTracks.title, track.title));
+    if (existing.length === 0) {
+      await db.insert(meditationTracks).values({
+        id: randomUUID(),
+        ...track,
+        isActive: true,
+      });
+    }
+  }
+
+  console.log("Meditation tracks seeded");
+
+  // Seed reports for demo user
+  const reportsData = [
+    {
+      userId: demoUserId,
+      title: "گزارش ماهانه - خرداد ۱۴۰۴",
+      description: "خلاصه عملکرد و پیشرفت روانی شما",
+      type: "monthly" as const,
+      reportDate: new Date(daysAgo(10) * 1000),
+    },
+    {
+      userId: demoUserId,
+      title: "گزارش ماهانه - اردیبهشت ۱۴۰۴",
+      description: "خلاصه عملکرد و پیشرفت روانی شما",
+      type: "monthly" as const,
+      reportDate: new Date(daysAgo(40) * 1000),
+    },
+    {
+      userId: demoUserId,
+      title: "گزارش هفتگی - هفته چهارم خرداد",
+      description: "تحلیل احساسات و تمرینات انجام شده",
+      type: "weekly" as const,
+      reportDate: new Date(daysAgo(7) * 1000),
+    },
+    {
+      userId: demoUserId,
+      title: "گزارش هفتگی - هفته سوم خرداد",
+      description: "تحلیل احساسات و تمرینات انجام شده",
+      type: "weekly" as const,
+      reportDate: new Date(daysAgo(21) * 1000),
+    },
+  ];
+
+  for (const report of reportsData) {
+    const existing = await db
+      .select()
+      .from(reports)
+      .where(eq(reports.title, report.title));
+    if (existing.length === 0) {
+      await db.insert(reports).values({
+        id: randomUUID(),
+        userId: report.userId,
+        title: report.title,
+        description: report.description,
+        type: report.type,
+        reportDate: report.reportDate,
+      });
+    }
+  }
+
+  console.log("Reports seeded");
+
+  // Seed emotion logs for analytics
+  const emotions = ["آرامش", "شادی", "امید", "اضطراب", "غم"];
+  for (let i = 0; i < 30; i++) {
+    for (const emotion of emotions) {
+      const score = Math.floor(Math.random() * 60) + 40;
+      await db.insert(emotionLogs).values({
+        id: randomUUID(),
+        userId: demoUserId,
+        emotion,
+        score,
+        loggedAt: new Date(daysAgo(i) * 1000),
+      });
+    }
+  }
+
+  console.log("Emotion logs seeded");
+
+  // Seed mood entries
+  const moods = ["عالی", "آرام", "معمولی", "غمگین", "مضطرب"];
+  for (let i = 0; i < 30; i++) {
+    const mood = moods[Math.floor(Math.random() * moods.length)];
+    await db.insert(moodEntries).values({
+      id: randomUUID(),
+      userId: demoUserId,
+      mood,
+      loggedAt: new Date(daysAgo(i) * 1000),
+    });
+  }
+
+  console.log("Mood entries seeded");
+
+  // Seed payments for demo user
+  const paymentsData = [
+    {
+      userId: demoUserId,
+      amount: 149000,
+      currency: "IRR",
+      status: "SUCCESS" as const,
+      gatewayName: "ZARINPAL",
+      description: "خرید اشتراک ماهانه",
+      createdAt: new Date(daysAgo(20) * 1000),
+      paidAt: new Date(daysAgo(20) * 1000),
+    },
+    {
+      userId: demoUserId,
+      amount: 1070000,
+      currency: "IRR",
+      status: "SUCCESS" as const,
+      gatewayName: "ZARINPAL",
+      description: "خرید اشتراک سالانه",
+      createdAt: new Date(daysAgo(60) * 1000),
+      paidAt: new Date(daysAgo(60) * 1000),
+    },
+    {
+      userId: demoUserId,
+      amount: 149000,
+      currency: "IRR",
+      status: "SUCCESS" as const,
+      gatewayName: "ZARINPAL",
+      description: "تمدید اشتراک ماهانه",
+      createdAt: new Date(daysAgo(10) * 1000),
+      paidAt: new Date(daysAgo(10) * 1000),
+    },
+  ];
+
+  for (const payment of paymentsData) {
+    const existing = await db
+      .select()
+      .from(payments)
+      .where(
+        and(
+          eq(payments.userId, payment.userId),
+          eq(payments.description, payment.description),
+        ),
+      );
+    if (existing.length === 0) {
+      await db.insert(payments).values({
+        id: randomUUID(),
+        ...payment,
+        subscriptionId: null,
+        gatewayRefId: null,
+        callbackUrl: null,
+      });
+    }
+  }
+
+  console.log("Payments seeded");
+
+  // Create super admin user if none exists
   const superAdminRole = await db
     .select()
     .from(roles)
@@ -396,7 +768,7 @@ async function main() {
           planId: freePlan[0].id,
           status: "ACTIVE",
           startDate: new Date(),
-          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
         });
       }
 
@@ -408,12 +780,16 @@ async function main() {
     }
   }
 
+  console.log("\n=== Seeding Complete ===");
+  console.log(`Demo User: ${demoUserEmail} / ${demoUserPassword}`);
+  console.log(`Super Admin: ${process.env.SUPER_ADMIN_EMAIL || "superadmin@arama.app"} / ${process.env.SUPER_ADMIN_PASSWORD || "Admin123!@#"}`);
   console.log("Database seeded successfully!");
 }
 
 main()
   .then(() => {
     console.log("Seed completed successfully");
+    process.exit(0);
   })
   .catch(async (e) => {
     console.error(e);

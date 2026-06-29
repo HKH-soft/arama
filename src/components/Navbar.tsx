@@ -50,7 +50,7 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
       {/* Main glass bar */}
       <div className=" relative rounded-2xl overflow-hidden transition-all duration-300 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.42)]">
         {/* Apple Premium Glass Base Layer */}
-        <div className="absolute inset-0 rounded-2xl bg-white/90 dark:bg-neutral-900/[0.45] backdrop-blur-[32px] saturate-[210%] transition-colors duration-300" />
+        <div className="absolute inset-0 rounded-2xl bg-background/90 dark:bg-neutral-900/[0.45] backdrop-blur-[32px] saturate-[210%] transition-colors duration-300" />
 
         {/* Liquid Fluid Gloss/Sheen Surface Injection */}
         <div className="absolute inset-0 rounded-2xl pointer-events-none bg-linear-to-b from-white/35 dark:from-white/8 via-white/[0.03] dark:via-transparent to-transparent" />
@@ -67,7 +67,7 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
                 آ
               </div>
-              <span className="font-bold text-lg tracking-tight text-neutral-900 dark:text-neutral-50 transition-colors">
+              <span className="font-bold text-lg tracking-tight text-foreground transition-colors">
                 آراما
               </span>
             </Link>
@@ -78,7 +78,7 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -136,7 +136,7 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
                     <Link href="/login">ورود</Link>
                   </Button>
                   <Button
-                    className="bg-primary rounded-full hover:bg-primary/50 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border-0 font-medium shadow-sm transition-all"
+                    className="bg-primary rounded-full hover:bg-primary/80 text-white dark:text-black border-0 font-medium shadow-sm transition-all"
                     asChild
                   >
                     <Link href="/signup">شروع رایگان</Link>
@@ -243,7 +243,7 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
                       </Link>
                     </Button>
                     <Button
-                      className="w-full justify-center rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black shadow-sm"
+                      className="w-full justify-center rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white dark:hover:bg-neutral-700 dark:text-black shadow-sm"
                       asChild
                     >
                       <Link

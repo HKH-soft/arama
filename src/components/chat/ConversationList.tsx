@@ -42,11 +42,11 @@ export function ConversationList({
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-white/6 flex justify-between items-center shrink-0">
-        <h2 className="font-semibold text-white text-sm">گفتگوهای من</h2>
+        <h2 className="font-semibold text-foreground text-sm">گفتگوهای من</h2>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/6"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/6"
           onClick={onCreate}
           disabled={isCreating}
           data-testid="button-new-conversation"
@@ -59,7 +59,7 @@ export function ConversationList({
       <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
         <AnimatePresence initial={false}>
           {conversations.length === 0 && (
-            <div className="text-center text-xs text-white/30 py-8">
+            <div className="text-center text-xs text-muted-foreground py-8">
               <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p>هنوز گفتگویی ندارید</p>
             </div>
@@ -71,18 +71,17 @@ export function ConversationList({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
               className={`group relative p-3 rounded-lg cursor-pointer transition-colors flex flex-col gap-0.5
-                ${
-                  conv.id === activeId ? "bg-white/8" : "hover:bg-white/[0.04]"
+                ${conv.id === activeId ? "bg-white/8" : "hover:bg-white/[0.04]"
                 }`}
               onClick={() => onSelect(conv.id)}
               data-testid={`conversation-item-${conv.id}`}
             >
               <span
-                className={`text-xs font-medium truncate pl-5 ${conv.id === activeId ? "text-white" : "text-white/70"}`}
+                className={`text-xs font-medium truncate pl-5 ${conv.id === activeId ? "text-foreground" : "text-muted-foreground"}`}
               >
                 {conv.title}
               </span>
-              <span className="text-[10px] text-white/30">
+              <span className="text-[10px] text-muted-foreground">
                 {relativeTime(conv.createdAt)}
               </span>
 

@@ -1,93 +1,64 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  CreditCard, 
-  Receipt, 
-  Calendar, 
-  DollarSign, 
-  CheckCircle, 
-  XCircle, 
+import {
+  CreditCard,
+  Receipt,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Payment {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  gatewayName: string;
+  description: string;
+  createdAt: number;
+  paidAt: number | null;
+  subscription: {
+    plan: {
+      displayName: string;
+    };
+  };
+}
+
 export default function BillingHistoryPage() {
-  const [payments, setPayments] = useState<any[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Simulate fetching data
+
   useEffect(() => {
     const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setPayments([
-          {
-            id: "pay1",
-            amount: 149000,
-            currency: "IRR",
-            status: "SUCCESS",
-            gatewayName: "ZARINPAL",
-            description: "خرید اشتراک ماهانه",
-            createdAt: "2024-06-20",
-            paidAt: "2024-06-20",
-            subscription: { plan: { displayName: "ماهانه" } }
-          },
-          {
-            id: "pay2",
-            amount: 1070000,
-            currency: "IRR",
-            status: "SUCCESS",
-            gatewayName: "STRIPE",
-            description: "خرید اشتراک سالانه",
-            createdAt: "2024-05-15",
-            paidAt: "2024-05-15",
-            subscription: { plan: { displayName: "سالانه" } }
-          },
-          {
-            id: "pay3",
-            amount: 499000,
-            currency: "IRR",
-            status: "FAILED",
-            gatewayName: "MELLAT",
-            description: "خرید اشتراک حرفه‌ای",
-            createdAt: "2024-04-10",
-            paidAt: null,
-            subscription: { plan: { displayName: "حرفه‌ای" } }
-          },
-          {
-            id: "pay4",
-            amount: 149000,
-            currency: "IRR",
-            status: "SUCCESS",
-            gatewayName: "ZARINPAL",
-            description: "تمدید اشتراک ماهانه",
-            createdAt: "2024-03-22",
-            paidAt: "2024-03-22",
-            subscription: { plan: { displayName: "ماهانه" } }
-          }
-        ]);
-        
+      try {
+        const res = await fetch("/api/payments/history");
+        const data = await res.json();
+        setPayments(data.payments || data);
+      } catch (err) {
+        console.error("Error fetching payments:", err);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
-    
     fetchData();
   }, []);
-  
-  // Function to get status badge
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "SUCCESS":
@@ -115,7 +86,7 @@ export default function BillingHistoryPage() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-  
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -197,7 +168,7 @@ export default function BillingHistoryPage() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -209,20 +180,20 @@ export default function BillingHistoryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? 
-                <Skeleton className="h-6 w-24" /> : 
+              {loading ?
+                <Skeleton className="h-6 w-24" /> :
                 `${payments.filter(p => p.status === "SUCCESS").reduce((sum, p) => sum + p.amount, 0).toLocaleString()} تومان`
               }
             </div>
             <p className="text-xs mt-1 text-green-500">
-              {loading ? 
-                <Skeleton className="h-3 w-16" /> : 
+              {loading ?
+                <Skeleton className="h-3 w-16" /> :
                 `در ${payments.filter(p => p.status === "SUCCESS").length} تراکنش`
               }
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">تراکنش موفق</CardTitle>
@@ -232,15 +203,15 @@ export default function BillingHistoryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? 
-                <Skeleton className="h-6 w-16" /> : 
+              {loading ?
+                <Skeleton className="h-6 w-16" /> :
                 payments.filter(p => p.status === "SUCCESS").length
               }
             </div>
             <p className="text-xs mt-1 text-green-500">موفقیت آمیز</p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">تراکنش ناموفق</CardTitle>
@@ -250,8 +221,8 @@ export default function BillingHistoryPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {loading ? 
-                <Skeleton className="h-6 w-16" /> : 
+              {loading ?
+                <Skeleton className="h-6 w-16" /> :
                 payments.filter(p => p.status === "FAILED").length
               }
             </div>

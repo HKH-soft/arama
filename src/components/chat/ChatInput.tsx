@@ -62,7 +62,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
                 setValue(prompt);
                 textareaRef.current?.focus();
               }}
-              className="text-xs px-3 py-1.5 rounded-full border border-white/8 bg-white/[0.04] hover:bg-white/8 text-white/50 hover:text-white/80 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-full border border-border/8 bg-background/50 hover:bg-background/80 text-muted-foreground hover:text-foreground transition-colors"
               data-testid={`prompt-${prompt}`}
             >
               {prompt}
@@ -93,7 +93,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             placeholder="احساست رو بنویس..."
             rows={1}
             disabled={disabled}
-            className="w-full resize-none bg-background border border-white/8 rounded-2xl px-4 py-3 text-sm text-white/90 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-white/30 disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
+            className="w-full resize-none bg-background border border-border/8 rounded-2xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors placeholder:text-muted-foreground disabled:opacity-50 leading-relaxed min-h-[44px] max-h-[140px]"
             data-testid="input-message"
           />
         </div>
@@ -103,7 +103,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           type="button"
           variant="ghost"
           size="icon"
-          className="text-white/40 hover:text-primary h-11 w-11 shrink-0 rounded-full"
+          className="text-muted-foreground hover:text-primary h-11 w-11 shrink-0 rounded-full"
           data-testid="button-voice"
           title="ورودی صوتی (به زودی)"
         >
@@ -111,7 +111,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         </Button>
       </form>
 
-      <p className="text-center text-[10px] text-white/25">
+      <p className="text-center text-[10px] text-muted-foreground">
         آراما ممکن است اشتباه کند. در بحران‌های جدی با اورژانس اجتماعی ۱۲۳ تماس
         بگیرید.
       </p>

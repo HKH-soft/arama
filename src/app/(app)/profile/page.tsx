@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Edit, 
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Edit,
   Save,
   Shield,
   Key,
@@ -21,8 +21,20 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  bio: string;
+  avatarUrl: string | null;
+  createdAt: number;
+  lastLoginAt: number;
+  isActive: boolean;
+}
+
 export default function ProfilePage() {
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -32,37 +44,30 @@ export default function ProfilePage() {
   });
   const [loading, setLoading] = useState(true);
   const [showPasswordFields, setShowPasswordFields] = useState(false);
-  
-  // Simulate fetching user data
+
   useEffect(() => {
     const fetchUserData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setUserData({
-          id: "user1",
-          name: "سروش احمدی",
-          email: "ahmadi@example.com",
-          phone: "09123456789",
-          bio: "کاربر فعال سیستم آراما",
-          avatarUrl: null,
-          createdAt: "2024-01-15",
-          lastLoginAt: "2024-06-22"
-        });
-        
-        setFormData({
-          name: "سروش احمدی",
-          email: "ahmadi@example.com",
-          phone: "09123456789",
-          bio: "کاربر فعال سیستم آراما"
-        });
-        
+      try {
+        const res = await fetch("/api/profile");
+        if (res.ok) {
+          const data = await res.json();
+          setUserData(data);
+          setFormData({
+            name: data.name || "",
+            email: data.email || "",
+            phone: data.phone || "",
+            bio: data.bio || ""
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
-    
     fetchUserData();
   }, []);
-  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -70,17 +75,24 @@ export default function ProfilePage() {
       [name]: value
     }));
   };
-  
+
   const handleSave = async () => {
-    // In a real app, this would be an API call
-    console.log("Saving profile:", formData);
-    setUserData((prev: any) => ({
-      ...prev,
-      ...formData
-    }));
-    setEditing(false);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setUserData(updated);
+        setEditing(false);
+      }
+    } catch (err) {
+      console.error("Error saving profile:", err);
+    }
   };
-  
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -100,7 +112,7 @@ export default function ProfilePage() {
               <Avatar className="w-24 h-24">
                 <AvatarImage src={userData?.avatarUrl || ""} alt="Profile" />
                 <AvatarFallback>
-                  {userData?.name ? userData.name.split(' ').map((n: string) => n[0]).join('') : 'SA'}
+                  {loading ? <Skeleton className="h-6 w-6 rounded-full" /> : userData?.name ? userData.name.split(' ').map((n: string) => n[0]).join('') : 'SA'}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -115,7 +127,7 @@ export default function ProfilePage() {
                 <span className="text-sm font-medium">
                   {loading ?
                     <Skeleton className="h-4 w-24" /> :
-                    new Date(userData?.createdAt).toLocaleDateString('fa-IR')
+                    userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString('fa-IR') : "-"
                   }
                 </span>
               </div>
@@ -124,7 +136,7 @@ export default function ProfilePage() {
                 <span className="text-sm font-medium">
                   {loading ?
                     <Skeleton className="h-4 w-24" /> :
-                    new Date(userData?.lastLoginAt).toLocaleDateString('fa-IR')
+                    userData?.lastLoginAt ? new Date(userData.lastLoginAt).toLocaleDateString('fa-IR') : "-"
                   }
                 </span>
               </div>
@@ -138,7 +150,7 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Profile Details Card */}
         <Card className="md:col-span-2">
           <CardHeader>
@@ -164,18 +176,18 @@ export default function ProfilePage() {
                       <User className="w-5 h-5 text-muted-foreground" />
                       <div>
                         <Label className="text-sm text-muted-foreground">نام کامل</Label>
-                        <p className="font-medium">{formData.name}</p>
+                        <p className="font-medium">{formData.name || 'ثبت نشده'}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-muted-foreground" />
                       <div>
                         <Label className="text-sm text-muted-foreground">ایمیل</Label>
-                        <p className="font-medium">{formData.email}</p>
+                        <p className="font-medium">{formData.email || 'ثبت نشده'}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 text-muted-foreground" />
                       <div>
@@ -183,7 +195,7 @@ export default function ProfilePage() {
                         <p className="font-medium">{formData.phone || 'ثبت نشده'}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <User className="w-5 h-5 text-muted-foreground mt-1" />
                       <div className="flex-1">
@@ -191,7 +203,7 @@ export default function ProfilePage() {
                         <p className="font-medium">{formData.bio || 'توضیحاتی ثبت نشده است'}</p>
                       </div>
                     </div>
-                    
+
                     <Button onClick={() => setEditing(true)} className="w-full sm:w-auto">
                       <Edit className="w-4 h-4 ml-2" />
                       ویرایش پروفایل
@@ -209,7 +221,7 @@ export default function ProfilePage() {
                         dir="rtl"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="email">ایمیل</Label>
                       <Input
@@ -221,7 +233,7 @@ export default function ProfilePage() {
                         dir="rtl"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="phone">تلفن</Label>
                       <Input
@@ -232,7 +244,7 @@ export default function ProfilePage() {
                         dir="rtl"
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="bio">بیو</Label>
                       <Input
@@ -243,7 +255,7 @@ export default function ProfilePage() {
                         dir="rtl"
                       />
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button onClick={handleSave} className="w-full sm:w-auto">
                         <Save className="w-4 h-4 ml-2" />
@@ -254,10 +266,10 @@ export default function ProfilePage() {
                         onClick={() => {
                           setEditing(false);
                           setFormData({
-                            name: userData.name,
-                            email: userData.email,
-                            phone: userData.phone,
-                            bio: userData.bio
+                            name: userData?.name || "",
+                            email: userData?.email || "",
+                            phone: userData?.phone || "",
+                            bio: userData?.bio || ""
                           });
                         }}
                         className="w-full sm:w-auto"
@@ -272,7 +284,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Security Section */}
       <Card>
         <CardHeader>
@@ -296,7 +308,7 @@ export default function ProfilePage() {
                 {showPasswordFields ? "مخفی کردن" : "تغییر رمز"}
               </Button>
             </div>
-            
+
             {showPasswordFields && (
               <div className="p-4 border border-border rounded-lg space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

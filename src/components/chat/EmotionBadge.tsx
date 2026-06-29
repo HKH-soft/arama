@@ -10,14 +10,14 @@ interface EmotionBadgeProps {
   confidence: number;
 }
 
-const emotionConfig: Record<NonNullable<Emotion>, { color: string; bg: string; border: string }> = {
-  اضطراب:  { color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/30" },
-  استرس:   { color: "text-red-600 dark:text-red-400",    bg: "bg-red-500/10",    border: "border-red-500/30" },
-  غم:      { color: "text-blue-600 dark:text-blue-400",  bg: "bg-blue-500/10",   border: "border-blue-500/30" },
-  تنهایی: { color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/30" },
-  شادی:    { color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/30" },
-  آرامش:   { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/30" },
-  امید:    { color: "text-sky-600 dark:text-sky-400",    bg: "bg-sky-500/10",    border: "border-sky-500/30" },
+const emotionConfig: Record<NonNullable<Emotion>, { colorVar: string; bgVar: string; borderVar: string }> = {
+  اضطراب: { colorVar: "var(--emotion-anxiety)", bgVar: "var(--emotion-anxiety)", borderVar: "var(--emotion-anxiety)" },
+  استرس: { colorVar: "var(--emotion-stress)", bgVar: "var(--emotion-stress)", borderVar: "var(--emotion-stress)" },
+  غم: { colorVar: "var(--emotion-sadness)", bgVar: "var(--emotion-sadness)", borderVar: "var(--emotion-sadness)" },
+  تنهایی: { colorVar: "var(--emotion-loneliness)", bgVar: "var(--emotion-loneliness)", borderVar: "var(--emotion-loneliness)" },
+  شادی: { colorVar: "var(--emotion-joy)", bgVar: "var(--emotion-joy)", borderVar: "var(--emotion-joy)" },
+  آرامش: { colorVar: "var(--emotion-calmness)", bgVar: "var(--emotion-calmness)", borderVar: "var(--emotion-calmness)" },
+  امید: { colorVar: "var(--emotion-hope)", bgVar: "var(--emotion-hope)", borderVar: "var(--emotion-hope)" },
 };
 
 export function detectEmotion(text: string): { emotion: Emotion; confidence: number } {
@@ -43,11 +43,16 @@ export function EmotionBadge({ emotion, confidence }: EmotionBadgeProps) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border ${cfg.bg} ${cfg.border}`}
+        className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border"
         data-testid="emotion-badge"
+        style={{
+          color: `hsl(${cfg.colorVar})`,
+          backgroundColor: `hsl(${cfg.bgVar} / 0.1)`,
+          borderColor: `hsl(${cfg.borderVar} / 0.3)`,
+        }}
       >
-        <CircleDot className={`w-3 h-3 ${cfg.color}`} />
-        <span className={`text-xs font-medium ${cfg.color}`}>
+        <CircleDot className="w-3 h-3" style={{ color: `hsl(${cfg.colorVar})` }} />
+        <span className="text-xs font-medium" style={{ color: `hsl(${cfg.colorVar})` }}>
           احساس شناسایی شده: {emotion} {confidence}٪
         </span>
       </motion.div>

@@ -1,58 +1,51 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Play, Wind, Activity, Clock } from "lucide-react";
 
+interface Exercise {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  difficulty: string;
+  category: string;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: number;
+}
+
 export default function ExercisesPage() {
-  const exercises = [
-    {
-      title: "تنفس ۴-۷-۸",
-      desc: "تکنیک آرام‌سازی سریع با تنفس عمیق",
-      time: "۵ دقیقه",
-      difficulty: "آسان",
-      icon: Wind,
-      color: "from-blue-500/20 to-cyan-500/10",
-    },
-    {
-      title: "مدیتیشن بدن‌آگاهی",
-      desc: "اسکن بدن از سر تا پا برای رهایی از تنش",
-      time: "۱۵ دقیقه",
-      difficulty: "متوسط",
-      icon: Activity,
-      color: "from-purple-500/20 to-pink-500/10",
-    },
-    {
-      title: "تنفس جعبه‌ای",
-      desc: "تنفس ۴ مرحله‌ای برای تمرکز و آرامش",
-      time: "۱۰ دقیقه",
-      difficulty: "آسان",
-      icon: Wind,
-      color: "from-green-500/20 to-emerald-500/10",
-    },
-    {
-      title: "یوگای صبحگاهی",
-      desc: "حرکات کششی ساده برای شروع روز پرانرژی",
-      time: "۲۰ دقیقه",
-      difficulty: "متوسط",
-      icon: Activity,
-      color: "from-orange-500/20 to-yellow-500/10",
-    },
-    {
-      title: "آرامش عضلانی",
-      desc: "انقباض و رهاسازی عضلات برای کاهش تنش فیزیکی",
-      time: "۱۲ دقیقه",
-      difficulty: "آسان",
-      icon: Wind,
-      color: "from-indigo-500/20 to-violet-500/10",
-    },
-    {
-      title: "ذهن‌آگاهی در حرکت",
-      desc: "پیاده‌روی آگاهانه با تمرکز بر لحظه حال",
-      time: "۲۵ دقیقه",
-      difficulty: "پیشرفته",
-      icon: Activity,
-      color: "from-rose-500/20 to-red-500/10",
-    },
-  ];
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        const res = await fetch("/api/exercises");
+        const data = await res.json();
+        setExercises(data);
+      } catch (err) {
+        console.error("Error fetching exercises:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExercises();
+  }, []);
+
+  const getIcon = (iconName: string) => {
+    switch (iconName) {
+      case "Wind":
+        return Wind;
+      case "Activity":
+        return Activity;
+      default:
+        return Activity;
+    }
+  };
 
   return (
     <>
@@ -69,11 +62,10 @@ export default function ExercisesPage() {
           {["همه", "تنفسی", "مدیتیشن", "حرکتی", "ذهن‌آگاهی"].map((chip, i) => (
             <button
               key={i}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                i === 0
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${i === 0
                   ? "bg-white text-black"
                   : "bg-white/5 text-foreground/70 hover:bg-white/10"
-              }`}
+                }`}
             >
               {chip}
             </button>
@@ -82,36 +74,45 @@ export default function ExercisesPage() {
 
         {/* Exercise grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {exercises.map((ex, i) => (
-            <div
-              key={i}
-              className={`bg-linear-to-br ${ex.color} rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all group cursor-pointer`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                  <ex.icon className="w-5 h-5 text-foreground/70" />
+          {loading ? (
+            <p className="text-foreground/50">در حال بارگذاری...</p>
+          ) : exercises.length > 0 ? (
+            exercises.map((ex, i) => {
+              const IconComponent = getIcon(ex.icon);
+              return (
+                <div
+                  key={ex.id}
+                  className={`bg-linear-to-br ${ex.color} rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all group cursor-pointer`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                      <IconComponent className="w-5 h-5 text-foreground/70" />
+                    </div>
+                    <span className="text-[11px] text-foreground/40 bg-white/5 px-2 py-1 rounded-full">
+                      {ex.difficulty}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-foreground mb-1">
+                    {ex.title}
+                  </h3>
+                  <p className="text-foreground/50 text-sm mb-4 leading-relaxed">
+                    {ex.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-foreground/40 text-xs">
+                      <Clock className="w-3.5 h-3.5" />
+                      {ex.duration}
+                    </span>
+                    <button className="w-9 h-9 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg shadow-primary/30">
+                      <Play className="w-4 h-4 text-foreground fill-white mr-0.5" />
+                    </button>
+                  </div>
                 </div>
-                <span className="text-[11px] text-foreground/40 bg-white/5 px-2 py-1 rounded-full">
-                  {ex.difficulty}
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-foreground mb-1">
-                {ex.title}
-              </h3>
-              <p className="text-foreground/50 text-sm mb-4 leading-relaxed">
-                {ex.desc}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-foreground/40 text-xs">
-                  <Clock className="w-3.5 h-3.5" />
-                  {ex.time}
-                </span>
-                <button className="w-9 h-9 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg shadow-primary/30">
-                  <Play className="w-4 h-4 text-foreground fill-white mr-0.5" />
-                </button>
-              </div>
-            </div>
-          ))}
+              );
+            })
+          ) : (
+            <p className="text-foreground/50">تمرینی یافت نشد</p>
+          )}
         </div>
       </div>
     </>
