@@ -391,9 +391,8 @@ export default function Landing() {
                   <div className="w-full h-full flex flex-col md:flex-row items-center">
                     {/* Text half */}
                     <div
-                      className={`w-full md:w-1/2 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-12 md:py-0 ${
-                        textRight ? "md:order-2" : "md:order-1"
-                      }`}
+                      className={`w-full md:w-1/2 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-12 md:py-0 ${textRight ? "md:order-2" : "md:order-1"
+                        }`}
                     >
                       <motion.div
                         initial={{ opacity: 0, x: textRight ? 40 : -40 }}
@@ -412,9 +411,8 @@ export default function Landing() {
 
                     {/* Graphic half */}
                     <div
-                      className={`w-full md:w-1/2 flex items-center justify-center py-8 md:py-0 ${
-                        textRight ? "md:order-1" : "md:order-2"
-                      }`}
+                      className={`w-full md:w-1/2 flex items-center justify-center py-8 md:py-0 ${textRight ? "md:order-1" : "md:order-2"
+                        }`}
                     >
                       <motion.div
                         initial={{ opacity: 0, scale: 0.85 }}
@@ -452,9 +450,9 @@ export default function Landing() {
                               key={d}
                               className="absolute w-2 h-2 rounded-full bg-primary/40"
                               style={{
-                                top: `${50 + radius * Math.sin(angle)}%`,
-                                left: `${50 + radius * Math.cos(angle)}%`,
-                                animation: `pulse 2s ease-in-out ${d * 0.3}s infinite alternate`,
+                                top: `${(50 + radius * Math.sin(angle)).toFixed(4)}%`,
+                                left: `${(50 + radius * Math.cos(angle)).toFixed(4)}%`,
+                                animationDelay: `${(d * 0.3).toFixed(1)}s`,
                               }}
                             />
                           );

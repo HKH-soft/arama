@@ -20,6 +20,9 @@ class AccountDisabledError extends CredentialsSignin {
 
 export const authConfig = {
   adapter: DrizzleAdapter(db),
+  session: {
+    strategy: "jwt" as const,
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",

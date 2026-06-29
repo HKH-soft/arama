@@ -174,3 +174,5 @@ npm info package peerDependencies
 7. **Ready to write version-appropriate code**
 
 Remember: When in doubt about API compatibility, ALWAYS consult the official Next.js documentation for the specific version being used rather than relying on training data which may be outdated.
+
+Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.

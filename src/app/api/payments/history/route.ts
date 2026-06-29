@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
-import db from "@/lib/db"; // Updated to use Drizzle
-import { 
-  payments,
-  subscriptionPlans
-} from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc, sql } from 'drizzle-orm'; // Import Drizzle operators
+import { PaymentService } from "@/lib/services/payment";
 import { z } from "zod";
 
 const getHistorySchema = z.object({
@@ -20,7 +15,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth();
     const searchParams = request.nextUrl.searchParams;
-    
+
     const parsed = getHistorySchema.safeParse({
       page: searchParams.get("page"),
       limit: searchParams.get("limit"),
@@ -28,67 +23,53 @@ export async function GET(request: NextRequest) {
       sortBy: searchParams.get("sortBy"),
       sortOrder: searchParams.get("sortOrder"),
     });
-    
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: "پارامترهای نامعتبر", details: parsed.error.issues },
         { status: 400 }
       );
     }
-    
+
     const { page, limit, status, sortBy, sortOrder } = parsed.data;
     const skip = (page - 1) * limit;
-    
-    // Build where clause
-    let conditions: any[] = [eq(payments.userId, user.id)];
-    
-    if (status) {
-      conditions.push(eq(payments.status, status));
-    }
-    
-    const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
-    
-    const [paymentsList, total] = await Promise.all([
-      db.select({
-        id: payments.id,
-        userId: payments.userId,
-        subscriptionId: payments.subscriptionId,
-        amount: payments.amount,
-        currency: payments.currency,
-        status: payments.status,
-        gatewayName: payments.gatewayName,
-        gatewayRefId: payments.gatewayRefId,
-        description: payments.description,
-        callbackUrl: payments.callbackUrl,
-        paidAt: payments.paidAt,
-        createdAt: payments.createdAt,
-        updatedAt: payments.updatedAt,
-        plan: {
-          id: subscriptionPlans.id,
-          name: subscriptionPlans.name,
-          displayName: subscriptionPlans.displayName,
-          price: subscriptionPlans.price,
-        }
-      })
-      .from(payments)
-      .leftJoin(subscriptionPlans, eq(subscriptionPlans.id, payments.subscriptionId)) // Note: this might be incorrect, should join with subscriptions first
-      .where(whereClause)
-      .orderBy(sortOrder === "asc" ? asc(payments[sortBy]) : desc(payments[sortBy]))
-      .offset(skip)
-      .limit(limit),
-      
-      db.select({ count: sql<number>`count(*)::int` })
-        .from(payments)
-        .where(eq(payments.userId, user.id))
-    ]);
-    
+
+    const paymentsList = await PaymentService.getUserPayments(user.id);
+
+    // Filter by status if provided
+    const filteredPayments = status
+      ? paymentsList.filter(p => p.status === status)
+      : paymentsList;
+
+    // Sort payments
+    const sortedPayments = [...filteredPayments].sort((a, b) => {
+      const aValue = a[sortBy as keyof typeof a];
+      const bValue = b[sortBy as keyof typeof b];
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return 0;
+    });
+
+    // Paginate
+    const paginatedPayments = sortedPayments.slice(skip, skip + limit);
+    const total = filteredPayments.length;
+
     return NextResponse.json({
-      data: paymentsList,
+      data: paginatedPayments,
       pagination: {
-        total: total[0].count,
+        total,
         page,
         limit,
-        totalPages: Math.ceil(total[0].count / limit),
+        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (err) {

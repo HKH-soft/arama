@@ -1,6 +1,6 @@
-import db from "@/lib/db"; // Updated to use Drizzle
-import nodemailer from "nodemailer";
-import { 
+import db from "@/lib/db";
+import { Resend } from "resend";
+import {
   emailVerificationTokens,
   passwordResetTokens,
   users
@@ -8,17 +8,8 @@ import {
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
-// Create test transporter for development
-// In production, configure with actual email service
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+// Initialize Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface SendEmailOptions {
   to: string;
@@ -29,15 +20,15 @@ interface SendEmailOptions {
 
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   try {
-    const info = await transporter.sendMail({
-      from: process.env.SMTP_FROM || "noreply@arama.app",
+    const data = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "noreply@arama.app",
       to: options.to,
       subject: options.subject,
       text: options.text,
       html: options.html,
     });
 
-    console.log("Email sent:", info.messageId);
+    console.log("Email sent:", data.data!.id);
     return true;
   } catch (error) {
     console.error("Error sending email:", error);
@@ -122,8 +113,8 @@ export async function verifyEmailToken(token: string): Promise<{ userId: string;
       expiresAt: emailVerificationTokens.expiresAt,
       usedAt: emailVerificationTokens.usedAt,
     })
-    .from(emailVerificationTokens)
-    .where(eq(emailVerificationTokens.token, token));
+      .from(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.token, token));
 
     if (tokenResult.length === 0) {
       return null;
@@ -145,8 +136,8 @@ export async function verifyEmailToken(token: string): Promise<{ userId: string;
     const userResult = await db.select({
       email: users.email
     })
-    .from(users)
-    .where(eq(users.id, tokenRecord.userId));
+      .from(users)
+      .where(eq(users.id, tokenRecord.userId));
 
     if (userResult.length === 0) {
       return null;
@@ -176,8 +167,8 @@ export async function verifyPasswordResetToken(token: string): Promise<{ userId:
       expiresAt: passwordResetTokens.expiresAt,
       usedAt: passwordResetTokens.usedAt,
     })
-    .from(passwordResetTokens)
-    .where(eq(passwordResetTokens.token, token));
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
 
     if (tokenResult.length === 0) {
       return null;
@@ -199,8 +190,8 @@ export async function verifyPasswordResetToken(token: string): Promise<{ userId:
     const userResult = await db.select({
       email: users.email
     })
-    .from(users)
-    .where(eq(users.id, tokenRecord.userId));
+      .from(users)
+      .where(eq(users.id, tokenRecord.userId));
 
     if (userResult.length === 0) {
       return null;
