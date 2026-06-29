@@ -52,7 +52,7 @@ Thumbs.db
 .qoder
 
 #Nextjs
-.env
+.env*
 !.env.example
 .next
 
