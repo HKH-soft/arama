@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function Chat() {
-  const [activeId, setActiveId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [detectedEmotion, setDetectedEmotion] = useState<Emotion>(null);
@@ -50,7 +50,7 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
 
-  const handleSelect = (id: number) => {
+  const handleSelect = (id: string) => {
     setActiveId(id);
     setSidebarOpen(false);
   };
@@ -65,7 +65,7 @@ export default function Chat() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     await remove(id);
     if (activeId === id) {
       setActiveId(null);

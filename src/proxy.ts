@@ -29,9 +29,19 @@ export const proxy = auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Also protect API routes (except NextAuth's own auth endpoints)
+  if (pathname.startsWith("/api/") && 
+      !pathname.startsWith("/api/auth/") && 
+      !req.auth) {
+    return NextResponse.json(
+      { error: "Unauthorized: authentication required" },
+      { status: 401 }
+    );
+  }
+
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

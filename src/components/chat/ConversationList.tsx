@@ -5,17 +5,17 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface Conversation {
-  id: number;
+  id: string;
   title: string;
   createdAt: string;
 }
 
 interface ConversationListProps {
   conversations: Conversation[];
-  activeId: number | null;
-  onSelect: (id: number) => void;
+  activeId: string | null;
+  onSelect: (id: string) => void;
   onCreate: () => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   isCreating?: boolean;
 }
 

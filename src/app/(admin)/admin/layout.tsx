@@ -13,7 +13,7 @@ export default async function AdminLayout({
     user = await requirePermission("users:read"); // Basic admin permission
 
     // If user doesn't have admin role, redirect
-    const hasAdminRole = user.roles.some(
+    const hasAdminRole = (user.roles ?? []).some(
       (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
     );
 

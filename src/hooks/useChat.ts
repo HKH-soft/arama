@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { Message } from "@/components/chat/ChatMessage";
 import type { Conversation } from "@/components/chat/ConversationList";
 
@@ -36,7 +36,7 @@ export function useConversations() {
     return conv;
   }, []);
 
-  const remove = useCallback(async (id: number) => {
+  const remove = useCallback(async (id: string) => {
     await fetch(`${BASE}/chat/conversations/${id}`, { method: "DELETE" });
     setConversations((prev) => prev.filter((c) => c.id !== id));
   }, []);
@@ -44,17 +44,23 @@ export function useConversations() {
   return { conversations, loading, load, create, remove };
 }
 
-export function useMessages(conversationId: number | null) {
+export function useMessages(conversationId: string | null) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const isStreamingRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  const load = useCallback(async (id: number) => {
+  // Keep the ref in sync with the state
+  useEffect(() => {
+    isStreamingRef.current = isStreaming;
+  }, [isStreaming]);
+
+  const load = useCallback(async (id: string) => {
     const res = await fetch(`${BASE}/chat/conversations/${id}`);
     if (!res.ok) return;
     const data = await res.json();
     setMessages(
-      (data.messages ?? []).map((m: { id: number; role: string; content: string; createdAt: string }) => ({
+      (data.messages ?? []).map((m: { id: string; role: string; content: string; createdAt: string }) => ({
         id: String(m.id),
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -64,18 +70,16 @@ export function useMessages(conversationId: number | null) {
   }, []);
 
   const send = useCallback(
-    async (content: string, overrideConvId?: number) => {
-      // We should allow sending if we have either conversationId or overrideConvId
-      // The original logic was correct, but let's add better error handling
+    async (content: string, overrideConvId?: string) => {
       const effectiveId = overrideConvId ?? conversationId;
       
-      // If neither is available, we can't send the message
       if (!effectiveId) {
         console.warn("No conversation ID available to send message");
         return;
       }
       
-      if (isStreaming) {
+      // Use ref to avoid stale closure issues
+      if (isStreamingRef.current) {
         console.warn("Already streaming a message, ignoring new send request");
         return;
       }
@@ -159,7 +163,7 @@ export function useMessages(conversationId: number | null) {
         abortRef.current = null;
       }
     },
-    [conversationId, isStreaming]
+    [conversationId]
   );
 
   const clear = useCallback(() => setMessages([]), []);

@@ -4,7 +4,7 @@ import {
   users,
   passwordResetTokens
 } from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import { eq, and } from 'drizzle-orm';
 import { sendPasswordResetEmail } from "@/lib/email";
 import { logAudit, getClientInfo } from "@/lib/audit";
 import { z } from "zod";
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Generate reset token
-    const token = crypto.randomUUID(); // Using crypto.randomUUID() for token generation
+    const token = randomUUID();
     
     // Create password reset token record
     await db.insert(passwordResetTokens).values({
@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
       expiresAt: new Date(Date.now() + 15 * 60 * 1000), // Token expires in 15 minutes
     });
     
-    // Send reset email
-    await sendPasswordResetEmail(user.id, email);
+    // Send reset email with the generated token
+    await sendPasswordResetEmail(user.id, email, token);
     
     // Log audit
     await logAudit({

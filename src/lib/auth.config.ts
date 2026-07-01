@@ -3,7 +3,7 @@ import db from "./db";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getUserByEmail } from "./auth-helpers-no-auth";
-import { CredentialsSignin } from "next-auth";
+import { CredentialsSignin, type JWT, type Session } from "next-auth";
 import { loginSchema } from "./validators/auth";
 
 class InvalidCredentialsError extends CredentialsSignin {
@@ -30,7 +30,7 @@ export const authConfig = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: any) {
+      async authorize(credentials: unknown) {
         // Validate input format first
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) {
@@ -92,7 +92,7 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: any; user: any }) {
+    async jwt({ token, user }: { token: JWT; user: User | undefined }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
@@ -100,7 +100,7 @@ export const authConfig = {
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.name = token.name;

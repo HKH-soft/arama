@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db"; // Updated to use Drizzle
 import { 
   users,
-  emailVerificationTokens,
   roles,
   userRoles,
   subscriptionPlans,
   subscriptions
-} from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+} from "@/db/schema";
+import { eq, and } from 'drizzle-orm';
 import { hashPassword } from "@/lib/auth-helpers-no-auth";
 import { sendVerificationEmail } from "@/lib/email";
 import { logAudit, getClientInfo } from "@/lib/audit";

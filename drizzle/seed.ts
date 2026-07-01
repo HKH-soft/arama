@@ -365,7 +365,7 @@ async function main() {
 
   // Create demo user: سارا محمدی
   const demoUserEmail = "sara_mohammadi@gmail.com";
-  const demoUserPassword = "sara_mohammadi";
+  const demoUserPassword = process.env.DEMO_USER_PASSWORD || "Demo@123456!";
   const hashedDemoPassword = await bcrypt.hash(demoUserPassword, 12);
 
   let demoUserId: string;
@@ -734,7 +734,10 @@ async function main() {
       const superAdminEmail =
         process.env.SUPER_ADMIN_EMAIL || "superadmin@arama.app";
       const superAdminPassword =
-        process.env.SUPER_ADMIN_PASSWORD || "Admin123!@#";
+        process.env.SUPER_ADMIN_PASSWORD;
+      if (!superAdminPassword) {
+        throw new Error("SUPER_ADMIN_PASSWORD environment variable is required to seed super admin");
+      }
       const hashedPassword = await bcrypt.hash(superAdminPassword, 12);
 
       const superAdminResult = await db
@@ -772,17 +775,14 @@ async function main() {
         });
       }
 
-      console.log(
-        `Super admin user created with email: ${superAdminEmail} and password: ${superAdminPassword}`,
-      );
+      console.log("Super admin user created successfully");
     } else {
       console.log("Super admin user already exists");
     }
   }
 
   console.log("\n=== Seeding Complete ===");
-  console.log(`Demo User: ${demoUserEmail} / ${demoUserPassword}`);
-  console.log(`Super Admin: ${process.env.SUPER_ADMIN_EMAIL || "superadmin@arama.app"} / ${process.env.SUPER_ADMIN_PASSWORD || "Admin123!@#"}`);
+  console.log("Demo users and seed data created successfully");
   console.log("Database seeded successfully!");
 }
 

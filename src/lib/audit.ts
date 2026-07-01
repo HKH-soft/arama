@@ -1,7 +1,6 @@
 import db from "@/lib/db";
 import { auditLogs } from "../db/schema";
 import { randomUUID } from "crypto";
-import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 
 export async function logAudit({

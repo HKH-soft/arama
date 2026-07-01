@@ -70,22 +70,24 @@ export async function sendVerificationEmail(userId: string, email: string): Prom
   }
 }
 
-export async function sendPasswordResetEmail(userId: string, email: string): Promise<boolean> {
+export async function sendPasswordResetEmail(userId: string, email: string, token?: string): Promise<boolean> {
   try {
-    // Generate reset token
-    const token = randomUUID();
-    const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+    // Use the provided token, or generate one if not provided (backward compatibility)
+    const resetToken = token ?? randomUUID();
 
-    // Store the token in the database
-    await db.insert(passwordResetTokens).values({
-      id: randomUUID(),
-      userId,
-      token,
-      expiresAt,
-    });
+    // Only store the token in the database if the caller didn't already do so
+    if (!token) {
+      const expiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+      await db.insert(passwordResetTokens).values({
+        id: randomUUID(),
+        userId,
+        token: resetToken,
+        expiresAt,
+      });
+    }
 
     // Create reset link
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password/${token}`;
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password/${resetToken}`;
 
     // Send reset email
     return await sendEmail({
