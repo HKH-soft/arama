@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 
 import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function LoginForm() {
   const router = useRouter();
@@ -237,7 +238,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center text-sm text-muted-foreground">در حال بارگذاری...</div>}>
+    <Suspense fallback={<div className="flex h-screen items-center justify-center px-6"><Skeleton className="h-80 w-full max-w-md rounded-3xl" /></div>}>
       <LoginForm />
     </Suspense>
   );

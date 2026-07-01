@@ -45,101 +45,24 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 
-// Mock data for demonstration
-const mockPlans = [
-  {
-    id: "1",
-    name: "FREE",
-    displayName: "رایگان",
-    description: "دسترسی پایه به امکانات آراما",
-    price: 0,
-    durationDays: 0,
-    features: ["۵ گفتگو در روز", "تمرینات پایه", "مدیتیشن‌های عمومی"],
-    maxConversations: 5,
-    maxMessagesPerDay: 50,
-    isActive: true,
-    sortOrder: 0,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-  },
-  {
-    id: "2",
-    name: "MONTHLY",
-    displayName: "ماهانه",
-    description: "اشتراک یک ماهه آراما",
-    price: 149000,
-    durationDays: 30,
-    features: [
-      "گفتگوهای نامحدود",
-      "تمام تمرینات",
-      "تمام مدیتیشن‌ها",
-      "گزارش‌های تحلیلی",
-      "پشتیبانی اولویت‌دار",
-    ],
-    maxConversations: null,
-    maxMessagesPerDay: null,
-    isActive: true,
-    sortOrder: 1,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-  },
-  {
-    id: "3",
-    name: "YEARLY",
-    displayName: "سالانه",
-    description: "اشتراک یک ساله آراما — ۴۰٪ تخفیف",
-    price: 1070000,
-    durationDays: 365,
-    features: [
-      "تمام امکانات ماهانه",
-      "۴۰٪ تخفیف",
-      "دسترسی زودهنگام به ویژگی‌های جدید",
-      "مشاوره رایگان ماهانه",
-    ],
-    maxConversations: null,
-    maxMessagesPerDay: null,
-    isActive: true,
-    sortOrder: 2,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-  },
-  {
-    id: "4",
-    name: "PROFESSIONAL",
-    displayName: "حرفه‌ای",
-    description: "برای روانشناسان و مشاوران",
-    price: 499000,
-    durationDays: 30,
-    features: [
-      "تمام امکانات سالانه",
-      "پنل مدیریت بیماران",
-      "API اختصاصی",
-      "گزارش‌های تخصصی",
-      "پشتیبانی ۲۴/۷",
-      "برندینگ سفارشی",
-    ],
-    maxConversations: null,
-    maxMessagesPerDay: null,
-    isActive: true,
-    sortOrder: 3,
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01",
-  },
-];
-
 export default function AdminSubscriptionPlansPage() {
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  // Simulate fetching data
   useEffect(() => {
     const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setPlans(mockPlans);
+      try {
+        const res = await fetch("/api/plans");
+        if (res.ok) {
+          const data = await res.json();
+          setPlans(data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching plans:", error);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
 
     fetchData();
@@ -296,7 +219,7 @@ export default function AdminSubscriptionPlansPage() {
                         className="max-w-xs truncate"
                         title={plan.features.join(", ")}
                       >
-                        {plan.features.join(", ")}
+                        {(plan.features || []).join(", ")}
                       </div>
                     </TableCell>
                     <TableCell>

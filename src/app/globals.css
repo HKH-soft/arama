@@ -106,27 +106,27 @@
   --elevate-1: rgba(16, 185, 129, 0.03);
   --elevate-2: rgba(16, 185, 129, 0.08);
 
-  --background: 150 60% 98%;
+  --background: 150 45% 97%;
   /* Clean ice-mint white (#F4FBF7) */
-  --foreground: 160 50% 10%;
+  --foreground: 160 55% 9%;
   /* Sharp Midnight Mint Text */
 
-  --card: 160 100% 99%;
-  --card-foreground: 160 50% 10%;
-  --card-border: 150 30% 90%;
-  --border: 150 30% 90%;
-  --input: 150 30% 90%;
+  --card: 0 0% 100%;
+  --card-foreground: 160 55% 9%;
+  --card-border: 150 28% 84%;
+  --border: 150 28% 84%;
+  --input: 150 28% 84%;
 
   --primary: 160 84% 39%;
   /* Iconic Tailwind Emerald 600 (#10B981) */
   --primary-foreground: 150 60% 98%;
 
-  --secondary: 150 40% 88%;
+  --secondary: 150 35% 90%;
   /* Soft Mint Surfaces */
   --secondary-foreground: 160 84% 39%;
 
-  --muted: 150 30% 95%;
-  --muted-foreground: 160 25% 40%;
+  --muted: 150 25% 94%;
+  --muted-foreground: 160 25% 32%;
 
   --accent: 160 75% 46%;
   /* Tailwind Emerald 500 */

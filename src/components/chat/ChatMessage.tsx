@@ -23,7 +23,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className={`flex items-end gap-3 ${isAI ? "flex-row-reverse" : ""}`}
+      className={`flex items-end gap-3 ${isAI ? "justify-end" : "flex-row-reverse justify-start"}`}
       data-testid={`message-${message.role}-${message.id}`}
     >
       {/* Avatar */}
@@ -41,8 +41,8 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       <div
         className={`max-w-[85%] sm:max-w-[72%] px-4 py-3 text-sm leading-7 rounded-2xl shadow-sm
           ${isAI
-            ? "bg-background text-foreground rounded-bl-sm"
-            : "bg-primary text-primary-foreground rounded-br-sm"
+            ? "bg-background text-foreground rounded-br-sm"
+            : "bg-primary text-primary-foreground rounded-bl-sm"
           }
           ${isStreaming ? "animate-pulse" : ""}
         `}

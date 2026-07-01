@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Play, Wind, Activity, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Exercise {
   id: string;
@@ -49,16 +50,31 @@ export default function ExercisesPage() {
 
   return (
     <>
-      <div className="bg-linear-to-b from-emerald-900/40 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-emerald-900/45 via-background to-background px-6 pt-6 pb-4 border-b border-border/60">
         <h1 className="text-2xl font-bold text-foreground">تمرینات</h1>
-        <p className="text-foreground/50 mt-1 text-sm">
+        <p className="text-muted-foreground mt-1 text-sm">
           تمرین‌های آرام‌سازی و ذهن‌آگاهی برای سلامت روان
         </p>
       </div>
 
       <div className="px-6 pb-6 space-y-6">
+        {loading && (
+          <div className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-24 rounded-full" />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-56 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Filter chips */}
-        <div className="flex gap-2 flex-wrap">
+        {!loading && <div className="flex gap-2 flex-wrap">
           {["همه", "تنفسی", "مدیتیشن", "حرکتی", "ذهن‌آگاهی"].map((chip, i) => (
             <button
               key={i}
@@ -70,19 +86,17 @@ export default function ExercisesPage() {
               {chip}
             </button>
           ))}
-        </div>
+        </div>}
 
         {/* Exercise grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loading ? (
-            <p className="text-foreground/50">در حال بارگذاری...</p>
-          ) : exercises.length > 0 ? (
+        {!loading && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {exercises.length > 0 ? (
             exercises.map((ex, i) => {
               const IconComponent = getIcon(ex.icon);
               return (
                 <div
                   key={ex.id}
-                  className={`bg-linear-to-br ${ex.color} rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all group cursor-pointer`}
+                  className={`bg-linear-to-br ${ex.color} rounded-xl p-5 border border-border hover:border-border/80 transition-all group cursor-pointer shadow-sm`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
@@ -95,7 +109,7 @@ export default function ExercisesPage() {
                   <h3 className="text-base font-bold text-foreground mb-1">
                     {ex.title}
                   </h3>
-                  <p className="text-foreground/50 text-sm mb-4 leading-relaxed">
+                  <p className="text-foreground/60 text-sm mb-4 leading-relaxed">
                     {ex.description}
                   </p>
                   <div className="flex items-center justify-between">
@@ -111,9 +125,9 @@ export default function ExercisesPage() {
               );
             })
           ) : (
-            <p className="text-foreground/50">تمرینی یافت نشد</p>
+            <p className="text-muted-foreground">تمرینی یافت نشد</p>
           )}
-        </div>
+        </div>}
       </div>
     </>
   );

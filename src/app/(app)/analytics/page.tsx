@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BarChart2, TrendingUp, TrendingDown, Calendar } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface EmotionData {
   emotion: string;
@@ -37,32 +38,44 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <div className="bg-linear-to-b from-indigo-900/40 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-indigo-900/50 via-background to-background px-6 pt-6 pb-4 border-b border-border/60">
         <h1 className="text-2xl font-bold text-foreground">تحلیل احساسات</h1>
-        <p className="text-foreground/50 mt-1 text-sm">
+        <p className="text-muted-foreground mt-1 text-sm">
           بررسی روند تغییرات احساسات شما در طول زمان
         </p>
       </div>
 
       <div className="px-6 pb-6 space-y-6">
+        {loading && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-lg" />
+              ))}
+            </div>
+            <Skeleton className="h-64 rounded-lg" />
+            <Skeleton className="h-32 rounded-lg" />
+          </div>
+        )}
+
         {/* Summary cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {!loading && <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             {
               label: "میانگین خلق هفتگی",
-              val: weeklyTrend.length > 0 ? `${Math.round(weeklyTrend.reduce((sum, d) => sum + d.avgScore, 0) / weeklyTrend.length)}٪` : "۰٪",
+              val: weeklyTrend.length > 0 ? `${Math.round(weeklyTrend.reduce((sum, d) => sum + d.avgScore, 0) / weeklyTrend.length)}٪` : "—",
               trend: "up",
               icon: TrendingUp,
             },
             {
               label: "بیشترین احساس",
-              val: emotionBreakdown.length > 0 ? emotionBreakdown.reduce((max, e) => e.avgScore > max.avgScore ? e : max, emotionBreakdown[0]).emotion : "نامعلوم",
+              val: emotionBreakdown.length > 0 ? emotionBreakdown.reduce((max, e) => e.avgScore > max.avgScore ? e : max, emotionBreakdown[0]).emotion : "—",
               trend: null,
               icon: BarChart2,
             },
             {
               label: "جلسات این ماه",
-              val: emotionBreakdown.length > 0 ? emotionBreakdown.reduce((sum, e) => sum + e.count, 0).toString() : "۰",
+              val: emotionBreakdown.length > 0 ? emotionBreakdown.reduce((sum, e) => sum + e.count, 0).toString() : "—",
               trend: "up",
               icon: Calendar,
             },
@@ -75,7 +88,7 @@ export default function AnalyticsPage() {
           ].map((stat, i) => (
             <div
               key={i}
-              className="bg-white/5 hover:bg-white/10 transition-colors p-4 rounded-lg"
+              className="bg-card/90 hover:bg-card transition-colors p-4 rounded-lg border border-border shadow-sm"
             >
               <div className="flex items-center gap-2 text-foreground/50 mb-2">
                 <stat.icon className="w-4 h-4" />
@@ -86,17 +99,15 @@ export default function AnalyticsPage() {
               </span>
             </div>
           ))}
-        </div>
+        </div>}
 
         {/* Emotion breakdown */}
-        <div className="bg-white/5 rounded-lg p-5">
+        {!loading && <div className="bg-card/90 rounded-lg p-5 border border-border shadow-sm">
           <h3 className="font-semibold text-foreground mb-4 text-sm">
             توزیع احساسات این هفته
           </h3>
           <div className="space-y-3">
-            {loading ? (
-              <p className="text-foreground/50">در حال بارگذاری...</p>
-            ) : emotionBreakdown.length > 0 ? (
+            {emotionBreakdown.length > 0 ? (
               emotionBreakdown.map((e, i) => {
                 const colors: Record<string, string> = {
                   "آرامش": "bg-blue-400",
@@ -122,13 +133,13 @@ export default function AnalyticsPage() {
                 );
               })
             ) : (
-              <p className="text-foreground/50">داده‌ای یافت نشد</p>
+              <p className="text-muted-foreground">داده‌ای یافت نشد</p>
             )}
           </div>
-        </div>
+        </div>}
 
         {/* Weekly insight */}
-        <div className="bg-linear-to-r from-indigo-500/20 to-purple-500/10 rounded-lg p-6 border border-indigo-500/10">
+        {!loading && <div className="bg-linear-to-r from-indigo-500/20 to-purple-500/10 rounded-lg p-6 border border-indigo-500/10 shadow-sm">
           <h3 className="font-semibold text-foreground mb-2 text-sm">
             تحلیل هفته
           </h3>
@@ -137,7 +148,7 @@ export default function AnalyticsPage() {
               ? `این هفته سطح احساسات شما ${Math.round(weeklyTrend[weeklyTrend.length - 1].avgScore - weeklyTrend[0].avgScore)}٪ تغییر داشته. ادامه کنیم!`
               : "در حال جمع‌آوری داده‌های هفته جاری..."}
           </p>
-        </div>
+        </div>}
       </div>
     </>
   );

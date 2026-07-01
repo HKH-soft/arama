@@ -1,91 +1,58 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import { useState } from "react";
+import {
+  Plus,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   Eye,
-  Shield,
-  CheckCircle,
-  XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-
-// Mock data for demonstration
-const mockRoles = [
-  {
-    id: "1",
-    name: "SUPER_ADMIN",
-    displayName: "مدیر ارشد",
-    description: "دسترسی کامل به تمام بخش‌ها",
-    permissions: ["users:read", "users:write", "users:delete", "roles:read", "roles:write", "subscriptions:read", "subscriptions:manage", "payments:read", "payments:refund", "audit:read", "content:manage", "settings:manage"],
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01"
-  },
-  {
-    id: "2",
-    name: "ADMIN",
-    displayName: "مدیر",
-    description: "دسترسی به بخش‌های مدیریتی",
-    permissions: ["users:read", "users:write", "subscriptions:read", "subscriptions:manage", "payments:read", "audit:read", "content:manage"],
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01"
-  },
-  {
-    id: "3",
-    name: "USER",
-    displayName: "کاربر",
-    description: "کاربر عادی سیستم",
-    permissions: [],
-    createdAt: "2024-01-01",
-    updatedAt: "2024-01-01"
-  },
-];
+import {
+  roleDefinitions,
+  roleDisplayNames,
+  roleDescriptions,
+} from "@/lib/permissions";
 
 export default function AdminRolesPage() {
-  const [roles, setRoles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
-  // Simulate fetching data
-  useEffect(() => {
-    const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setRoles(mockRoles);
-        setLoading(false);
-      }, 800);
-    };
-    
-    fetchData();
-  }, []);
-  
+  const roles = Object.entries(roleDefinitions).map(([name, definition]) => ({
+    id: name,
+    name,
+    displayName: roleDisplayNames[name] || name,
+    description: roleDescriptions[name] || "",
+    permissions: definition.permissions,
+  }));
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -117,30 +84,26 @@ export default function AdminRolesPage() {
                   <Input id="displayName" placeholder="عنوان فارسی نقش" />
                 </div>
               </div>
-              
+
               <div>
                 <Label htmlFor="description">توضیحات</Label>
                 <Textarea id="description" placeholder="توضیحات نقش" />
               </div>
-              
+
               <div>
                 <Label>مجوزهای نقش</Label>
                 <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                  {[
-                    "users:read", "users:write", "users:delete",
-                    "roles:read", "roles:write",
-                    "subscriptions:read", "subscriptions:manage",
-                    "payments:read", "payments:refund",
-                    "audit:read", "content:manage", "settings:manage"
-                  ].map((perm) => (
-                    <div key={perm} className="flex items-center">
-                      <input type="checkbox" id={perm} className="mr-2" />
-                      <label htmlFor={perm}>{perm}</label>
-                    </div>
-                  ))}
+                  {Object.values(roleDefinitions)
+                    .flatMap((role) => role.permissions)
+                    .map((perm) => (
+                      <div key={perm} className="flex items-center">
+                        <input type="checkbox" id={perm} className="mr-2" />
+                        <label htmlFor={perm}>{perm}</label>
+                      </div>
+                    ))}
                 </div>
               </div>
-              
+
               <Button className="w-full">ایجاد نقش</Button>
             </div>
           </DialogContent>
@@ -163,71 +126,53 @@ export default function AdminRolesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                  </TableRow>
-                ))
-              ) : roles.length > 0 ? (
-                roles.map((role) => (
-                  <TableRow key={role.id}>
-                    <TableCell className="font-medium">{role.name}</TableCell>
-                    <TableCell>{role.displayName}</TableCell>
-                    <TableCell>{role.description}</TableCell>
-                    <TableCell>
-                      <div className="max-w-xs">
-                        {role.permissions.slice(0, 3).map((perm: string) => (
-                          <Badge key={perm} variant="secondary" className="mr-1 mb-1">
-                            {perm}
-                          </Badge>
-                        ))}
-                        {role.permissions.length > 3 && (
-                          <Badge variant="outline" className="mr-1 mb-1">
-                            +{role.permissions.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>عملیات</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 ml-2" />
-                            مشاهده جزئیات
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="w-4 h-4 ml-2" />
-                            ویرایش
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600">
-                            <Trash2 className="w-4 h-4 ml-2" />
-                            حذف
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    نقشی یافت نشد
+              {roles.map((role) => (
+                <TableRow key={role.id}>
+                  <TableCell className="font-medium">{role.name}</TableCell>
+                  <TableCell>{role.displayName}</TableCell>
+                  <TableCell>{role.description}</TableCell>
+                  <TableCell>
+                    <div className="max-w-xs">
+                      {role.permissions.slice(0, 3).map((perm: string) => (
+                        <Badge key={perm} variant="secondary" className="mr-1 mb-1">
+                          {perm}
+                        </Badge>
+                      ))}
+                      {role.permissions.length > 3 && (
+                        <Badge variant="outline" className="mr-1 mb-1">
+                          +{role.permissions.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>عملیات</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Eye className="w-4 h-4 ml-2" />
+                          مشاهده جزئیات
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Edit className="w-4 h-4 ml-2" />
+                          ویرایش
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-red-600">
+                          <Trash2 className="w-4 h-4 ml-2" />
+                          حذف
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </CardContent>

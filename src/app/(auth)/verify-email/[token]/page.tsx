@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VerifyEmailPage() {
   const params = useParams();
@@ -31,8 +32,8 @@ export default function VerifyEmailPage() {
       <div className="bg-card rounded-2xl border border-border shadow-sm p-8 text-center space-y-4">
         {status === "loading" && (
           <>
-            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center mx-auto animate-pulse">
-              <CheckCircle className="w-8 h-8 text-blue-600" />
+            <div className="mx-auto">
+              <Skeleton className="h-16 w-16 rounded-full" />
             </div>
             <p className="text-foreground">در حال تأیید ایمیل...</p>
           </>

@@ -14,7 +14,7 @@ export default async function AdminLayout({
 
     // If user doesn't have admin role, redirect
     const hasAdminRole = (user.roles ?? []).some(
-      (role: string) => role === "ADMIN" || role === "SUPER_ADMIN"
+      (role: string) => role.toLowerCase() === "admin" || role.toLowerCase() === "super_admin"
     );
 
     if (!hasAdminRole) {

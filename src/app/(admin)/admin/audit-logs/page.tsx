@@ -39,91 +39,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data for demonstration
-const mockAuditLogs = [
-  {
-    id: "1",
-    userId: "user1",
-    user: { name: "سروش احمدی", email: "ahmadi@example.com" },
-    action: "LOGIN_SUCCESS",
-    entity: "user",
-    entityId: "user1",
-    ipAddress: "192.168.1.100",
-    userAgent: "Mozilla/5.0...",
-    metadata: {},
-    createdAt: "2024-06-22T10:30:00Z"
-  },
-  {
-    id: "2",
-    userId: "user2",
-    user: { name: "مهسا رضایی", email: "rezai@example.com" },
-    action: "SUBSCRIPTION_CREATED",
-    entity: "subscription",
-    entityId: "sub1",
-    ipAddress: "192.168.1.101",
-    userAgent: "Mozilla/5.0...",
-    metadata: { planId: "plan2", amount: 149000 },
-    createdAt: "2024-06-22T09:15:00Z"
-  },
-  {
-    id: "3",
-    userId: "user3",
-    user: { name: "عرفان کریمی", email: "karimi@example.com" },
-    action: "FAILED_LOGIN",
-    entity: "user",
-    entityId: null,
-    ipAddress: "192.168.1.102",
-    userAgent: "Mozilla/5.0...",
-    metadata: { email: "invalid@example.com", reason: "invalid_credentials" },
-    createdAt: "2024-06-22T08:45:00Z"
-  },
-  {
-    id: "4",
-    userId: "admin1",
-    user: { name: "مدیر سیستم", email: "admin@arama.app" },
-    action: "USER_UPDATED",
-    entity: "user",
-    entityId: "user4",
-    ipAddress: "192.168.1.103",
-    userAgent: "Mozilla/5.0...",
-    metadata: { fieldsUpdated: ["isActive"] },
-    createdAt: "2024-06-21T16:20:00Z"
-  },
-  {
-    id: "5",
-    userId: "user5",
-    user: { name: "زهرا محمدی", email: "mohammadi@example.com" },
-    action: "PASSWORD_CHANGED",
-    entity: "user",
-    entityId: "user5",
-    ipAddress: "192.168.1.104",
-    userAgent: "Mozilla/5.0...",
-    metadata: { ipAddress: "192.168.1.104" },
-    createdAt: "2024-06-21T14:10:00Z"
-  },
-];
-
 export default function AdminAuditLogsPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Simulate fetching data
+
   useEffect(() => {
     const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setLogs(mockAuditLogs);
+      try {
+        const res = await fetch("/api/admin/audit-logs?limit=100");
+        if (res.ok) {
+          const data = await res.json();
+          setLogs(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching audit logs:", error);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
     
     fetchData();
   }, []);
   
   const filteredLogs = logs.filter(log => 
-    log.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (log.user?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (log.user?.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.id.includes(searchTerm)
   );
@@ -225,15 +166,15 @@ export default function AdminAuditLogsPage() {
                       <div className="flex items-center">
                         <User className="w-4 h-4 ml-2 text-muted-foreground" />
                         <div>
-                          <div className="font-medium">{log.user.name}</div>
-                          <div className="text-xs text-muted-foreground">{log.user.email}</div>
+                          <div className="font-medium">{log.user?.name || "-"}</div>
+                          <div className="text-xs text-muted-foreground">{log.user?.email || "-"}</div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
                         <span className="ml-2">{getActionIcon(log.action)}</span>
-                        <Badge variant={getActionVariant(log.action)}>
+                        <Badge variant={getActionVariant(log.action) as any}>
                           {log.action}
                         </Badge>
                       </div>
@@ -252,7 +193,7 @@ export default function AdminAuditLogsPage() {
                     <TableCell>
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 ml-2 text-muted-foreground" />
-                        {new Date(log.createdAt).toLocaleString('fa-IR')}
+                        {new Date(log.timestamp || log.createdAt).toLocaleString('fa-IR')}
                       </div>
                     </TableCell>
                     <TableCell>

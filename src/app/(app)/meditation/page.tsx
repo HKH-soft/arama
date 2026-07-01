@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { useAudioPlayer, type Track } from "@/hooks/useAudioPlayer";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type BreathPhase = "inhale" | "hold" | "exhale" | "rest";
 
@@ -174,6 +175,19 @@ export default function MeditationPage() {
     transform: `scale(${isBreathing ? currentConfig.scale : 1})`,
     transition: `transform ${isBreathing ? currentConfig.duration : 0.5}s cubic-bezier(0.4, 0, 0.2, 1)`,
   };
+
+  if (loading && !zenMode) {
+    return (
+      <div className="px-6 py-6 space-y-6">
+        <Skeleton className="h-20 rounded-lg" />
+        <Skeleton className="h-10 rounded-full w-64" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-72 rounded-2xl" />
+          <Skeleton className="h-72 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
 
   if (zenMode && selectedTrack) {
     return (
@@ -521,7 +535,11 @@ export default function MeditationPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {loading ? (
-            <p className="text-foreground/50">در حال بارگذاری...</p>
+            <>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-44 rounded-xl" />
+              ))}
+            </>
           ) : filteredTracks.length > 0 ? (
             filteredTracks.map((track) => {
               const isCurrent = player.currentTrack?.id === track.id;

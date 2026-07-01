@@ -4,6 +4,13 @@ import { getUserByEmail, getUserById, hashPassword } from "./auth-helpers-no-aut
 
 export { getUserByEmail, getUserById, hashPassword };
 
+function normalizeRoles(role?: string | null) {
+  return (role ?? "user")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export async function getCurrentUser() {
   try {
     const session = await auth.api.getSession({
@@ -17,9 +24,9 @@ export async function getCurrentUser() {
     const user = await getUserByEmail(session.user.email);
     if (!user) return null;
 
-    // Get role from session (Better-Auth admin plugin stores role on user)
-    const role = (session.user as { role?: string }).role || "user";
-    const roles = role.split(",").filter(Boolean);
+    const sessionRole = (session.user as { role?: string }).role;
+    const persistedRole = (user as { role?: string }).role;
+    const roles = normalizeRoles(sessionRole ?? persistedRole);
 
     return {
       ...user,
@@ -51,22 +58,12 @@ export async function requireAuth() {
 }
 
 export async function requirePermission(permission: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user?.email) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
     throw new Error("احراز هویت الزامی: کاربر وارد نشده است");
   }
 
-  const user = await getUserByEmail(session.user.email);
-  if (!user) {
-    throw new Error("کاربر یافت نشد: حساب کاربری احراز هویت شده وجود ندارد");
-  }
-
-  // Get role from session (Better-Auth admin plugin stores role on user)
-  const role = (session.user as { role?: string }).role || "user";
-  const roles = role.split(",").filter(Boolean);
+  const roles = currentUser.roles ?? [];
 
   // Check if user has admin role (which grants all permissions)
   const isAdmin = roles.some((r) => r === "admin" || r === "super_admin");
@@ -75,7 +72,7 @@ export async function requirePermission(permission: string) {
   }
 
   return {
-    ...user,
+    ...currentUser,
     roles,
   };
 }

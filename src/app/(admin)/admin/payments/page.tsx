@@ -35,83 +35,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data for demonstration
-const mockPayments = [
-  {
-    id: "1",
-    userId: "user1",
-    user: { name: "سروش احمدی", email: "ahmadi@example.com" },
-    amount: 149000,
-    currency: "IRR",
-    status: "SUCCESS",
-    gatewayName: "ZARINPAL",
-    description: "خرید اشتراک ماهانه",
-    createdAt: "2024-06-20",
-    paidAt: "2024-06-20",
-    subscription: { plan: { displayName: "ماهانه" } }
-  },
-  {
-    id: "2",
-    userId: "user2",
-    user: { name: "مهسا رضایی", email: "rezai@example.com" },
-    amount: 1070000,
-    currency: "IRR",
-    status: "SUCCESS",
-    gatewayName: "STRIPE",
-    description: "خرید اشتراک سالانه",
-    createdAt: "2024-06-18",
-    paidAt: "2024-06-18",
-    subscription: { plan: { displayName: "سالانه" } }
-  },
-  {
-    id: "3",
-    userId: "user3",
-    user: { name: "عرفان کریمی", email: "karimi@example.com" },
-    amount: 499000,
-    currency: "IRR",
-    status: "FAILED",
-    gatewayName: "MELLAT",
-    description: "خرید اشتراک حرفه‌ای",
-    createdAt: "2024-06-15",
-    paidAt: null,
-    subscription: { plan: { displayName: "حرفه‌ای" } }
-  },
-  {
-    id: "4",
-    userId: "user4",
-    user: { name: "زهرا محمدی", email: "mohammadi@example.com" },
-    amount: 149000,
-    currency: "IRR",
-    status: "PENDING",
-    gatewayName: "ZARINPAL",
-    description: "خرید اشتراک ماهانه",
-    createdAt: "2024-06-22",
-    paidAt: null,
-    subscription: { plan: { displayName: "ماهانه" } }
-  },
-];
-
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Simulate fetching data
+
   useEffect(() => {
     const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setPayments(mockPayments);
+      try {
+        const res = await fetch("/api/admin/payments?limit=100");
+        if (res.ok) {
+          const data = await res.json();
+          setPayments(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching admin payments:", error);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
     
     fetchData();
   }, []);
   
   const filteredPayments = payments.filter(payment => 
-    payment.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    payment.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (payment.user?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (payment.user?.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     payment.id.includes(searchTerm)
   );
   
@@ -179,8 +128,8 @@ export default function AdminPaymentsPage() {
                       <div className="flex items-center">
                         <User className="w-4 h-4 ml-2 text-muted-foreground" />
                         <div>
-                          <div className="font-medium">{payment.user.name}</div>
-                          <div className="text-xs text-muted-foreground">{payment.user.email}</div>
+                          <div className="font-medium">{payment.user?.name || "-"}</div>
+                          <div className="text-xs text-muted-foreground">{payment.user?.email || "-"}</div>
                         </div>
                       </div>
                     </TableCell>
@@ -193,7 +142,7 @@ export default function AdminPaymentsPage() {
                     <TableCell>
                       <Badge variant="outline">{payment.gatewayName}</Badge>
                     </TableCell>
-                    <TableCell>{payment.subscription?.plan.displayName || "-"}</TableCell>
+                    <TableCell>{payment.plan?.displayName || payment.subscription?.plan?.displayName || "-"}</TableCell>
                     <TableCell>
                       {payment.status === "SUCCESS" ? (
                         <Badge variant="default">

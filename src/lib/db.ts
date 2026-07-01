@@ -44,6 +44,22 @@ if (!fs.existsSync(dbDir)) {
 
 const sqlite = new Database(dbPath);
 
+function ensureUserRoleColumn(database: Database.Database) {
+  const columns = database.prepare('PRAGMA table_info("user")').all() as Array<{
+    name: string;
+  }>;
+
+  const hasRoleColumn = columns.some((column) => column.name === "role");
+
+  if (!hasRoleColumn) {
+    database.exec(
+      'ALTER TABLE "user" ADD COLUMN "role" text NOT NULL DEFAULT "user"',
+    );
+  }
+}
+
+ensureUserRoleColumn(sqlite);
+
 // Create the database instance with Drizzle
 const db = drizzle(sqlite, { schema });
 

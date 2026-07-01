@@ -1,112 +1,78 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  UserPlus, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  MoreHorizontal,
+  UserPlus,
+  Edit,
+  Trash2,
   Eye,
-  Shield,
   User,
   Mail,
   Calendar,
   CheckCircle,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// Mock data for demonstration
-const mockUsers = [
-  {
-    id: "1",
-    name: "سروش احمدی",
-    email: "ahmadi@example.com",
-    isActive: true,
-    isDeleted: false,
-    createdAt: "2024-01-15",
-    lastLoginAt: "2024-06-20",
-    roles: ["USER"]
-  },
-  {
-    id: "2",
-    name: "مهسا رضایی",
-    email: "rezai@example.com",
-    isActive: true,
-    isDeleted: false,
-    createdAt: "2024-02-20",
-    lastLoginAt: "2024-06-21",
-    roles: ["USER"]
-  },
-  {
-    id: "3",
-    name: "عرفان کریمی",
-    email: "karimi@example.com",
-    isActive: false,
-    isDeleted: false,
-    createdAt: "2024-03-10",
-    lastLoginAt: "2024-05-15",
-    roles: ["USER"]
-  },
-  {
-    id: "4",
-    name: "زهرا محمدی",
-    email: "mohammadi@example.com",
-    isActive: true,
-    isDeleted: false,
-    createdAt: "2024-01-05",
-    lastLoginAt: "2024-06-22",
-    roles: ["ADMIN"]
-  },
-];
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  
-  // Simulate fetching data
+
   useEffect(() => {
     const fetchData = async () => {
-      // In a real app, this would be an API call
-      setTimeout(() => {
-        setUsers(mockUsers);
+      try {
+        const res = await fetch("/api/admin/users?limit=100");
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching admin users:", error);
+      } finally {
         setLoading(false);
-      }, 800);
+      }
     };
-    
+
     fetchData();
   }, []);
-  
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+
+  const filteredUsers = users.filter(
+    (user) =>
+      (user.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.email || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
-  
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -202,14 +168,14 @@ export default function AdminUsersPage() {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      {user.roles.map((role: string) => (
+                      {(user.roles || ["USER"]).map((role: string) => (
                         <Badge key={role} variant="secondary" className="mr-1">
-                          {role === "ADMIN" ? "مدیر" : "کاربر"}
+                          {role === "ADMIN" ? "مدیر" : role === "SUPER_ADMIN" ? "مدیر ارشد" : "کاربر"}
                         </Badge>
                       ))}
                     </TableCell>
-                    <TableCell>{user.createdAt}</TableCell>
-                    <TableCell>{user.lastLoginAt || "ثبت نشده"}</TableCell>
+                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString("fa-IR") : "-"}</TableCell>
+                    <TableCell>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString("fa-IR") : "ثبت نشده"}</TableCell>
                     <TableCell>
                       {user.isActive ? (
                         <Badge variant="default">
@@ -265,4 +231,3 @@ export default function AdminUsersPage() {
     </div>
   );
 }
-

@@ -76,7 +76,7 @@ export default function SecurityPage() {
 
       <div className="grid gap-6">
         {/* Change Password Card */}
-        <Card>
+        <Card id="password">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Key className="w-5 h-5" />
@@ -145,7 +145,7 @@ export default function SecurityPage() {
         </Card>
         
         {/* Active Sessions Card */}
-        <Card>
+        <Card id="sessions">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="w-5 h-5" />

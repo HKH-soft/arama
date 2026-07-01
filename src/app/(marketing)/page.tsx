@@ -617,7 +617,7 @@ export default function Landing() {
               plans.map((plan, index) => (
                 <div
                   key={plan.id}
-                  className={`relative bg-card border rounded-3xl p-8 shadow-sm ${index === 1 ? "border-2 border-primary transform md:-translate-y-4 shadow-lg" : "border-border"
+                  className={`relative bg-card border rounded-3xl p-8 shadow-sm flex h-full flex-col ${index === 1 ? "border-2 border-primary transform md:-translate-y-4 shadow-lg" : "border-border"
                     }`}
                 >
                   {index === 1 && (
@@ -639,7 +639,7 @@ export default function Landing() {
                       {plan.price === 0 ? "تومان" : `تومان / ${plan.durationDays === 30 ? "ماه" : plan.durationDays === 365 ? "سال" : ""}`}
                     </span>
                   </div>
-                  <ul className="space-y-4 mb-8">
+                  <ul className="space-y-4 mb-8 flex-1">
                     {(plan.features || []).map((feature, i) => (
                       <li key={i} className="flex items-center gap-3">
                         <CheckCircle2 className="w-5 h-5 text-primary" />
@@ -648,7 +648,7 @@ export default function Landing() {
                     ))}
                   </ul>
                   <Button
-                    className={`w-full ${index === 1 ? "bg-primary hover:bg-primary/90" : ""}`}
+                    className={`w-full mt-auto ${index === 1 ? "bg-primary hover:bg-primary/90" : ""}`}
                     variant={index === 1 ? "default" : "outline"}
                     asChild
                   >

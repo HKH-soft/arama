@@ -9,7 +9,7 @@ export function TypingIndicator() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
-      className="flex items-end gap-3"
+      className="flex items-end gap-3 justify-end"
       data-testid="typing-indicator"
     >
       <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-white shrink-0 shadow-md">

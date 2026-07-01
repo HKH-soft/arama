@@ -3,24 +3,29 @@
 import { useState, useEffect, useRef } from "react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { TypingIndicator } from "@/components/chat/TypingIndicator";
-import {
-  EmotionBadge,
-  detectEmotion,
-  type Emotion,
-} from "@/components/chat/EmotionBadge";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ConversationList } from "@/components/chat/ConversationList";
 import { useConversations, useMessages } from "@/hooks/useChat";
-import { Settings, Menu, X } from "lucide-react";
+import { Settings, Menu, X, Trash2, BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Chat() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [detectedEmotion, setDetectedEmotion] = useState<Emotion>(null);
-  const [emotionConfidence, setEmotionConfidence] = useState(0);
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -47,8 +52,10 @@ export default function Chat() {
   }, [activeId, loadMessages, clear]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isStreaming]);
+    if (autoScrollEnabled) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isStreaming, autoScrollEnabled]);
 
   const handleSelect = (id: string) => {
     setActiveId(id);
@@ -74,12 +81,6 @@ export default function Chat() {
   };
 
   const handleSend = async (text: string) => {
-    const { emotion, confidence } = detectEmotion(text);
-    if (emotion) {
-      setDetectedEmotion(emotion);
-      setEmotionConfidence(confidence);
-    }
-
     let convId = activeId;
     if (!convId) {
       setIsCreating(true);
@@ -194,14 +195,11 @@ export default function Chat() {
           </div>
 
           <div className="flex items-center gap-2">
-            <EmotionBadge
-              emotion={detectedEmotion}
-              confidence={emotionConfidence}
-            />
             <Button
               variant="ghost"
               size="icon"
-              className="text-muted-foreground pl-13 md:pl-0 hover:text-foreground h-8 w-8"
+              className="text-muted-foreground hover:text-foreground h-8 w-8"
+              onClick={() => setSettingsOpen(true)}
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -280,6 +278,60 @@ export default function Chat() {
           </div>
         </div>
       </div>
+
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md">
+          <SheetHeader className="text-right">
+            <SheetTitle>تنظیمات گفتگو</SheetTitle>
+            <SheetDescription>
+              کنترل رفتار صفحه گفتگو و دسترسی سریع به تنظیمات امنیتی.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="mt-6 space-y-5">
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">اسکرول خودکار</Label>
+                <p className="text-xs text-muted-foreground">
+                  هنگام رسیدن پیام جدید، نما به آخر گفتگو برود.
+                </p>
+              </div>
+              <Switch
+                checked={autoScrollEnabled}
+                onCheckedChange={setAutoScrollEnabled}
+              />
+            </div>
+
+            <div className="grid gap-3">
+              <Button
+                variant="outline"
+                className="justify-between"
+                asChild
+              >
+                <Link href="/session-management">
+                  <span>مدیریت نشست‌ها</span>
+                  <BrainCircuit className="w-4 h-4" />
+                </Link>
+              </Button>
+
+              <Button
+                variant="destructive"
+                className="justify-between"
+                onClick={() => {
+                  if (activeId) {
+                    clear();
+                    setActiveId(null);
+                  }
+                  setSettingsOpen(false);
+                }}
+              >
+                <span>پاک کردن گفتگوی فعلی</span>
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

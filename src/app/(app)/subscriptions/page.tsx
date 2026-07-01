@@ -242,12 +242,12 @@ export default function SubscriptionsPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {availablePlans.map((plan) => (
-                  <Card key={plan.id} className={`border-2 ${activeSubscription?.plan.id === plan.id ? 'border-primary' : ''}`}>
+                  <Card key={plan.id} className={`border-2 h-full flex flex-col ${activeSubscription?.plan.id === plan.id ? 'border-primary' : ''}`}>
                     <CardHeader className="text-center">
                       <CardTitle className="text-lg">{plan.displayName}</CardTitle>
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
                     </CardHeader>
-                    <CardContent className="text-center">
+                    <CardContent className="text-center flex-1 flex flex-col">
                       <div className="text-2xl font-bold mb-4">
                         {plan.price === 0 ? "رایگان" : `${plan.price.toLocaleString()} تومان`}
                         {plan.durationDays > 0 && (
@@ -257,7 +257,7 @@ export default function SubscriptionsPage() {
                         )}
                       </div>
                       
-                      <ul className="text-sm text-left space-y-2 mb-6">
+                      <ul className="text-sm text-left space-y-2 mb-6 flex-1">
                         {plan.features.slice(0, 4).map((feature: string, idx: number) => (
                           <li key={idx} className="flex items-center gap-2">
                             <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -272,7 +272,7 @@ export default function SubscriptionsPage() {
                       </ul>
                       
                       <Button 
-                        className="w-full" 
+                        className="w-full mt-auto" 
                         onClick={() => handleSubscribe(plan.id)}
                         disabled={activeSubscription?.plan.id === plan.id}
                       >

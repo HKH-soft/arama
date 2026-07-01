@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   User,
   Bell,
@@ -12,7 +13,6 @@ import {
   Sun,
   Volume2,
   Key,
-  Mail,
   Monitor,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserProfile {
   id: string;
@@ -81,25 +82,6 @@ export default function SettingsPage() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const Toggle = ({
-    checked,
-    onChange,
-  }: {
-    checked: boolean;
-    onChange: () => void;
-  }) => (
-    <button
-      onClick={onChange}
-      className={`relative w-11 h-6 rounded-full transition-colors ${checked ? "bg-primary" : "bg-muted-foreground/30"
-        }`}
-    >
-      <div
-        className={`absolute top-0.5 w-5 h-5 rounded-full bg-primary shadow transition-all ${checked ? "right-0.5" : "left-0.5"
-          }`}
-      />
-    </button>
-  );
-
   return (
     <>
       <div className="bg-linear-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
@@ -114,10 +96,10 @@ export default function SettingsPage() {
         <div className="bg-muted/30 border border-border rounded-lg p-5 mt-6">
           {loading ? (
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-muted animate-pulse" />
+              <Skeleton className="h-16 w-16 rounded-full" />
               <div className="space-y-2">
-                <div className="h-5 w-32 bg-muted rounded animate-pulse" />
-                <div className="h-4 w-48 bg-muted rounded animate-pulse" />
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-48" />
               </div>
             </div>
           ) : (
@@ -158,9 +140,9 @@ export default function SettingsPage() {
                     دریافت اعلان‌ها در مرورگر
                   </p>
                 </div>
-                <Toggle
+                <Switch
                   checked={notifications}
-                  onChange={() => setNotifications(!notifications)}
+                  onCheckedChange={setNotifications}
                 />
               </div>
 
@@ -171,9 +153,9 @@ export default function SettingsPage() {
                     پخش صدای اعلان‌ها
                   </p>
                 </div>
-                <Toggle
+                <Switch
                   checked={soundEnabled}
-                  onChange={() => setSoundEnabled(!soundEnabled)}
+                  onCheckedChange={setSoundEnabled}
                 />
               </div>
 
@@ -184,9 +166,9 @@ export default function SettingsPage() {
                     دریافت اعلان‌ها از طریق ایمیل
                   </p>
                 </div>
-                <Toggle
+                <Switch
                   checked={emailNotifications}
-                  onChange={() => setEmailNotifications(!emailNotifications)}
+                  onCheckedChange={setEmailNotifications}
                 />
               </div>
             </CardContent>
@@ -210,18 +192,51 @@ export default function SettingsPage() {
                     افزایش امنیت حساب
                   </p>
                 </div>
-                <Toggle
+                <Switch
                   checked={twoFactorAuth}
-                  onChange={() => setTwoFactorAuth(!twoFactorAuth)}
+                  onCheckedChange={setTwoFactorAuth}
                 />
               </div>
 
               <div className="pt-2">
-                <Button variant="outline" className="w-full">
-                  <Key className="w-4 h-4 ml-2" />
-                  تغییر رمز عبور
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/session-management#password">
+                    <Key className="w-4 h-4 ml-2" />
+                    تغییر رمز عبور
+                  </Link>
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Session management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Monitor className="w-5 h-5" />
+                مدیریت نشست‌ها
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-24 w-full rounded-lg" />
+                  <Skeleton className="h-24 w-full rounded-lg" />
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">
+                    نشست‌های فعال، دستگاه‌های وارد شده و خروج از همه دستگاه‌ها را مدیریت کن.
+                  </p>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/session-management#sessions">
+                      <Monitor className="w-4 h-4 ml-2" />
+                      رفتن به مدیریت نشست‌ها
+                    </Link>
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -241,7 +256,7 @@ export default function SettingsPage() {
                     تغییر حالت نمایش
                   </p>
                 </div>
-                <Toggle checked={theme === "dark"} onChange={toggleTheme} />
+                <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
               </div>
 
               <div className="pt-2">
@@ -291,9 +306,11 @@ export default function SettingsPage() {
               <Separator />
 
               <div className="pt-2">
-                <Button variant="outline" className="w-full">
-                  <Monitor className="w-4 h-4 ml-2" />
-                  مدیریت نشست‌ها
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/session-management">
+                    <Monitor className="w-4 h-4 ml-2" />
+                    مدیریت نشست‌ها
+                  </Link>
                 </Button>
               </div>
             </CardContent>

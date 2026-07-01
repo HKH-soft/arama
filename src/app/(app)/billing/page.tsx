@@ -48,10 +48,23 @@ export default function BillingHistoryPage() {
     const fetchData = async () => {
       try {
         const res = await fetch("/api/payments/history");
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error("API error:", errorData);
+          setPayments([]);
+          return;
+        }
         const data = await res.json();
-        setPayments(data.payments || data);
+        if (data.data && Array.isArray(data.data)) {
+          setPayments(data.data);
+        } else if (Array.isArray(data)) {
+          setPayments(data);
+        } else {
+          setPayments([]);
+        }
       } catch (err) {
         console.error("Error fetching payments:", err);
+        setPayments([]);
       } finally {
         setLoading(false);
       }
@@ -185,12 +198,12 @@ export default function BillingHistoryPage() {
                 `${payments.filter(p => p.status === "SUCCESS").reduce((sum, p) => sum + p.amount, 0).toLocaleString()} تومان`
               }
             </div>
-            <p className="text-xs mt-1 text-green-500">
+            <div className="text-xs mt-1 text-green-500">
               {loading ?
                 <Skeleton className="h-3 w-16" /> :
                 `در ${payments.filter(p => p.status === "SUCCESS").length} تراکنش`
               }
-            </p>
+            </div>
           </CardContent>
         </Card>
 

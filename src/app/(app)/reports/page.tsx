@@ -8,6 +8,7 @@ import {
   TrendingUp,
   BarChart2,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Report {
   id: string;
@@ -44,33 +45,48 @@ export default function ReportsPage() {
 
   return (
     <>
-      <div className="bg-linear-to-b from-amber-900/30 via-card to-card px-6 pt-6 pb-4">
+      <div className="bg-linear-to-b from-amber-900/40 via-background to-background px-6 pt-6 pb-4 border-b border-border/60">
         <h1 className="text-2xl font-bold text-foreground">گزارش‌ها</h1>
-        <p className="text-foreground/50 mt-1 text-sm">
+        <p className="text-muted-foreground mt-1 text-sm">
           مشاهده پیشرفت و تاریخچه فعالیت‌های شما
         </p>
       </div>
 
       <div className="px-6 pb-6 space-y-6">
+        {loading && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 rounded-lg" />
+              ))}
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Quick stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {!loading && <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
             {
               label: "میانگین خلق ماهانه",
-              val: "۷۵٪",
-              change: "+۵٪",
+              val: reports.length > 0 ? "—" : "—",
+              change: "",
               icon: TrendingUp,
             },
             {
               label: "روزهای فعال",
-              val: "۲۶",
-              change: "از ۳۰ روز",
+              val: "—",
+              change: "",
               icon: Calendar,
             },
             {
               label: "تعداد گزارش‌ها",
-              val: reports.length > 0 ? reports.length.toString() : "۰",
-              change: "این ماه",
+              val: reports.length > 0 ? reports.length.toString() : "—",
+              change: "",
               icon: BarChart2,
             },
           ].map((stat, i) => (
@@ -86,11 +102,11 @@ export default function ReportsPage() {
                 <span className="text-2xl font-bold text-foreground">
                   {stat.val}
                 </span>
-                <span className="text-xs text-green-400">{stat.change}</span>
+                {stat.change ? <span className="text-xs text-green-400">{stat.change}</span> : null}
               </div>
             </div>
           ))}
-        </div>
+        </div>}
 
         {/* Report list */}
         <div className="space-y-3">
@@ -98,12 +114,16 @@ export default function ReportsPage() {
             گزارش‌های شما
           </h3>
           {loading ? (
-            <p className="text-foreground/50">در حال بارگذاری...</p>
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-lg" />
+              ))}
+            </div>
           ) : reports.length > 0 ? (
             reports.map((report) => (
               <div
                 key={report.id}
-                className="bg-white/5 hover:bg-white/10 transition-colors rounded-lg p-4 flex items-center justify-between group cursor-pointer"
+                className="bg-card/90 hover:bg-card transition-colors rounded-lg p-4 flex items-center justify-between group cursor-pointer border border-border shadow-sm"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-foreground/50">
@@ -129,7 +149,7 @@ export default function ReportsPage() {
               </div>
             ))
           ) : (
-            <p className="text-foreground/50">گزارشی یافت نشد</p>
+            <p className="text-muted-foreground">گزارشی یافت نشد</p>
           )}
         </div>
       </div>

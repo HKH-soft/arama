@@ -13,6 +13,8 @@ import {
   Settings,
   LogOut,
   Crown,
+  CreditCard,
+  Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,11 +39,13 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
     { icon: FileText, label: "گزارش‌ها", href: "/reports" },
     user ? { icon: Crown, label: "اشتراک‌ها", href: "/subscriptions" } : null,
     user ? { icon: Settings, label: "تنظیمات", href: "/settings" } : null,
+    user ? { icon: CreditCard, label: "صورتحساب", href: "/billing" } : null,
+    user ? { icon: Monitor, label: "مدیریت نشست‌ها", href: "/session-management" } : null,
   ].filter(Boolean) as { icon: any; label: string; href: string }[];
 
   // Show admin link if user has admin role
   const isAdmin = user?.roles?.some(
-    (r) => r === "SUPER_ADMIN" || r === "ADMIN",
+    (r) => r === "super_admin" || r === "admin",
   );
 
   const handleLogout = async () => {
@@ -53,7 +57,7 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
   const displayName = user?.name || "کاربر مهمان";
   const initials = user?.name ? getInitials(user.name) : "؟";
   const avatarUrl = user?.image || "";
-  const isSuperAdmin = user?.roles?.includes("SUPER_ADMIN");
+  const isSuperAdmin = user?.roles?.includes("super_admin");
 
   return (
     <aside className="w-75 shrink-0 flex flex-col gap-2 hidden md:flex">
@@ -105,21 +109,23 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
 
       {/* User panel */}
       <div className="bg-sidebar rounded-lg p-3 mt-auto border border-sidebar-border">
-        <div className="flex items-center gap-3 px-2">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-primary/30 text-primary text-xs font-bold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-sm font-semibold text-sidebar-foreground truncate">
-              {displayName}
-            </span>
-            <span className="text-[11px] text-sidebar-foreground/40">
-              {isSuperAdmin ? "مدیر ارشد" : "کاربر"}
-            </span>
-          </div>
+        <div className="flex items-center justify-between px-2">
+          <Link href="/profile" className="flex items-center gap-3 px-2">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={avatarUrl} />
+              <AvatarFallback className="bg-primary/30 text-primary text-xs font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-sm font-semibold text-sidebar-foreground truncate">
+                {displayName}
+              </span>
+              <span className="text-[11px] text-sidebar-foreground/40">
+                {isSuperAdmin ? "مدیر ارشد" : "کاربر"}
+              </span>
+            </div>
+          </Link>
           <button
             onClick={handleLogout}
             className="text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors p-1"

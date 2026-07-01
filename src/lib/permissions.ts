@@ -1,7 +1,7 @@
 import { PermissionValue } from "@/types/auth";
 
 // Define role definitions with their associated permissions
-const roleDefinitions: Record<string, { permissions: PermissionValue[] }> = {
+export const roleDefinitions: Record<string, { permissions: PermissionValue[] }> = {
   SUPER_ADMIN: {
     permissions: [
       "users:read",
@@ -42,6 +42,18 @@ const roleDefinitions: Record<string, { permissions: PermissionValue[] }> = {
       "payment:read"
     ]
   }
+};
+
+export const roleDisplayNames: Record<string, string> = {
+  SUPER_ADMIN: "مدیر ارشد",
+  ADMIN: "مدیر",
+  USER: "کاربر",
+};
+
+export const roleDescriptions: Record<string, string> = {
+  SUPER_ADMIN: "دسترسی کامل به تمام بخش‌ها",
+  ADMIN: "دسترسی به بخش‌های مدیریتی",
+  USER: "کاربر عادی سیستم",
 };
 
 export function hasPermission(role: string, permission: PermissionValue): boolean {

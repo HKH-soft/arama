@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     try {
         const user = await requireAuth();
         const body = await request.json();
-        const { mood } = body;
+        const { mood, mode } = body;
 
         if (!mood) {
             return NextResponse.json(
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
             id: `${Date.now()}-${Math.random()}`,
             userId: user.id,
             mood,
+            currentMode: mode || mood,
             loggedAt: new Date(),
         }).returning();
 

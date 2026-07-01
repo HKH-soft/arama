@@ -274,6 +274,7 @@ export const moodEntries = sqliteTable("mood_entries", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   mood: text("mood").notNull(),
+  currentMode: text("current_mode").notNull().default(""),
   loggedAt: integer("logged_at", { mode: "timestamp" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
     sql`(strftime('%s', 'now'))`,
