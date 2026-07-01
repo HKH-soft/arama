@@ -45,7 +45,7 @@ export default function ReportsPage() {
 
   return (
     <>
-      <div className="bg-linear-to-b from-amber-900/40 via-background to-background px-6 pt-6 pb-4 border-b border-border/60">
+      <div className="bg-linear-to-b from-amber-900/40 via-card to-card px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground">گزارش‌ها</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           مشاهده پیشرفت و تاریخچه فعالیت‌های شما

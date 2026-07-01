@@ -183,7 +183,7 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-sm font-medium">
                     احراز هویت دو مرحله‌ای
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                   checked={twoFactorAuth}
                   onCheckedChange={setTwoFactorAuth}
                 />
-              </div>
+              </div> */}
 
               <div className="pt-2">
                 <Button variant="outline" className="w-full" asChild>
@@ -249,16 +249,6 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">حالت تیره</Label>
-                  <p className="text-xs text-muted-foreground">
-                    تغییر حالت نمایش
-                  </p>
-                </div>
-                <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
-              </div>
-
               <div className="pt-2">
                 <div className="flex gap-2">
                   <Button
@@ -300,17 +290,6 @@ export default function SettingsPage() {
                 </div>
                 <Button variant="destructive" size="sm">
                   حذف
-                </Button>
-              </div>
-
-              <Separator />
-
-              <div className="pt-2">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/session-management">
-                    <Monitor className="w-4 h-4 ml-2" />
-                    مدیریت نشست‌ها
-                  </Link>
                 </Button>
               </div>
             </CardContent>

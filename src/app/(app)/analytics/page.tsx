@@ -38,7 +38,7 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <div className="bg-linear-to-b from-indigo-900/50 via-background to-background px-6 pt-6 pb-4 border-b border-border/60">
+      <div className="bg-linear-to-b from-indigo-900/50 via-card to-card px-6 pt-6 pb-4">
         <h1 className="text-2xl font-bold text-foreground">تحلیل احساسات</h1>
         <p className="text-muted-foreground mt-1 text-sm">
           بررسی روند تغییرات احساسات شما در طول زمان
