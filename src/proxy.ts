@@ -1,47 +1,67 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export const proxy = auth((req) => {
-  const { pathname, search } = req.nextUrl;
+const publicPaths = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+];
 
-  const protectedRoutes = [
-    "/dashboard",
-    "/chat",
-    "/analytics",
-    "/exercises",
-    "/meditation",
-    "/reports",
-    "/settings",
-    "/subscriptions",
-    "/profile",
-    "/admin",
-  ];
+// API paths that don't require authentication
+const publicApiPaths = ["/api/auth", "/api/plans"];
 
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  if (isProtectedRoute && !req.auth) {
-    const loginUrl = new URL("/login", req.nextUrl.origin);
+  // Allow public paths
+  if (publicPaths.some((path) => pathname.startsWith(path))) {
+    return NextResponse.next();
+  }
 
-    loginUrl.searchParams.set("callbackUrl", pathname + search);
+  // Allow public API paths
+  if (publicApiPaths.some((path) => pathname.startsWith(path))) {
+    return NextResponse.next();
+  }
 
+  // Allow static files and Next.js internal paths
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/static") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/images") ||
+    pathname === "/"
+  ) {
+    return NextResponse.next();
+  }
+
+  // Check authentication using Better-Auth
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  if (!session) {
+    // Redirect to login for protected routes
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Also protect API routes (except NextAuth's own auth endpoints)
-  if (pathname.startsWith("/api/") && 
-      !pathname.startsWith("/api/auth/") && 
-      !req.auth) {
-    return NextResponse.json(
-      { error: "Unauthorized: authentication required" },
-      { status: 401 }
-    );
-  }
-
   return NextResponse.next();
-});
+}
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - images/ (image files)
+     * - public/ (public files)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|images/).*)",
+  ],
 };

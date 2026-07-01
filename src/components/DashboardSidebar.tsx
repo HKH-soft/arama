@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth-client";
 import {
   Home,
   MessageCircle,
@@ -45,7 +45,7 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
   );
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
+    await signOut();
     router.push("/login");
     router.refresh();
   };

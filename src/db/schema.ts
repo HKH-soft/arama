@@ -4,8 +4,14 @@ import {
   integer,
   real,
   primaryKey,
+  index,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+
+// ============================================================
+// Better-Auth Tables (auto-created by Better-Auth at runtime)
+// These are defined here so our business tables can reference them
+// ============================================================
 
 export const users = sqliteTable("user", {
   id: text("id")
@@ -13,9 +19,18 @@ export const users = sqliteTable("user", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+  emailVerified: integer("email_verified", { mode: "boolean" })
+    .default(false)
+    .notNull(),
   image: text("image"),
-  passwordHash: text("password_hash"),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+
+  // Custom additional fields
   phone: text("phone"),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
@@ -26,142 +41,74 @@ export const users = sqliteTable("user", {
   lastLoginIp: text("last_login_ip"),
   failedLoginCount: integer("failed_login_count").default(0),
   lockedUntil: integer("locked_until", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
+  role: text("role").default("user"),
 });
 
-export const sessions = sqliteTable("session", {
-  sessionToken: text("sessionToken").primaryKey(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-});
+export const sessions = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
 
 export const accounts = sqliteTable(
   "account",
   {
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").notNull(),
-    provider: text("provider").notNull(),
-    providerAccountId: text("providerAccountId").notNull(),
-    refresh_token: text("refresh_token"),
-    access_token: text("access_token"),
-    expires_at: integer("expires_at"),
-    token_type: text("token_type"),
-    scope: text("scope"),
-    id_token: text("id_token"),
-    session_state: text("session_state"),
-  },
-  (account) => ({
-    compositePk: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-  }),
-);
-
-export const verificationTokens = sqliteTable(
-  "verificationToken",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull().unique(),
-    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
-  },
-  (vt) => ({
-    pk: primaryKey(vt.identifier, vt.token),
-  }),
-);
-
-export const emailVerificationTokens = sqliteTable(
-  "email_verification_tokens",
-  {
     id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
     userId: text("user_id")
       .notNull()
-      .references(() => users.id),
-    token: text("token").notNull().unique(),
-    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-    usedAt: integer("used_at", { mode: "timestamp" }),
-    createdAt: integer("created_at", { mode: "timestamp" }).default(
-      sql`(strftime('%s', 'now'))`,
-    ),
+      .references(() => users.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: integer("access_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+      mode: "timestamp_ms",
+    }),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
+  (table) => [index("account_userId_idx").on(table.userId)],
 );
 
-export const passwordResetTokens = sqliteTable("password_reset_tokens", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id),
-  token: text("token").notNull().unique(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  usedAt: integer("used_at", { mode: "timestamp" }),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-});
+export const verifications = sqliteTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
 
-export const roles = sqliteTable("roles", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  displayName: text("display_name").notNull(),
-  description: text("description"),
-  isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-});
-
-export const permissions = sqliteTable("permissions", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull().unique(),
-  displayName: text("display_name").notNull(),
-  description: text("description"),
-  isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-});
-
-export const userRoles = sqliteTable("user_roles", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  roleId: text("role_id")
-    .notNull()
-    .references(() => roles.id, { onDelete: "cascade" }),
-  assignedAt: integer("assigned_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-  assignedBy: text("assigned_by").references(() => users.id),
-});
-
-export const rolePermissions = sqliteTable("role_permissions", {
-  id: text("id").primaryKey(),
-  roleId: text("role_id")
-    .notNull()
-    .references(() => roles.id, { onDelete: "cascade" }),
-  permissionId: text("permission_id")
-    .notNull()
-    .references(() => permissions.id, { onDelete: "cascade" }),
-  assignedAt: integer("assigned_at", { mode: "timestamp" }).default(
-    sql`(strftime('%s', 'now'))`,
-  ),
-  assignedBy: text("assigned_by").references(() => users.id),
-});
+// ============================================================
+// Business Tables (the app's domain data)
+// ============================================================
 
 export const subscriptionPlans = sqliteTable("subscription_plans", {
   id: text("id").primaryKey(),
@@ -277,8 +224,6 @@ export const auditLogs = sqliteTable("audit_logs", {
     sql`(strftime('%s', 'now'))`,
   ),
 });
-
-// New tables for demo data
 
 export const exercises = sqliteTable("exercises", {
   id: text("id").primaryKey(),

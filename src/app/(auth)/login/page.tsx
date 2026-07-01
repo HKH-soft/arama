@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -71,13 +71,12 @@ function LoginForm() {
 
     setIsLoading(true);
     try {
-      const result = await signIn("credentials", {
+      const { data, error: signInError } = await signIn.email({
         email: email.trim(),
         password,
-        redirect: false,
       });
-      if (result?.error) {
-        setError(getErrorMessage(result.error));
+      if (signInError) {
+        setError(getErrorMessage(signInError.code || "CredentialsSignin"));
         return;
       }
       router.push(callbackUrl);
@@ -211,7 +210,7 @@ function LoginForm() {
             variant="outline"
             className="h-11 gap-2"
             type="button"
-            onClick={() => signIn("google", { callbackUrl })}
+            onClick={() => signIn.social({ provider: "google", callbackURL: callbackUrl })}
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />

@@ -1,5 +1,5 @@
 // Define permission types
-export type PermissionValue = 
+export type PermissionValue =
   | "users:read"
   | "users:write"
   | "users:delete"
@@ -29,7 +29,7 @@ export interface AuthUser {
   name: string;
   email: string;
   roles: string[];
-  permissions: string[];
+  permissions?: string[];
   isActive: boolean;
   image?: string | null;
   avatarUrl?: string | null;
