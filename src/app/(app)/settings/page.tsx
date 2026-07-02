@@ -53,7 +53,6 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
-  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [userData, setUserData] = useState<UserProfile | null>(null);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,54 +91,16 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="bg-linear-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
+      <div className="bg-linear-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 ">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">تنظیمات</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              مدیریت حساب کاربری و تنظیمات برنامه
-            </p>
+            <p className="text-muted-foreground mt-1 text-sm">تنظیمات برنامه</p>
           </div>
-          <Link href="/profile">
-            <Button variant="outline" size="sm">
-              <User className="w-4 h-4 ml-2" />
-              پروفایل
-            </Button>
-          </Link>
         </div>
       </div>
 
       <div className="px-6 pb-6 space-y-6">
-        {/* Profile section */}
-        <div className="bg-muted/30 border border-border rounded-lg p-5 mt-6">
-          {loading ? (
-            <div className="flex items-center gap-4">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-4 w-48" />
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-2xl">
-                {userData?.name ? userData.name.split(' ').map(n => n[0]).join('') : '?'}
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-foreground">
-                  {userData?.name || 'کاربر'}
-                </h3>
-                <p className="text-muted-foreground/80 text-sm">
-                  {userData?.email || '-'}
-                </p>
-                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full mt-1 inline-block">
-                  {subscription?.plan?.displayName || 'رایگان'}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Settings groups */}
         <div className="space-y-4">
           {/* Notifications */}
@@ -189,72 +150,6 @@ export default function SettingsPage() {
                   onCheckedChange={setEmailNotifications}
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Privacy & Security */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                حریم خصوصی و امنیت
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">
-                    احراز هویت دو مرحله‌ای
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    افزایش امنیت حساب
-                  </p>
-                </div>
-                <Switch
-                  checked={twoFactorAuth}
-                  onCheckedChange={setTwoFactorAuth}
-                />
-              </div> */}
-
-              <div className="pt-2">
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/session-management#password">
-                    <Key className="w-4 h-4 ml-2" />
-                    تغییر رمز عبور
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Session management */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Monitor className="w-5 h-5" />
-                مدیریت نشست‌ها
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {loading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-24 w-full rounded-lg" />
-                  <Skeleton className="h-24 w-full rounded-lg" />
-                </div>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    نشست‌های فعال، دستگاه‌های وارد شده و خروج از همه دستگاه‌ها را مدیریت کن.
-                  </p>
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link href="/session-management#sessions">
-                      <Monitor className="w-4 h-4 ml-2" />
-                      رفتن به مدیریت نشست‌ها
-                    </Link>
-                  </Button>
-                </>
-              )}
             </CardContent>
           </Card>
 
@@ -308,10 +203,14 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">پلن:</span>
-                    <Badge variant="default">{subscription.plan.displayName}</Badge>
+                    <Badge variant="default">
+                      {subscription.plan.displayName}
+                    </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">وضعیت:</span>
+                    <span className="text-sm text-muted-foreground">
+                      وضعیت:
+                    </span>
                     <span className="text-sm font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
                       فعال
                     </span>
@@ -338,7 +237,8 @@ export default function SettingsPage() {
                     <Badge variant="outline">رایگان</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    برای دسترسی به امکانات پیشرفته، یکی از پلن‌های پولی را انتخاب کنید
+                    برای دسترسی به امکانات پیشرفته، یکی از پلن‌های پولی را
+                    انتخاب کنید
                   </p>
                   <Link href="/profile" passHref>
                     <Button variant="outline" size="sm" className="w-full">
@@ -348,29 +248,6 @@ export default function SettingsPage() {
                   </Link>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Account */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="w-5 h-5" />
-                حساب کاربری
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium">حذف حساب</Label>
-                  <p className="text-xs text-muted-foreground">
-                    حذف دائمی حساب کاربری
-                  </p>
-                </div>
-                <Button variant="destructive" size="sm">
-                  حذف
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>

@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Shield, 
-  Key, 
-  Activity, 
-  Clock, 
-  Monitor, 
+import {
+  Shield,
+  Key,
+  Activity,
+  Clock,
+  Monitor,
   Globe,
   Eye,
   EyeOff,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ export default function SecurityPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  
+
   const activeSessions = [
     {
       id: "session1",
@@ -32,7 +32,7 @@ export default function SecurityPage() {
       ip: "192.168.1.100",
       lastActivity: "همین الان",
       isActive: true,
-      isCurrent: true
+      isCurrent: true,
     },
     {
       id: "session2",
@@ -41,7 +41,7 @@ export default function SecurityPage() {
       ip: "192.168.1.101",
       lastActivity: "۲ ساعت پیش",
       isActive: true,
-      isCurrent: false
+      isCurrent: false,
     },
     {
       id: "session3",
@@ -50,23 +50,27 @@ export default function SecurityPage() {
       ip: "192.168.1.102",
       lastActivity: "۱ روز پیش",
       isActive: false,
-      isCurrent: false
-    }
+      isCurrent: false,
+    },
   ];
-  
+
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real app, this would be an API call
-    console.log("Changing password:", { currentPassword, newPassword, confirmNewPassword });
+    console.log("Changing password:", {
+      currentPassword,
+      newPassword,
+      confirmNewPassword,
+    });
     // Reset form
     setCurrentPassword("");
     setNewPassword("");
     setConfirmNewPassword("");
     setShowPasswordFields(false);
   };
-  
+
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-bold text-foreground">امنیت حساب</h1>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -88,19 +92,28 @@ export default function SecurityPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">رمز عبور</h3>
-                  <p className="text-sm text-muted-foreground">رمز عبور فعلی ایمن است</p>
+                  <p className="text-sm text-muted-foreground">
+                    رمز عبور فعلی ایمن است
+                  </p>
                 </div>
                 <Button
                   variant="outline"
                   onClick={() => setShowPasswordFields(!showPasswordFields)}
                 >
-                  {showPasswordFields ? <EyeOff className="w-4 h-4 ml-2" /> : <Eye className="w-4 h-4 ml-2" />}
+                  {showPasswordFields ? (
+                    <EyeOff className="w-4 h-4 ml-2" />
+                  ) : (
+                    <Eye className="w-4 h-4 ml-2" />
+                  )}
                   {showPasswordFields ? "مخفی کردن" : "تغییر رمز"}
                 </Button>
               </div>
-              
+
               {showPasswordFields && (
-                <form onSubmit={handlePasswordChange} className="p-4 border border-border rounded-lg space-y-4">
+                <form
+                  onSubmit={handlePasswordChange}
+                  className="p-4 border border-border rounded-lg space-y-4"
+                >
                   <div>
                     <Label htmlFor="currentPassword">رمز فعلی</Label>
                     <Input
@@ -112,7 +125,7 @@ export default function SecurityPage() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="newPassword">رمز جدید</Label>
                     <Input
@@ -124,7 +137,7 @@ export default function SecurityPage() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="confirmNewPassword">تکرار رمز جدید</Label>
                     <Input
@@ -136,14 +149,14 @@ export default function SecurityPage() {
                       required
                     />
                   </div>
-                  
+
                   <Button type="submit">ذخیره رمز جدید</Button>
                 </form>
               )}
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Active Sessions Card */}
         <Card id="sessions">
           <CardHeader>
@@ -155,7 +168,10 @@ export default function SecurityPage() {
           <CardContent>
             <div className="space-y-4">
               {activeSessions.map((session) => (
-                <div key={session.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between p-4 border border-border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
                       {session.isCurrent ? (
@@ -166,8 +182,12 @@ export default function SecurityPage() {
                     </div>
                     <div>
                       <h4 className="font-medium">{session.device}</h4>
-                      <p className="text-sm text-muted-foreground">{session.location} • {session.ip}</p>
-                      <p className="text-xs text-muted-foreground mt-1">آخرین فعالیت: {session.lastActivity}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {session.location} • {session.ip}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        آخرین فعالیت: {session.lastActivity}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -197,7 +217,7 @@ export default function SecurityPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Security Recommendations Card */}
         <Card>
           <CardHeader>

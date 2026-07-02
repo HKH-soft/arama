@@ -37,7 +37,7 @@ export function DashboardShell({
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetContent
             side="right"
-            className="bg-card border-none p-0 w-75 [&>button]:hidden [&_aside]:!flex [&_aside]:h-full text-foreground"
+            className="bg-transparent border-none p-0 w-75 [&>button]:hidden [&_aside]:!flex [&_aside]:h-full text-foreground"
           >
             <SheetTitle className="sr-only">منو</SheetTitle>
             <DashboardSidebar user={user} />

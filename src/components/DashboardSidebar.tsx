@@ -37,9 +37,6 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
     { icon: Activity, label: "تمرینات", href: "/exercises" },
     { icon: Wind, label: "مدیتیشن", href: "/meditation" },
     { icon: FileText, label: "گزارش‌ها", href: "/reports" },
-    user ? { icon: Crown, label: "اشتراک‌ها", href: "/subscriptions" } : null,
-    user ? { icon: CreditCard, label: "صورتحساب", href: "/billing" } : null,
-    user ? { icon: Settings, label: "تنظیمات", href: "/settings" } : null,
   ].filter(Boolean) as { icon: any; label: string; href: string }[];
 
   // Show admin link if user has admin role
@@ -59,7 +56,7 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
   const isSuperAdmin = user?.roles?.includes("super_admin");
 
   return (
-    <aside className="w-75 shrink-0 flex flex-col gap-2 hidden md:flex">
+    <aside className="w-75 shrink-0 flex-col gap-2 hidden md:flex bg-transparent">
       {/* Navigation panel */}
       <div className="bg-sidebar rounded-lg p-4 grow border border-sidebar-border">
         <Link href="/" className="flex items-center gap-2 mb-4 px-2">
