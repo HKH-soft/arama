@@ -53,32 +53,27 @@ export class PayPingGateway {
     }
 
     /**
-     * Request a payment from PayPing
+     * Request a payment from PayPing conforming to PaymentGateway interface
      * @param amount Amount in Rials
-     * @param returnUrl The URL to redirect user after payment
-     * @param clientRefId Unique reference ID for this payment
-     * @param options Additional options
-     * @returns Payment URL and code
+     * @param description Payment description
+     * @param callbackUrl The URL to redirect user after payment
+     * @param metadata Optional metadata to store
+     * @returns Payment URL and authority code
      */
     async requestPayment(
         amount: number,
-        returnUrl: string,
-        clientRefId: string,
-        options?: {
-            payerName?: string;
-            payerEmail?: string;
-            description?: string;
-            metaData?: Record<string, string>;
-        }
+        description: string,
+        callbackUrl: string,
+        metadata?: Record<string, string>
     ): Promise<{ authority: string; url: string }> {
         const requestData: PayPingRequest = {
             amount,
-            returnUrl,
-            clientRefId,
-            payerName: options?.payerName,
-            payerEmail: options?.payerEmail,
-            description: options?.description,
-            metaData: options?.metaData,
+            returnUrl: callbackUrl,
+            clientRefId: metadata?.paymentId || metadata?.userId || "Ref-" + Math.floor(Math.random() * 1000000),
+            payerName: metadata?.payerName,
+            payerEmail: metadata?.payerEmail,
+            description,
+            metaData: metadata,
         };
 
         const response = await fetch(`${this.getBaseUrl()}post`, {

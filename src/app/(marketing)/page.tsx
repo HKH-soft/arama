@@ -88,7 +88,7 @@ export default function Landing() {
           <BackgroundRenderer />
         </div>
         {/* Smooth fade at bottom to blend with page bg */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-b from-transparent via-background/60 to-background -z-[5] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-b from-transparent via-card to-card -z-[5] pointer-events-none" />
 
         {/* Foreground Content Wrapper */}
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-36">
@@ -720,7 +720,7 @@ export default function Landing() {
 
       {/* Final CTA */}
       <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-secondary/10 to-background -z-10" />
+        <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-card to-card -z-10" />
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

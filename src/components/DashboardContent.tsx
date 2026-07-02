@@ -164,7 +164,7 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
   return (
     <>
       {/* Gradient header */}
-      <div className="bg-linear-to-b from-primary/35 via-background/95 to-background px-6 pt-6 pb-4 border-b border-border/60">
+      <div className="bg-linear-to-b from-primary/35 via-card to-card px-6 pt-6 pb-4">
         <header className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
@@ -257,34 +257,34 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
                   minWidth={0}
                   minHeight={0}
                 >
-                <RadarChart
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="70%"
-                  data={emotionChartData}
-                >
-                  <PolarGrid stroke="hsl(var(--border))" />
-                  <PolarAngleAxis
-                    dataKey="subject"
-                    tick={{
-                      fill: "hsl(var(--muted-foreground))",
-                      fontSize: 11,
-                    }}
-                  />
-                  <PolarRadiusAxis
-                    angle={30}
-                    domain={[0, 100]}
-                    tick={false}
-                    axisLine={false}
-                  />
-                  <Radar
-                    name="شما"
-                    dataKey="A"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.3}
-                  />
-                </RadarChart>
+                  <RadarChart
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="70%"
+                    data={emotionChartData}
+                  >
+                    <PolarGrid stroke="hsl(var(--border))" />
+                    <PolarAngleAxis
+                      dataKey="subject"
+                      tick={{
+                        fill: "hsl(var(--muted-foreground))",
+                        fontSize: 11,
+                      }}
+                    />
+                    <PolarRadiusAxis
+                      angle={30}
+                      domain={[0, 100]}
+                      tick={false}
+                      axisLine={false}
+                    />
+                    <Radar
+                      name="شما"
+                      dataKey="A"
+                      stroke="hsl(var(--primary))"
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.3}
+                    />
+                  </RadarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
@@ -316,49 +316,49 @@ export function DashboardContent({ user }: { user: SessionPayload | null }) {
                   minWidth={0}
                   minHeight={0}
                 >
-                <LineChart
-                  data={weeklyChartData}
-                  margin={{ top: 5, right: 5, bottom: 5, left: -20 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="hsl(var(--border))"
-                  />
-                  <XAxis
-                    dataKey="name"
-                    stroke="hsl(var(--muted-foreground)/60)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="hsl(var(--muted-foreground)/60)"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      borderColor: "hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                    itemStyle={{ color: "hsl(var(--foreground))" }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="score"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={3}
-                    dot={{
-                      r: 4,
-                      fill: "hsl(var(--primary))",
-                      strokeWidth: 0,
-                    }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
+                  <LineChart
+                    data={weeklyChartData}
+                    margin={{ top: 5, right: 5, bottom: 5, left: -20 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="hsl(var(--border))"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke="hsl(var(--muted-foreground)/60)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground)/60)"
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        borderColor: "hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                      itemStyle={{ color: "hsl(var(--foreground))" }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={3}
+                      dot={{
+                        r: 4,
+                        fill: "hsl(var(--primary))",
+                        strokeWidth: 0,
+                      }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             ) : (

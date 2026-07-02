@@ -14,6 +14,7 @@ import {
   Volume2,
   Key,
   Monitor,
+  Wallet,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 interface UserProfile {
   id: string;
@@ -38,7 +40,13 @@ interface UserProfile {
 interface Subscription {
   plan: {
     displayName: string;
+    price: number;
+    durationDays: number;
+    features: string[];
   };
+  status: string;
+  startDate: number;
+  endDate: number;
 }
 
 export default function SettingsPage() {
@@ -85,10 +93,20 @@ export default function SettingsPage() {
   return (
     <>
       <div className="bg-linear-to-b from-primary/25 via-card/40 to-card px-6 pt-6 pb-4 border-b border-border/50">
-        <h1 className="text-2xl font-bold text-foreground">تنظیمات</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          مدیریت حساب کاربری و تنظیمات برنامه
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">تنظیمات</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              مدیریت حساب کاربری و تنظیمات برنامه
+            </p>
+          </div>
+          <Link href="/profile">
+            <Button variant="outline" size="sm">
+              <User className="w-4 h-4 ml-2" />
+              پروفایل
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="px-6 pb-6 space-y-6">
@@ -269,6 +287,67 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Current Plan Display */}
+          <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Wallet className="w-5 h-5" />
+                پلن فعلی شما
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : subscription ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">پلن:</span>
+                    <Badge variant="default">{subscription.plan.displayName}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">وضعیت:</span>
+                    <span className="text-sm font-medium bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                      فعال
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">مبلغ:</span>
+                    <span className="text-sm font-medium">
+                      {subscription.plan.price === 0
+                        ? "رایگان"
+                        : `${subscription.plan.price.toLocaleString()} تومان`}
+                    </span>
+                  </div>
+                  <Link href="/profile" passHref>
+                    <Button variant="outline" size="sm" className="w-full mt-2">
+                      <User className="w-4 h-4 ml-2" />
+                      مدیریت اشتراک در پروفایل
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">پلن:</span>
+                    <Badge variant="outline">رایگان</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    برای دسترسی به امکانات پیشرفته، یکی از پلن‌های پولی را انتخاب کنید
+                  </p>
+                  <Link href="/profile" passHref>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Wallet className="w-4 h-4 ml-2" />
+                      مشاهده پلن‌ها
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </CardContent>
           </Card>
 

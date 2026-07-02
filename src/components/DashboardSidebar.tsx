@@ -38,9 +38,8 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
     { icon: Wind, label: "مدیتیشن", href: "/meditation" },
     { icon: FileText, label: "گزارش‌ها", href: "/reports" },
     user ? { icon: Crown, label: "اشتراک‌ها", href: "/subscriptions" } : null,
-    user ? { icon: Settings, label: "تنظیمات", href: "/settings" } : null,
     user ? { icon: CreditCard, label: "صورتحساب", href: "/billing" } : null,
-    user ? { icon: Monitor, label: "مدیریت نشست‌ها", href: "/session-management" } : null,
+    user ? { icon: Settings, label: "تنظیمات", href: "/settings" } : null,
   ].filter(Boolean) as { icon: any; label: string; href: string }[];
 
   // Show admin link if user has admin role
