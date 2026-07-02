@@ -38,11 +38,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Determine currentMode: use mode if provided, otherwise default to mood
+        const currentMode = mode ?? mood;
+
         const result = await db.insert(moodEntries).values({
             id: `${Date.now()}-${Math.random()}`,
             userId: user.id,
             mood,
-            currentMode: mode || mood,
+            currentMode,
             loggedAt: new Date(),
         }).returning();
 

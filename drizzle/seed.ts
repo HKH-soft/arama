@@ -119,6 +119,18 @@ async function main() {
       console.log(`✓ User created: ${userData.email}`);
     } else {
       console.log(`- User already exists: ${userData.email}`);
+      // Update role for existing admin user if needed
+      if (userData.email === "admin@arama.ir") {
+        await db.update(users)
+          .set({ role: "super_admin" })
+          .where(eq(users.email, "admin@arama.ir"));
+        console.log(`✓ Admin user role updated to super_admin`);
+      } else if (userData.email === "user@arama.ir") {
+        await db.update(users)
+          .set({ role: "user" })
+          .where(eq(users.email, "user@arama.ir"));
+        console.log(`✓ Regular user role updated to user`);
+      }
     }
   }
 
@@ -393,3 +405,5 @@ main()
     console.error(e);
     process.exit(1);
   });
+
+

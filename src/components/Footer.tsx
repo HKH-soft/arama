@@ -17,13 +17,13 @@ export function Footer() {
               هم‌صحبت امن روزهای سخت. دستیار هوشمند سلامت روان که همیشه در کنار توست.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <SiX className="w-5 h-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <SiInstagram className="w-5 h-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="https://t.me/arama" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
               </a>
             </div>
@@ -44,17 +44,17 @@ export function Footer() {
             <ul className="space-y-2">
               <li><Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">درباره ما</Link></li>
               <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">تماس با ما</Link></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">وبلاگ</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">فرصت‌های شغلی</a></li>
+              <li><Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors">وبلاگ</Link></li>
+              <li><Link href="/careers" className="text-sm text-muted-foreground hover:text-foreground transition-colors">فرصت‌های شغلی</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="font-semibold text-foreground mb-4">پشتیبانی</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">مرکز راهنما</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">حریم خصوصی</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">شرایط استفاده</a></li>
+              <li><Link href="/help-center" className="text-sm text-muted-foreground hover:text-foreground transition-colors">مرکز راهنما</Link></li>
+              <li><Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">حریم خصوصی</Link></li>
+              <li><Link href="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors">شرایط استفاده</Link></li>
               <li><Link href="/#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">سوالات متداول</Link></li>
             </ul>
           </div>
