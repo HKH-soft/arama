@@ -60,31 +60,101 @@ export async function POST(
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
 
-    // Call AI to generate response
-    const aiResponse = await anthropic.messages.create({
-      model: process.env.AI_MODEL || "claude-3-haiku-20240307",
-      max_tokens: 1024,
-      temperature: 0.7,
-      system: "شما یک دستیار روان‌شناسی به نام آراما هستید. فارسی صحبت می‌کنید و به کاربران در حل مشکلات روانی و احساسی کمک می‌کنید. صمیمی اما حرفه‌ای باشید.",
-      messages: aiMessages as any, // Type assertion due to compatibility
+    // Create a readable stream for Server-Sent Events
+    const stream = new ReadableStream({
+      async start(controller) {
+        let isClosed = false; // Track if controller is already closed
+        
+        const closeController = () => {
+          if (!isClosed) {
+            isClosed = true;
+            controller.close();
+          }
+        };
+
+        try {
+          // Call AI to generate response with streaming
+          const aiResponse = await anthropic.messages.stream({
+            model: process.env.AI_MODEL || "claude-3-haiku-20240307",
+            max_tokens: 1024,
+            temperature: 0.7,
+            system: "شما یک دستیار روان‌شناسی به نام آراما هستید. فارسی صحبت می‌کنید و به کاربران در حل مشکلات روانی و احساسی کمک می‌کنید. صمیمی اما حرفه‌ای باشید.",
+            messages: aiMessages as any, // Type assertion due to compatibility
+          });
+
+          let fullResponse = "";
+          
+          // Subscribe to the stream and handle events
+          aiResponse.on('text', (textDelta) => {
+            fullResponse += textDelta;
+            // Send incremental update to client in SSE format
+            const sseMessage = `data: ${JSON.stringify({ content: textDelta })}\n\n`;
+            if (!isClosed) {
+              controller.enqueue(new TextEncoder().encode(sseMessage));
+            }
+          });
+
+          aiResponse.on('end', async () => {
+            try {
+              // Get the final message
+              const result = await aiResponse.finalMessage();
+              
+              // Create AI response message in database after streaming completes
+              const aiMessageResult = await db.insert(messages).values({
+                id: crypto.randomUUID(),
+                conversationId: id,
+                content: result.content[0].type === 'text' ? result.content[0].text : "نمی توانم این پیام را پردازش کنم.",
+                role: "assistant",
+              }).returning();
+
+              // Update conversation last message timestamp
+              await db.update(conversations)
+                .set({ updatedAt: new Date() })
+                .where(eq(conversations.id, id));
+
+              // Send completion signal
+              if (!isClosed) {
+                const doneMessage = `data: ${JSON.stringify({ done: true })}\n\n`;
+                controller.enqueue(new TextEncoder().encode(doneMessage));
+              }
+            } catch (dbError) {
+              console.error("Database error after streaming:", dbError);
+              if (!isClosed) {
+                const errorMessage = `data: ${JSON.stringify({ error: "خطا در ذخیره پیام" })}\n\n`;
+                controller.enqueue(new TextEncoder().encode(errorMessage));
+              }
+            } finally {
+              closeController();
+            }
+          });
+
+          aiResponse.on('error', (error) => {
+            console.error("AI streaming error:", error);
+            if (!isClosed) {
+              const errorMessage = `data: ${JSON.stringify({ error: "خطا در دریافت پاسخ از هوش مصنوعی" })}\n\n`;
+              controller.enqueue(new TextEncoder().encode(errorMessage));
+            }
+            closeController();
+          });
+
+        } catch (error) {
+          console.error("AI streaming error:", error);
+          if (!isClosed) {
+            const errorMessage = `data: ${JSON.stringify({ error: "خطا در دریافت پاسخ از هوش مصنوعی" })}\n\n`;
+            controller.enqueue(new TextEncoder().encode(errorMessage));
+          }
+          closeController();
+        }
+      },
     });
 
-    // Create AI response message
-    const aiMessageResult = await db.insert(messages).values({
-      id: crypto.randomUUID(),
-      conversationId: id,
-      content: aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : "نمی توانم این پیام را پردازش کنم.",
-      role: "assistant",
-    }).returning();
-
-    // Update conversation last message timestamp
-    await db.update(conversations)
-      .set({ updatedAt: new Date() }) // Changed from lastMessageAt to updatedAt
-      .where(eq(conversations.id, id));
-
-    return NextResponse.json({
-      userMessage: userMessageResult[0],
-      aiMessage: aiMessageResult[0],
+    // Return the streaming response
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+      },
     });
   } catch (error) {
     console.error("ارسال پیام انجام نشد:", error);
