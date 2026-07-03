@@ -171,6 +171,7 @@ export const payments = sqliteTable("payments", {
     .default("PENDING"),
   gatewayName: text("gateway_name").notNull(),
   gatewayRefId: text("gateway_ref_id"),
+  idempotencyKey: text("idempotency_key"), // For preventing duplicate processing
   description: text("description"),
   callbackUrl: text("callback_url"),
   paidAt: integer("paid_at", { mode: "timestamp" }),
@@ -295,3 +296,5 @@ export const meditationTracks = sqliteTable("meditation_tracks", {
     sql`(strftime('%s', 'now'))`,
   ),
 });
+
+

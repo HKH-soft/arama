@@ -6,6 +6,7 @@ import { z } from "zod";
 const createPaymentSchema = z.object({
   planId: z.string().min(1, "شناسه پلن الزامی است"),
   returnUrl: z.string().url("آدرس بازگشت نامعتبر است"),
+  clientRequestId: z.string().optional(), // Add idempotency key
 });
 
 export async function POST(request: NextRequest) {
@@ -22,14 +23,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planId, returnUrl } = parsed.data;
+    const { planId, returnUrl, clientRequestId } = parsed.data;
 
     // Create payment session with Iranian gateway
     const paymentData = await PaymentService.createPaymentSession(
       user.id,
       planId,
       "zarinpal",
-      returnUrl
+      returnUrl,
+      clientRequestId // Pass idempotency key
     );
 
     return NextResponse.json({

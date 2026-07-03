@@ -63,141 +63,157 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; messageId: string }> }
 ) {
   try {
-    const user = await requireAuth();
-    const clientInfo = getClientInfo(request);
-    const { id, messageId } = await params;
+    const currentUser = await requireAuth();
+    const { id: conversationId, messageId } = await params;
 
-    // Check if conversation exists and belongs to user
-    const conversationResult = await db.select()
+    // Verify conversation belongs to user
+    const conversation = await db
+      .select()
       .from(conversations)
       .where(and(
-        eq(conversations.id, id),
-        eq(conversations.userId, user.id)
+        eq(conversations.id, conversationId),
+        eq(conversations.userId, currentUser.id)
       ));
-      
-    if (conversationResult.length === 0) {
+
+    if (conversation.length === 0) {
       return NextResponse.json(
-        { error: "مکالمه یافت نشد یا متعلق به شما نیست" }, 
+        { error: "مکالمه یافت نشد یا دسترسی نامعتبر است" },
         { status: 404 }
       );
     }
 
-    // Check if message exists and belongs to the conversation
-    const messageResult = await db.select()
+    // Get original message for audit
+    const originalMessageResult = await db
+      .select()
       .from(messages)
       .where(and(
         eq(messages.id, messageId),
-        eq(messages.conversationId, id)
+        eq(messages.conversationId, conversationId)
       ));
-      
-    if (messageResult.length === 0) {
+
+    if (originalMessageResult.length === 0) {
       return NextResponse.json(
-        { error: "پیام در مکالمه مورد نظر یافت نشد" }, 
+        { error: "پیام یافت نشد" },
         { status: 404 }
       );
     }
 
+    const originalMessage = originalMessageResult[0];
+    
+    // Parse request body to get content and role
     const body = await request.json();
-    const parsed = updateMessageSchema.safeParse(body);
+    const { content, role } = body;
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
-        { status: 400 }
-      );
-    }
-
-    const { content } = parsed.data;
-
-    // Update message
-    const updatedMessageResult = await db.update(messages)
-      .set({ 
-        content: content.trim(),
-        updatedAt: new Date() 
+    // Update the message
+    const updatedMessage = await db
+      .update(messages)
+      .set({
+        content: content,
+        role: role,
+        updatedAt: new Date(),
       })
-      .where(eq(messages.id, messageId))
+      .where(and(
+        eq(messages.id, messageId),
+        eq(messages.conversationId, conversationId)
+      ))
       .returning();
 
+    const clientInfo = await getClientInfo();  // Changed to await
+    
     // Log audit
     await logAudit({
-      userId: user.id,
+      userId: currentUser.id,
       action: "MESSAGE_UPDATED",
       entity: "message",
-      entityId: messageId,
-      metadata: { updatedContentLength: content.length },
-      ipAddress: clientInfo.ipAddress,
+      entityId: updatedMessage[0].id,
+      metadata: {
+        conversationId: conversationId,
+        oldContent: originalMessage.content,
+        newContent: content,
+        role: role,
+      },
+      ipAddress: clientInfo.ipAddress,  // This should now work since clientInfo is awaited
       userAgent: clientInfo.userAgent,
     });
 
-    return NextResponse.json(updatedMessageResult[0]);
-  } catch (error) {
-    console.error("به‌روزرسانی پیام انجام نشد:", error);
+    return NextResponse.json(updatedMessage[0]);
+  } catch (err) {
+    console.error("Update message error:", err);
     return NextResponse.json(
-      { error: "خطا در به‌روزرسانی پیام", details: error instanceof Error ? error.message : "خطای ناشناخته" },
-      { status: 500 },
+      { error: "خطا در به‌روزرسانی پیام", details: err instanceof Error ? err.message : "خطای ناشناخته" },
+      { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string; messageId: string }> }
 ) {
   try {
-    const user = await requireAuth();
-    const clientInfo = getClientInfo(_request);
-    const { id, messageId } = await params;
+    const currentUser = await requireAuth();
+    const { id: conversationId, messageId } = await params;
 
-    // Check if conversation exists and belongs to user
-    const conversationResult = await db.select()
+    // Verify conversation belongs to user
+    const conversation = await db
+      .select()
       .from(conversations)
       .where(and(
-        eq(conversations.id, id),
-        eq(conversations.userId, user.id)
+        eq(conversations.id, conversationId),
+        eq(conversations.userId, currentUser.id)
       ));
-      
-    if (conversationResult.length === 0) {
+
+    if (conversation.length === 0) {
       return NextResponse.json(
-        { error: "مکالمه یافت نشد یا متعلق به شما نیست" }, 
+        { error: "مکالمه یافت نشد یا دسترسی نامعتبر است" },
         { status: 404 }
       );
     }
 
-    // Check if message exists and belongs to the conversation
-    const messageResult = await db.select()
+    // Get original message for audit
+    const originalMessage = await db
+      .select()
       .from(messages)
       .where(and(
         eq(messages.id, messageId),
-        eq(messages.conversationId, id)
+        eq(messages.conversationId, conversationId)
       ));
-      
-    if (messageResult.length === 0) {
+
+    if (originalMessage.length === 0) {
       return NextResponse.json(
-        { error: "پیام در مکالمه مورد نظر یافت نشد" }, 
+        { error: "پیام یافت نشد" },
         { status: 404 }
       );
     }
 
-    // Delete message
-    await db.delete(messages).where(eq(messages.id, messageId));
+    // Delete the message
+    await db
+      .delete(messages)
+      .where(eq(messages.id, messageId));
 
+    const clientInfo = await getClientInfo();  // Changed to await
+    
     // Log audit
     await logAudit({
-      userId: user.id,
+      userId: currentUser.id,
       action: "MESSAGE_DELETED",
       entity: "message",
       entityId: messageId,
-      metadata: {},
-      ipAddress: clientInfo.ipAddress,
+      metadata: {
+        conversationId: conversationId,
+        deletedContent: originalMessage[0].content,
+        role: originalMessage[0].role,
+      },
+      ipAddress: clientInfo.ipAddress,  // This should now work since clientInfo is awaited
       userAgent: clientInfo.userAgent,
     });
 
-    return NextResponse.json({ message: "پیام با موفقیت حذف شد" });
-  } catch (error) {
-    console.error("حذف پیام انجام نشد:", error);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Delete message error:", err);
     return NextResponse.json(
-      { error: "خطا در حذف پیام", details: error instanceof Error ? error.message : "خطای ناشناخته" },
-      { status: 500 },
+      { error: "خطا در حذف پیام", details: err instanceof Error ? err.message : "خطای ناشناخته" },
+      { status: 500 }
     );
   }
 }

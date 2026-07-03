@@ -16,7 +16,7 @@ const renewSubscriptionSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth();
-    const clientInfo = getClientInfo(request);
+    const clientInfo = await getClientInfo(request);
     
     // Get current subscription
     const subscriptionResult = await db.select({
@@ -86,6 +86,83 @@ export async function POST(request: NextRequest) {
     console.error("Failed to renew subscription:", error);
     return NextResponse.json(
       { error: "Failed to renew subscription" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const user = await requireAuth();
+    const { planId } = await request.json();
+
+    const planResult = await db.select().from(subscriptionPlans).where(eq(subscriptionPlans.id, planId));
+    if (planResult.length === 0) {
+      return NextResponse.json(
+        { error: "Plan not found" },
+        { status: 404 }
+      );
+    }
+    
+    const plan = planResult[0];
+    if (!plan) {
+      return NextResponse.json(
+        { error: "Plan not found" },
+        { status: 404 }
+      );
+    }
+
+    const subscriptionResult = await db.select().from(subscriptions).where(eq(subscriptions.userId, user.id)).get();
+    if (!subscriptionResult) {
+      return NextResponse.json(
+        { error: "Subscription not found" },
+        { status: 404 }
+      );
+    }
+
+    const subscriptionId = subscriptionResult.id;
+
+    const updatedSubscription = await db
+      .update(subscriptions)
+      .set({
+        status: "ACTIVE",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000), // Recalculate end date
+        cancelledAt: null, // Clear cancellation date
+        autoRenew: true, // Reset auto-renew to true
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptions.id, subscriptionId))
+      .returning();
+
+    const clientInfo = await getClientInfo(request);  // Fixed to pass request parameter
+    
+    // Log audit
+    await logAudit({
+      userId: user.id,
+      action: "SUBSCRIPTION_RENEWED",
+      entity: "subscription",
+      entityId: subscriptionId,
+      metadata: {
+        planId: plan.id,
+        planName: plan.displayName,
+        newStartDate: updatedSubscription[0].startDate,
+        newEndDate: updatedSubscription[0].endDate,
+        price: plan.price,
+      },
+      ipAddress: clientInfo.ipAddress,  // This should now work since clientInfo is awaited
+      userAgent: clientInfo.userAgent,
+    });
+
+    return NextResponse.json({
+      success: true,
+      subscription: updatedSubscription[0],
+      message: "اشتراک با موفقیت تمدید شد"
+    });
+  } catch (err) {
+    console.error("Subscription renewal error:", err);
+    return NextResponse.json(
+      { error: "خطا در تمدید اشتراک", details: err instanceof Error ? err.message : "خطای ناشناخته" },
       { status: 500 }
     );
   }
