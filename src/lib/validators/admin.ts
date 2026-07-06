@@ -5,31 +5,37 @@ import { z } from "zod";
  * This addresses the Admin API Boolean Parameter Validation & Fault Tolerance Specification
  */
 export function preprocessBoolean() {
-  return z.preprocess((val) => {
-    if (val === null || val === undefined || val === "") return undefined;
-    if (typeof val === "string") {
-      if (val.toLowerCase() === "true" || val === "1") return true;
-      if (val.toLowerCase() === "false" || val === "0") return false;
-    }
-    if (typeof val === "boolean") return val;
-    if (typeof val === "number") return val !== 0;
-    return undefined;
-  }, z.boolean().optional());
+  return z
+    .any()
+    .transform((val) => {
+      if (val === null || val === undefined || val === "") return undefined;
+      if (typeof val === "string") {
+        if (val.toLowerCase() === "true" || val === "1") return true;
+        if (val.toLowerCase() === "false" || val === "0") return false;
+      }
+      if (typeof val === "boolean") return val;
+      if (typeof val === "number") return val !== 0;
+      return undefined;
+    })
+    .pipe(z.boolean().optional());
 }
 
 /**
  * Enhanced number preprocessing function to handle various number representations
  */
 export function preprocessNumber() {
-  return z.preprocess((val) => {
-    if (val === null || val === undefined || val === "") return undefined;
-    if (typeof val === "string") {
-      const num = Number(val);
-      return isNaN(num) ? undefined : num;
-    }
-    if (typeof val === "number") return val;
-    return undefined;
-  }, z.number().optional());
+  return z
+    .any()
+    .transform((val) => {
+      if (val === null || val === undefined || val === "") return undefined;
+      if (typeof val === "string") {
+        const num = Number(val);
+        return isNaN(num) ? undefined : num;
+      }
+      if (typeof val === "number") return val;
+      return undefined;
+    })
+    .pipe(z.number().optional());
 }
 
 /**

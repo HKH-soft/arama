@@ -34,6 +34,17 @@ export async function getCurrentUser() {
       roles,
     };
   } catch (error) {
+    // During Next.js build, headers() throws a "Dynamic server usage" error
+    // to detect which routes need dynamic rendering. This is expected, not a bug.
+    // Check both the message and digest properties since the format varies.
+    if (
+      error instanceof Error &&
+      (error.message?.includes("Dynamic server usage") ||
+        (error as any).digest === "DYNAMIC_SERVER_USAGE")
+    ) {
+      // Re-throw so Next.js correctly marks the route as dynamic
+      throw error;
+    }
     console.error("Error getting current user:", error);
     return null;
   }

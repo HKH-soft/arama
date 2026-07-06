@@ -42,10 +42,14 @@ export async function GET(
     
     const plan = planResult[0];
     
-    // Parse features from JSON string
-    try {
-      plan.features = JSON.parse(plan.features as unknown as string);
-    } catch {
+    // Parse features from JSON string if it exists
+    if (plan.features && typeof plan.features === 'string') {
+      try {
+        plan.features = JSON.parse(plan.features);
+      } catch {
+        plan.features = [];
+      }
+    } else if (plan.features === null) {
       plan.features = [];
     }
     
@@ -66,6 +70,7 @@ export async function PUT(
   try {
     const currentUser = await requirePermission("plans:write");
     const { id } = await params;
+    const clientInfo = await getClientInfo(); // Changed to await
     
     const body = await request.json();
     const parsed = updatePlanSchema.safeParse(body);
@@ -101,31 +106,51 @@ export async function PUT(
       );
     }
     
+    // Prepare the update object with only the fields that are provided
+    const updateData: any = {};
+    if (displayName !== undefined) updateData.displayName = displayName;
+    if (description !== undefined) updateData.description = description;
+    if (price !== undefined) updateData.price = price;
+    if (durationDays !== undefined) updateData.durationDays = durationDays;
+    if (features !== undefined) updateData.features = features;
+    if (maxConversations !== undefined) updateData.maxConversations = maxConversations;
+    if (maxMessagesPerDay !== undefined) updateData.maxMessagesPerDay = maxMessagesPerDay;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (sortOrder !== undefined) updateData.sortOrder = sortOrder;
+    updateData.updatedAt = new Date();
+    
     // Update plan
     const updatedPlanResult = await db.update(subscriptionPlans)
-      .set({
-        displayName: displayName || existingPlanResult[0].displayName,
-        description: description || existingPlanResult[0].description,
-        price: price !== undefined ? price : existingPlanResult[0].price,
-        durationDays: durationDays !== undefined ? durationDays : existingPlanResult[0].durationDays,
-        features: features !== undefined ? features : existingPlanResult[0].features,
-        maxConversations: maxConversations !== undefined ? maxConversations : existingPlanResult[0].maxConversations,
-        maxMessagesPerDay: maxMessagesPerDay !== undefined ? maxMessagesPerDay : existingPlanResult[0].maxMessagesPerDay,
-        isActive: isActive !== undefined ? isActive : existingPlanResult[0].isActive,
-        sortOrder: sortOrder !== undefined ? sortOrder : existingPlanResult[0].sortOrder,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(subscriptionPlans.id, id))
       .returning();
     
     const updatedPlan = updatedPlanResult[0];
     
-    // Parse features from JSON string
-    try {
-      updatedPlan.features = JSON.parse(updatedPlan.features as unknown as string);
-    } catch {
+    // Parse features from JSON string if it exists
+    if (updatedPlan.features && typeof updatedPlan.features === 'string') {
+      try {
+        updatedPlan.features = JSON.parse(updatedPlan.features);
+      } catch {
+        updatedPlan.features = [];
+      }
+    } else if (updatedPlan.features === null) {
       updatedPlan.features = [];
     }
+    
+    // Log audit
+    await logAudit({
+      userId: currentUser.id,
+      action: "PLAN_UPDATED",
+      entity: "subscription_plan",
+      entityId: updatedPlan.id,
+      metadata: { 
+        planId: id,
+        updatedFields: Object.keys(parsed.data)
+      },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
     
     return NextResponse.json(updatedPlan);
   } catch (err) {
@@ -144,6 +169,7 @@ export async function DELETE(
   try {
     const currentUser = await requirePermission("plans:write");
     const { id } = await params;
+    const clientInfo = await getClientInfo(); // Changed to await
 
     // Check if plan exists
     const existingPlanResult = await db.select()
@@ -158,7 +184,7 @@ export async function DELETE(
     }
     
     // Don't allow deletion of built-in plans
-    if (["FREE", "PREMIUM", "ENTERPRISE"].includes(existingPlanResult[0].name)) {
+    if (["FREE", "PREMIUM", "ENTERPRISE"].includes(existingPlanResult[0].name.toUpperCase())) {
       return NextResponse.json(
         { error: "حذف پلن‌های داخلی مجاز نیست" },
         { status: 400 }
@@ -181,6 +207,17 @@ export async function DELETE(
     
     // Delete the plan
     await db.delete(subscriptionPlans).where(eq(subscriptionPlans.id, id));
+
+    // Log audit
+    await logAudit({
+      userId: currentUser.id,
+      action: "PLAN_DELETED",
+      entity: "subscription_plan",
+      entityId: id,
+      metadata: { planName: existingPlanResult[0].name },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
     
     return NextResponse.json({ message: "پلن با موفقیت حذف شد" });
   } catch (err) {

@@ -1,19 +1,21 @@
 CREATE TABLE `account` (
-	`userId` text NOT NULL,
-	`type` text NOT NULL,
-	`provider` text NOT NULL,
-	`providerAccountId` text NOT NULL,
-	`refresh_token` text,
+	`id` text PRIMARY KEY NOT NULL,
+	`account_id` text NOT NULL,
+	`provider_id` text NOT NULL,
+	`user_id` text NOT NULL,
 	`access_token` text,
-	`expires_at` integer,
-	`token_type` text,
-	`scope` text,
+	`refresh_token` text,
 	`id_token` text,
-	`session_state` text,
-	PRIMARY KEY(`provider`, `providerAccountId`),
-	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+	`access_token_expires_at` integer,
+	`refresh_token_expires_at` integer,
+	`scope` text,
+	`password` text,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE INDEX `account_userId_idx` ON `account` (`user_id`);--> statement-breakpoint
 CREATE TABLE `audit_logs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text,
@@ -36,17 +38,43 @@ CREATE TABLE `conversations` (
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `email_verification_tokens` (
+CREATE TABLE `emotion_logs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
-	`token` text NOT NULL,
-	`expires_at` integer NOT NULL,
-	`used_at` integer,
+	`emotion` text NOT NULL,
+	`score` integer NOT NULL,
+	`logged_at` integer NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `email_verification_tokens_token_unique` ON `email_verification_tokens` (`token`);--> statement-breakpoint
+CREATE TABLE `exercises` (
+	`id` text PRIMARY KEY NOT NULL,
+	`title` text NOT NULL,
+	`description` text NOT NULL,
+	`duration` text NOT NULL,
+	`difficulty` text NOT NULL,
+	`category` text NOT NULL,
+	`icon` text NOT NULL,
+	`color` text NOT NULL,
+	`is_active` integer DEFAULT true,
+	`sort_order` integer DEFAULT 0,
+	`created_at` integer DEFAULT (strftime('%s', 'now'))
+);
+--> statement-breakpoint
+CREATE TABLE `meditation_tracks` (
+	`id` text PRIMARY KEY NOT NULL,
+	`title` text NOT NULL,
+	`artist` text NOT NULL,
+	`duration` integer NOT NULL,
+	`category` text NOT NULL,
+	`audio_url` text NOT NULL,
+	`cover_image_url` text,
+	`is_active` integer DEFAULT true,
+	`sort_order` integer DEFAULT 0,
+	`created_at` integer DEFAULT (strftime('%s', 'now'))
+);
+--> statement-breakpoint
 CREATE TABLE `messages` (
 	`id` text PRIMARY KEY NOT NULL,
 	`conversation_id` text NOT NULL,
@@ -57,17 +85,16 @@ CREATE TABLE `messages` (
 	FOREIGN KEY (`conversation_id`) REFERENCES `conversations`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `password_reset_tokens` (
+CREATE TABLE `mood_entries` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
-	`token` text NOT NULL,
-	`expires_at` integer NOT NULL,
-	`used_at` integer,
+	`mood` text NOT NULL,
+	`current_mode` text DEFAULT '' NOT NULL,
+	`logged_at` integer NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `password_reset_tokens_token_unique` ON `password_reset_tokens` (`token`);--> statement-breakpoint
 CREATE TABLE `payments` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
@@ -77,6 +104,7 @@ CREATE TABLE `payments` (
 	`status` text DEFAULT 'PENDING' NOT NULL,
 	`gateway_name` text NOT NULL,
 	`gateway_ref_id` text,
+	`idempotency_key` text,
 	`description` text,
 	`callback_url` text,
 	`paid_at` integer,
@@ -86,46 +114,31 @@ CREATE TABLE `payments` (
 	FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
-CREATE TABLE `permissions` (
+CREATE TABLE `reports` (
 	`id` text PRIMARY KEY NOT NULL,
-	`name` text NOT NULL,
-	`display_name` text NOT NULL,
-	`description` text,
-	`is_active` integer DEFAULT true,
+	`user_id` text NOT NULL,
+	`title` text NOT NULL,
+	`description` text NOT NULL,
+	`type` text NOT NULL,
+	`report_date` integer NOT NULL,
 	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	`updated_at` integer DEFAULT (strftime('%s', 'now'))
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `permissions_name_unique` ON `permissions` (`name`);--> statement-breakpoint
-CREATE TABLE `role_permissions` (
-	`id` text PRIMARY KEY NOT NULL,
-	`role_id` text NOT NULL,
-	`permission_id` text NOT NULL,
-	`assigned_at` integer DEFAULT (strftime('%s', 'now')),
-	`assigned_by` text,
-	FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`permission_id`) REFERENCES `permissions`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`assigned_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
-CREATE TABLE `roles` (
-	`id` text PRIMARY KEY NOT NULL,
-	`name` text NOT NULL,
-	`display_name` text NOT NULL,
-	`description` text,
-	`is_active` integer DEFAULT true,
-	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	`updated_at` integer DEFAULT (strftime('%s', 'now'))
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `roles_name_unique` ON `roles` (`name`);--> statement-breakpoint
 CREATE TABLE `session` (
-	`sessionToken` text PRIMARY KEY NOT NULL,
-	`userId` text NOT NULL,
-	`expires` integer NOT NULL,
-	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+	`id` text PRIMARY KEY NOT NULL,
+	`expires_at` integer NOT NULL,
+	`token` text NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer NOT NULL,
+	`ip_address` text,
+	`user_agent` text,
+	`user_id` text NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `session_token_unique` ON `session` (`token`);--> statement-breakpoint
+CREATE INDEX `session_userId_idx` ON `session` (`user_id`);--> statement-breakpoint
 CREATE TABLE `subscription_plans` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -159,24 +172,14 @@ CREATE TABLE `subscriptions` (
 	FOREIGN KEY (`plan_id`) REFERENCES `subscription_plans`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `user_roles` (
-	`id` text PRIMARY KEY NOT NULL,
-	`user_id` text NOT NULL,
-	`role_id` text NOT NULL,
-	`assigned_at` integer DEFAULT (strftime('%s', 'now')),
-	`assigned_by` text,
-	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`assigned_by`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
 CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`email` text NOT NULL,
-	`emailVerified` integer,
+	`email_verified` integer DEFAULT false NOT NULL,
 	`image` text,
-	`password_hash` text,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`phone` text,
 	`bio` text,
 	`avatar_url` text,
@@ -187,16 +190,17 @@ CREATE TABLE `user` (
 	`last_login_ip` text,
 	`failed_login_count` integer DEFAULT 0,
 	`locked_until` integer,
-	`created_at` integer DEFAULT (strftime('%s', 'now')),
-	`updated_at` integer DEFAULT (strftime('%s', 'now'))
+	`role` text DEFAULT 'user'
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
-CREATE TABLE `verificationToken` (
+CREATE TABLE `verification` (
+	`id` text PRIMARY KEY NOT NULL,
 	`identifier` text NOT NULL,
-	`token` text NOT NULL,
-	`expires` integer NOT NULL,
-	PRIMARY KEY(`identifier`, `token`)
+	`value` text NOT NULL,
+	`expires_at` integer NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `verificationToken_token_unique` ON `verificationToken` (`token`);
+CREATE INDEX `verification_identifier_idx` ON `verification` (`identifier`);
