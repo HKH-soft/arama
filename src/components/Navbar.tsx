@@ -253,7 +253,7 @@ export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
                       </Link>
                     </Button>
                     <Button
-                      className="w-full justify-center rounded-xl bg-neutral-950 hover:bg-neutral-800 text-white dark:hover:bg-neutral-700 dark:text-black shadow-sm"
+                      className="w-full justify-center rounded-xl bg-primary hover:bg-primary/80 text-white dark:text-black border-0 font-medium shadow-sm transition-all"
                       asChild
                     >
                       <Link

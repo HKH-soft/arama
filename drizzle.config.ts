@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 import path from "path";
 
 // Define the possible values for NODE_ENV
-type NodeEnv = 'development' | 'production' | 'test' | 'staging';
+type NodeEnv = "development" | "production" | "test" | "staging";
 
 // Determine environment and load appropriate .env file
 const nodeEnv: NodeEnv = (process.env.NODE_ENV as NodeEnv) || "development";
@@ -32,8 +32,9 @@ dotenv.config({ path: envFileName });
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./drizzle",
-  dialect: "sqlite",
+  dialect: "turso",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "./data/arama.db",
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN,
   },
 });

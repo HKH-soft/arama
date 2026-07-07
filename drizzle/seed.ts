@@ -1,5 +1,5 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 import {
   users,
   accounts,
@@ -14,8 +14,6 @@ import {
 } from "../src/db/schema";
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import * as path from "path";
-import * as fs from "fs";
 import * as dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 
@@ -46,18 +44,13 @@ dotenv.config({ path: ".env" });
 // Load environment-specific file (higher priority, overrides .env)
 dotenv.config({ path: envFileName });
 
-// Use the same database path logic as db.ts
-const dbPath =
-  process.env.DATABASE_URL?.replace("file:", "") || "./data/arama.db";
+// Create the Turso client
+const turso = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-// Ensure the directory exists
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
-
-const sqlite = new Database(dbPath);
-const db = drizzle(sqlite);
+const db = drizzle(turso);
 
 // Helper to get timestamp for date calculations
 const now = Math.floor(Date.now() / 1000);
