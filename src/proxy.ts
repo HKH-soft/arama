@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const publicPaths = [
+  "/about",
+  "/contact",
   "/login",
   "/signup",
   "/forgot-password",
