@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useUser } from "@/contexts/UserContext";
 import {
   User,
   Mail,
@@ -122,6 +123,7 @@ export default function ProfilePage() {
   const [plansLoading, setPlansLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { updateUser } = useUser();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
@@ -129,6 +131,19 @@ export default function ProfilePage() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [activeSessions, setActiveSessions] = useState<
+    {
+      id: string;
+      device: string;
+      location: string;
+      ip: string;
+      lastActivity: string;
+      isActive: boolean;
+      isCurrent: boolean;
+    }[]
+  >([]);
   const { theme, setTheme } = useTheme();
   useEffect(() => {
     const fetchUserData = async () => {
@@ -204,6 +219,22 @@ export default function ProfilePage() {
     fetchPlans();
   }, []);
 
+  // Fetch active sessions
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch("/api/profile/sessions");
+        if (res.ok) {
+          const data = await res.json();
+          setActiveSessions(data);
+        }
+      } catch (err) {
+        console.error("Error fetching sessions:", err);
+      }
+    };
+    fetchSessions();
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -222,6 +253,7 @@ export default function ProfilePage() {
       if (res.ok) {
         const updated = await res.json();
         setUserData((prev) => (prev ? { ...prev, ...updated } : null));
+        updateUser(updated);
         setEditing(false);
         toast({ title: "پروفایل با موفقیت ذخیره شد" });
       }
@@ -255,6 +287,7 @@ export default function ProfilePage() {
         setUserData((prev) =>
           prev ? { ...prev, avatarUrl: data.avatarUrl } : null,
         );
+        updateUser({ avatarUrl: data.avatarUrl });
         toast({ title: "تصویر پروفایل با موفقیت آپلود شد" });
       } else {
         const error = await res.json();
@@ -279,11 +312,62 @@ export default function ProfilePage() {
       if (res.ok) {
         setAvatarPreview(null);
         setUserData((prev) => (prev ? { ...prev, avatarUrl: null } : null));
+        updateUser({ avatarUrl: null });
         toast({ title: "تصویر پروفایل حذف شد" });
       }
     } catch (err) {
       console.error("Error deleting avatar:", err);
       toast({ title: "خطا در حذف تصویر", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      toast({ title: "رمز عبور الزامی است", variant: "destructive" });
+      return;
+    }
+    try {
+      const res = await fetch("/api/profile", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+      if (res.ok) {
+        toast({ title: "حساب کاربری حذف شد" });
+        window.location.href = "/login";
+      } else {
+        const error = await res.json();
+        toast({
+          title: error.error || "خطا در حذف حساب",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      toast({ title: "خطا در اتصال به سرور", variant: "destructive" });
+    }
+  };
+
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      const res = await fetch("/api/profile/sessions/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      if (res.ok) {
+        toast({ title: "نشست حذف شد" });
+        setActiveSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      } else {
+        const error = await res.json();
+        toast({
+          title: error.error || "خطا در حذف نشست",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Error revoking session:", err);
+      toast({ title: "خطا در اتصال به سرور", variant: "destructive" });
     }
   };
 
@@ -315,35 +399,7 @@ export default function ProfilePage() {
     }
   };
 
-  const activeSessions = [
-    {
-      id: "session1",
-      device: "Chrome on Windows",
-      location: "تهران، ایران",
-      ip: "192.168.1.100",
-      lastActivity: "همین الان",
-      isActive: true,
-      isCurrent: true,
-    },
-    {
-      id: "session2",
-      device: "Firefox on Linux",
-      location: "تهران، ایران",
-      ip: "192.168.1.101",
-      lastActivity: "۲ ساعت پیش",
-      isActive: true,
-      isCurrent: false,
-    },
-    {
-      id: "session3",
-      device: "Safari on iPhone",
-      location: "تهران، ایران",
-      ip: "192.168.1.102",
-      lastActivity: "۱ روز پیش",
-      isActive: false,
-      isCurrent: false,
-    },
-  ];
+  // Sessions are now fetched from /api/profile/sessions
 
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
@@ -648,7 +704,7 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="pt-2">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
                       onClick={() => setTheme("light")}
@@ -1199,7 +1255,11 @@ export default function ProfilePage() {
                           </span>
                         )}
                         {!session.isCurrent && (
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRevokeSession(session.id)}
+                          >
                             <LogOut className="w-4 h-4 ml-2" />
                             خروج
                           </Button>
@@ -1218,7 +1278,11 @@ export default function ProfilePage() {
                     حذف دائمی حساب کاربری
                   </p>
                 </div>
-                <Button variant="destructive" size="sm">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
                   حذف حساب
                 </Button>
               </div>
@@ -1226,6 +1290,44 @@ export default function ProfilePage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Account Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in"
+          dir="rtl"
+        >
+          <div className="bg-card rounded-lg p-6 max-w-md w-full mx-4 animate-scale-in">
+            <h3 className="text-lg font-bold mb-4">تأیید حذف حساب</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              برای حذف حساب کاربری خود، رمز عبور خود را وارد کنید.
+            </p>
+            <Input
+              type="password"
+              placeholder="رمز عبور"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="mb-4"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteDialog(false)}
+              >
+                انصراف
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteAccount}
+              >
+                حذف حساب
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

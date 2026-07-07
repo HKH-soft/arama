@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield,
   Key,
@@ -23,36 +23,32 @@ export default function SecurityPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [activeSessions, setActiveSessions] = useState<
+    {
+      id: string;
+      device: string;
+      location: string;
+      ip: string;
+      lastActivity: string;
+      isActive: boolean;
+      isCurrent: boolean;
+    }[]
+  >([]);
 
-  const activeSessions = [
-    {
-      id: "session1",
-      device: "Chrome on Windows",
-      location: "تهران، ایران",
-      ip: "192.168.1.100",
-      lastActivity: "همین الان",
-      isActive: true,
-      isCurrent: true,
-    },
-    {
-      id: "session2",
-      device: "Firefox on Linux",
-      location: "تهران، ایران",
-      ip: "192.168.1.101",
-      lastActivity: "۲ ساعت پیش",
-      isActive: true,
-      isCurrent: false,
-    },
-    {
-      id: "session3",
-      device: "Safari on iPhone",
-      location: "تهران، ایران",
-      ip: "192.168.1.102",
-      lastActivity: "۱ روز پیش",
-      isActive: false,
-      isCurrent: false,
-    },
-  ];
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch("/api/profile/sessions");
+        if (res.ok) {
+          const data = await res.json();
+          setActiveSessions(data);
+        }
+      } catch (err) {
+        console.error("Error fetching sessions:", err);
+      }
+    };
+    fetchSessions();
+  }, []);
 
   const handlePasswordChange = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +63,21 @@ export default function SecurityPage() {
     setNewPassword("");
     setConfirmNewPassword("");
     setShowPasswordFields(false);
+  };
+
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      const res = await fetch("/api/profile/sessions/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      if (res.ok) {
+        setActiveSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      }
+    } catch (err) {
+      console.error("Error revoking session:", err);
+    }
   };
 
   return (
@@ -206,7 +217,11 @@ export default function SecurityPage() {
                       </span>
                     )}
                     {!session.isCurrent && (
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRevokeSession(session.id)}
+                      >
                         <LogOut className="w-4 h-4 ml-2" />
                         خروج
                       </Button>

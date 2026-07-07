@@ -5,21 +5,16 @@ import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import type { AuthUser } from "@/types/auth";
+import { useUser } from "@/contexts/UserContext";
 
-export function DashboardShell({
-  user,
-  children,
-}: {
-  user: AuthUser | null;
-  children: React.ReactNode;
-}) {
+export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const { user } = useUser();
 
   // If user is null (not authenticated), redirect to login
   if (!user) {
-    router.push('/login');
+    router.push("/login");
     return null;
   }
 

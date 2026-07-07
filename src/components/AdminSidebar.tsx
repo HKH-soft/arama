@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth-client";
 import {
@@ -16,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { AuthUser } from "@/types/auth";
+import { useUser } from "@/contexts/UserContext";
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -23,9 +23,16 @@ function getInitials(name: string): string {
   return name.slice(0, 2);
 }
 
-export function AdminSidebar({ user }: { user: AuthUser | null }) {
+export function AdminSidebar({ user: initialUser, onNavigate }: { user: AuthUser | null; onNavigate?: () => void }) {
+  const { user } = useUser();
+  const effectiveUser = user || initialUser;
   const pathname = usePathname();
   const router = useRouter();
+
+  const handleNav = (href: string) => {
+    onNavigate?.();
+    router.push(href);
+  };
 
   const navItems = [
     { icon: Shield, label: "داشبورد مدیریت", href: "/admin/dashboard" },
@@ -42,18 +49,18 @@ export function AdminSidebar({ user }: { user: AuthUser | null }) {
     router.refresh();
   };
 
-  const displayName = user?.name || "مدیر";
-  const initials = user?.name ? getInitials(user.name) : "م";
-  const avatarUrl = user?.image || "";
-  const isSuperAdmin = user?.roles?.includes("SUPER_ADMIN");
+  const displayName = effectiveUser?.name || "مدیر";
+  const initials = effectiveUser?.name ? getInitials(effectiveUser.name) : "م";
+  const avatarUrl = effectiveUser?.avatarUrl || effectiveUser?.image || "";
+  const isSuperAdmin = effectiveUser?.roles?.includes("SUPER_ADMIN");
 
   return (
     <aside className="w-75 shrink-0 flex-col gap-2 hidden md:flex bg-transparent">
       {/* Navigation panel */}
       <div className="bg-sidebar rounded-lg p-4 grow border border-sidebar-border">
-        <Link
-          href="/admin/dashboard"
-          className="flex items-center gap-2 mb-4 px-2"
+        <button
+          onClick={() => handleNav("/admin/dashboard")}
+          className="flex items-center gap-2 mb-4 px-2 w-full text-right"
         >
           <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
             م
@@ -61,16 +68,16 @@ export function AdminSidebar({ user }: { user: AuthUser | null }) {
           <span className="font-bold text-xl tracking-tight text-sidebar-foreground">
             پنل مدیریت
           </span>
-        </Link>
+        </button>
         <nav className="space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Link
+              <button
                 key={item.href}
-                href={item.href}
+                onClick={() => handleNav(item.href)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-semibold",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-semibold w-full text-right",
                   isActive
                     ? "bg-sidebar-accent text-sidebar-primary"
                     : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
@@ -78,13 +85,13 @@ export function AdminSidebar({ user }: { user: AuthUser | null }) {
               >
                 <item.icon className="w-6 h-6" />
                 {item.label}
-              </Link>
+              </button>
             );
           })}
-          <Link
-            href="/dashboard"
+          <button
+            onClick={() => handleNav("/dashboard")}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-semibold mt-3 border-t border-sidebar-border/50 pt-3",
+              "flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm font-semibold mt-3 border-t border-sidebar-border/50 pt-3 w-full text-right",
               pathname?.startsWith("/dashboard")
                 ? "bg-sidebar-accent text-sidebar-primary"
                 : "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50",
@@ -92,13 +99,16 @@ export function AdminSidebar({ user }: { user: AuthUser | null }) {
           >
             <Home className="w-6 h-6" />
             بخش کاربری
-          </Link>
+          </button>
         </nav>
       </div>
 
       {/* User panel */}
       <div className="bg-sidebar rounded-lg p-3 border border-sidebar-border">
-        <div className="flex items-center gap-3 px-2">
+        <button
+          onClick={() => handleNav("/profile")}
+          className="flex items-center gap-3 px-2 hover:opacity-80 transition-opacity w-full text-right"
+        >
           <Avatar className="h-9 w-9">
             <AvatarImage src={avatarUrl} />
             <AvatarFallback className="bg-primary/30 text-primary text-xs font-bold">
@@ -113,14 +123,14 @@ export function AdminSidebar({ user }: { user: AuthUser | null }) {
               {isSuperAdmin ? "مدیر ارشد" : "مدیر"}
             </span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors p-1"
-            title="خروج"
-          >
-            <LogOut className="w-4 h-4" />
           </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors p-1 mt-2 float-left"
+          title="خروج"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
       </div>
     </aside>
   );

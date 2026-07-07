@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { AuthUser } from "@/types/auth";
+import { useUser } from "@/contexts/UserContext";
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -26,7 +27,13 @@ function getInitials(name: string): string {
   return name.slice(0, 2);
 }
 
-export function DashboardSidebar({ user }: { user: AuthUser | null }) {
+export function DashboardSidebar({
+  user: initialUser,
+}: {
+  user: AuthUser | null;
+}) {
+  const { user } = useUser();
+  const effectiveUser = user || initialUser;
   const pathname = usePathname();
   const router = useRouter();
 
@@ -50,10 +57,10 @@ export function DashboardSidebar({ user }: { user: AuthUser | null }) {
     router.refresh();
   };
 
-  const displayName = user?.name || "کاربر مهمان";
-  const initials = user?.name ? getInitials(user.name) : "؟";
-  const avatarUrl = user?.image || "";
-  const isSuperAdmin = user?.roles?.includes("super_admin");
+  const displayName = effectiveUser?.name || "کاربر مهمان";
+  const initials = effectiveUser?.name ? getInitials(effectiveUser.name) : "؟";
+  const avatarUrl = effectiveUser?.avatarUrl || effectiveUser?.image || "";
+  const isSuperAdmin = effectiveUser?.roles?.includes("super_admin");
 
   return (
     <aside className="w-75 shrink-0 flex-col gap-2 hidden md:flex bg-transparent">

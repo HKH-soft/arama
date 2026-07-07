@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { AuthUser } from "@/types/auth";
+import { UserProvider } from "@/contexts/UserContext";
 
 const DashboardShell = dynamic(
   () => import("@/components/DashboardShell").then((m) => m.DashboardShell),
@@ -20,7 +21,7 @@ export function AppLayoutClient({
   // If user is null (not authenticated), redirect to login
   useEffect(() => {
     if (!user) {
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   }, [user]);
 
@@ -29,5 +30,9 @@ export function AppLayoutClient({
     return null; // This will be redirected by useEffect
   }
 
-  return <DashboardShell user={user}>{children}</DashboardShell>;
+  return (
+    <UserProvider user={user}>
+      <DashboardShell>{children}</DashboardShell>
+    </UserProvider>
+  );
 }

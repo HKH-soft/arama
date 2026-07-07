@@ -8,15 +8,19 @@ import { useTheme } from "./theme-provider";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/contexts/UserContext";
 
 type SessionPayload = {
   id: string;
   name?: string | null;
   email?: string | null;
   image?: string | null;
+  avatarUrl?: string | null;
 };
 
-export function Navbar({ user }: { user: SessionPayload | null }) {
+export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
+  const { user } = useUser();
+  const effectiveUser = user || initialUser;
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -101,20 +105,26 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
               </Button>
               {user ? (
                 <>
+                  <Link href="/profile" className="flex items-center">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={
+                          effectiveUser?.avatarUrl || effectiveUser?.image || ""
+                        }
+                      />
+                      <AvatarFallback className="bg-primary/30 text-primary text-[10px] font-bold">
+                        {effectiveUser?.name
+                          ? effectiveUser.name.slice(0, 2)
+                          : "کاربر"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <Button
                     variant="ghost"
                     className="rounded-full text-sm text-neutral-700 dark:text-neutral-200 border-0 hover:bg-neutral-950/5 dark:hover:bg-white/10 gap-2"
                     asChild
                   >
-                    <Link href="/dashboard">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src="" />
-                        <AvatarFallback className="bg-primary/30 text-primary text-[10px] font-bold">
-                          {user.name ? user.name.slice(0, 2) : "کاربر"}
-                        </AvatarFallback>
-                      </Avatar>
-                      داشبورد
-                    </Link>
+                    <Link href="/dashboard">داشبورد</Link>
                   </Button>
                   <Button
                     variant="ghost"
@@ -202,7 +212,7 @@ export function Navbar({ user }: { user: SessionPayload | null }) {
                 </Link>
               ))}
               <div className="pt-3 flex flex-col gap-2">
-                {user ? (
+                {effectiveUser ? (
                   <>
                     <Button
                       variant="outline"

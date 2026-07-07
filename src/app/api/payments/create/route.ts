@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
 import { PaymentService } from "@/lib/services/payment";
 import { z } from "zod";
+import { logAudit, getClientInfo } from "@/lib/audit";
 
 const createPaymentSchema = z.object({
   planId: z.string().min(1, "شناسه پلن الزامی است"),
@@ -12,6 +13,7 @@ const createPaymentSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth();
+    const clientInfo = await getClientInfo(request);
 
     const body = await request.json();
     const parsed = createPaymentSchema.safeParse(body);
@@ -33,6 +35,16 @@ export async function POST(request: NextRequest) {
       returnUrl,
       clientRequestId // Pass idempotency key
     );
+
+    await logAudit({
+      userId: user.id,
+      action: "PAYMENT_CREATED",
+      entity: "payment",
+      entityId: paymentData.paymentId,
+      metadata: { planId, gateway: "zarinpal" },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
 
     return NextResponse.json({
       paymentId: paymentData.paymentId,

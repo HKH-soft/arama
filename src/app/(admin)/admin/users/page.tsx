@@ -7,10 +7,6 @@ import {
   UserPlus,
   Edit,
   Trash2,
-  Eye,
-  User,
-  Mail,
-  Calendar,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -38,34 +34,168 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  roles: string[];
+  role?: string;
+  createdAt: number | null;
+  lastLoginAt: number | null;
+  isActive: boolean;
+  isDeleted: boolean;
+  phone: string | null;
+  bio: string | null;
+}
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "user",
+    phone: "",
+    bio: "",
+    isActive: true,
+  });
+  const [saving, setSaving] = useState(false);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users?limit=100");
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.data || []);
+      } else {
+        toast.error("خطا در دریافت کاربران");
+      }
+    } catch {
+      toast.error("خطا در ارتباط با سرور");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/admin/users?limit=100");
-        if (res.ok) {
-          const data = await res.json();
-          setUsers(data.data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching admin users:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchUsers();
   }, []);
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      role: "user",
+      phone: "",
+      bio: "",
+      isActive: true,
+    });
+  };
+
+  const handleCreate = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        toast.success("کاربر با موفقیت ایجاد شد");
+        setIsCreateDialogOpen(false);
+        resetForm();
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "خطا در ایجاد کاربر");
+      }
+    } catch {
+      toast.error("خطا در ارتباط با سرور");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!editingUser) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingUser.id,
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          isActive: formData.isActive,
+          phone: formData.phone || undefined,
+          bio: formData.bio || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("کاربر با موفقیت به‌روزرسانی شد");
+        setIsEditDialogOpen(false);
+        setEditingUser(null);
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "خطا در به‌روزرسانی کاربر");
+      }
+    } catch {
+      toast.error("خطا در ارتباط با سرور");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (user: User) => {
+    if (!confirm(`آیا از حذف کاربر "${user.name}" اطمینان دارید؟`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/users?id=${user.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("کاربر با موفقیت حذف شد");
+        fetchUsers();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "خطا در حذف کاربر");
+      }
+    } catch {
+      toast.error("خطا در ارتباط با سرور");
+    }
+  };
+
+  const openEditDialog = (user: User) => {
+    setEditingUser(user);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      password: "",
+      role: user.role || "user",
+      phone: user.phone || "",
+      bio: user.bio || "",
+      isActive: user.isActive,
+    });
+    setIsEditDialogOpen(true);
+  };
 
   const filteredUsers = users.filter(
     (user) =>
@@ -83,41 +213,139 @@ export default function AdminUsersPage() {
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="w-4 h-4 ml-2" />
-              افزودن کاربر
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md" aria-describedby="create-user-desc">
             <DialogHeader>
               <DialogTitle>ایجاد کاربر جدید</DialogTitle>
+              <DialogDescription id="create-user-desc">
+                اطلاعات کاربر جدید را وارد کنید
+              </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">نام کامل</label>
-                <Input placeholder="نام کامل کاربر را وارد کنید" />
+                <Input
+                  placeholder="نام کامل کاربر را وارد کنید"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">ایمیل</label>
-                <Input type="email" placeholder="آدرس ایمیل کاربر" />
+                <Input
+                  type="email"
+                  placeholder="آدرس ایمیل کاربر"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">رمز عبور</label>
-                <Input type="password" placeholder="رمز عبور کاربر" />
+                <Input
+                  type="password"
+                  placeholder="رمز عبور کاربر"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1 block">نقش</label>
-                <select className="w-full p-2 border border-input rounded-md bg-background text-foreground">
-                  <option value="USER">کاربر عادی</option>
-                  <option value="ADMIN">مدیر</option>
+                <select
+                  className="w-full p-2 border border-input rounded-md bg-background text-foreground"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                >
+                  <option value="user">کاربر عادی</option>
+                  <option value="admin">مدیر</option>
                 </select>
               </div>
-              <Button className="w-full">ایجاد کاربر</Button>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">تلفن</label>
+                <Input
+                  placeholder="شماره تلفن (اختیاری)"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+              <Button className="w-full" onClick={handleCreate} disabled={saving}>
+                {saving ? "در حال ایجاد..." : "ایجاد کاربر"}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md" aria-describedby="edit-user-desc">
+          <DialogHeader>
+            <DialogTitle>ویرایش کاربر</DialogTitle>
+            <DialogDescription id="edit-user-desc">
+              اطلاعات کاربر را ویرایش کنید
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">نام کامل</label>
+              <Input
+                placeholder="نام کامل کاربر"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">ایمیل</label>
+              <Input
+                type="email"
+                placeholder="آدرس ایمیل"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">نقش</label>
+              <select
+                className="w-full p-2 border border-input rounded-md bg-background text-foreground"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              >
+                <option value="user">کاربر عادی</option>
+                <option value="admin">مدیر</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">تلفن</label>
+              <Input
+                placeholder="شماره تلفن"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">بیو</label>
+              <Input
+                placeholder="بیو (اختیاری)"
+                value={formData.bio}
+                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="edit-isActive"
+                checked={formData.isActive}
+                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                className="rounded border-input"
+              />
+              <label htmlFor="edit-isActive" className="text-sm font-medium text-foreground">
+                کاربر فعال است
+              </label>
+            </div>
+            <Button className="w-full" onClick={handleUpdate} disabled={saving}>
+              {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="border-b border-border/50">
@@ -125,7 +353,7 @@ export default function AdminUsersPage() {
             <CardTitle>لیست کاربران</CardTitle>
             <div className="flex gap-2">
               <div className="relative">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="جستجوی کاربر..."
                   className="pl-10"
@@ -133,6 +361,10 @@ export default function AdminUsersPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <UserPlus className="w-4 h-4 ml-2" />
+                افزودن کاربر
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -143,6 +375,8 @@ export default function AdminUsersPage() {
                 <TableHead>نام</TableHead>
                 <TableHead>ایمیل</TableHead>
                 <TableHead>نقش</TableHead>
+                <TableHead>تلفن</TableHead>
+                <TableHead>بیو</TableHead>
                 <TableHead>تاریخ عضویت</TableHead>
                 <TableHead>آخرین ورود</TableHead>
                 <TableHead>وضعیت</TableHead>
@@ -158,6 +392,8 @@ export default function AdminUsersPage() {
                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                   </TableRow>
@@ -168,14 +404,30 @@ export default function AdminUsersPage() {
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      {(user.roles || ["USER"]).map((role: string) => (
-                        <Badge key={role} variant="secondary" className="mr-1">
-                          {role === "ADMIN" ? "مدیر" : role === "SUPER_ADMIN" ? "مدیر ارشد" : "کاربر"}
+                      {(user.roles || [user.role || "user"]).map((role: string) => (
+                        <Badge key={role} variant={role === "admin" ? "default" : "secondary"} className="mr-1">
+                          {role === "admin" ? "مدیر" : role === "super_admin" ? "مدیر ارشد" : "کاربر"}
                         </Badge>
                       ))}
                     </TableCell>
-                    <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString("fa-IR") : "-"}</TableCell>
-                    <TableCell>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString("fa-IR") : "ثبت نشده"}</TableCell>
+                    <TableCell>
+                      {user.phone || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-xs truncate" title={user.bio || ""}>
+                        {user.bio || "-"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString("fa-IR")
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {user.lastLoginAt
+                        ? new Date(user.lastLoginAt).toLocaleDateString("fa-IR")
+                        : "ثبت نشده"}
+                    </TableCell>
                     <TableCell>
                       {user.isActive ? (
                         <Badge variant="default">
@@ -199,16 +451,15 @@ export default function AdminUsersPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>عملیات</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 ml-2" />
-                            مشاهده جزئیات
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openEditDialog(user)}>
                             <Edit className="w-4 h-4 ml-2" />
                             ویرایش
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600">
+                          <DropdownMenuItem
+                            className="text-red-600"
+                            onClick={() => handleDelete(user)}
+                          >
                             <Trash2 className="w-4 h-4 ml-2" />
                             حذف
                           </DropdownMenuItem>
@@ -219,7 +470,7 @@ export default function AdminUsersPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     کاربری یافت نشد
                   </TableCell>
                 </TableRow>

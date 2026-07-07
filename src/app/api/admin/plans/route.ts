@@ -27,14 +27,17 @@ export async function GET(request: NextRequest) {
     const user = await requirePermission("plans:read");
     const clientInfo = await getClientInfo(); // Changed to await
 
-    // Extract query parameters
-    const { searchParams } = new URL(request.url);
+// Extract query parameters
+    const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
     const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const searchTerm = searchParams.get("searchTerm") || "";
     const isActive = searchParams.get("isActive");
+
+    // Log for debugging
+    console.log("Plans API called with sortBy:", sortBy, "sortOrder:", sortOrder);
 
     // Build conditions array
     const conditions = [];

@@ -1,65 +1,89 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db"; // Updated to use Drizzle
-import { 
-  subscriptions,
-  users,
-  subscriptionPlans
-} from "@/db/schema"; // Import Drizzle tables
-import { 
-  eq, 
-  and, 
-  asc, 
-  desc, 
-  gte, 
-  lte,
-  sql,
-  ilike
-} from 'drizzle-orm'; // Import Drizzle operators
+import { subscriptions, users, subscriptionPlans } from "@/db/schema"; // Import Drizzle tables
+import { eq, and, asc, desc, gte, lte, sql, ilike } from "drizzle-orm"; // Import Drizzle operators
 import { z } from "zod";
+import { logAudit, getClientInfo } from "@/lib/audit";
+
+// Enhanced boolean preprocessing to handle string "true"/"false" values
+const preprocessBoolean = () =>
+  z
+    .any()
+    .transform((val) => {
+      if (val === null || val === undefined || val === "") return undefined;
+      if (typeof val === "string") {
+        if (val.toLowerCase() === "true" || val === "1") return true;
+        if (val.toLowerCase() === "false" || val === "0") return false;
+      }
+      if (typeof val === "boolean") return val;
+      if (typeof val === "number") return val !== 0;
+      return undefined;
+    })
+    .pipe(z.boolean().optional());
 
 const getSubscriptionsSchema = z.object({
-  page: z.coerce.number().default(1),
-  limit: z.coerce.number().default(10),
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(10),
   status: z.enum(["ACTIVE", "INACTIVE", "CANCELED", "EXPIRED"]).optional(),
   userId: z.string().optional(),
   planId: z.string().optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
-  sortBy: z.enum(["createdAt", "startDate", "endDate", "status", "userId"]).default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  sortBy: z
+    .enum(["createdAt", "startDate", "endDate", "status", "userId"])
+    .optional()
+    .nullable()
+    .transform((val) => val ?? "createdAt"),
+  sortOrder: z
+    .enum(["asc", "desc"])
+    .optional()
+    .nullable()
+    .transform((val) => val ?? "desc"),
 });
 
 export async function GET(request: NextRequest) {
   try {
     const user = await requirePermission("subscriptions:read");
     const searchParams = request.nextUrl.searchParams;
-    
+
     const parsed = getSubscriptionsSchema.safeParse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      status: searchParams.get("status"),
-      userId: searchParams.get("userId"),
-      planId: searchParams.get("planId"),
-      dateFrom: searchParams.get("dateFrom"),
-      dateTo: searchParams.get("dateTo"),
+      page: searchParams.get("page") ?? undefined,
+      limit: searchParams.get("limit") ?? undefined,
+      status: searchParams.get("status") ?? undefined,
+      userId: searchParams.get("userId") ?? undefined,
+      planId: searchParams.get("planId") ?? undefined,
+      dateFrom: searchParams.get("dateFrom") ?? undefined,
+      dateTo: searchParams.get("dateTo") ?? undefined,
       sortBy: searchParams.get("sortBy"),
       sortOrder: searchParams.get("sortOrder"),
     });
-    
+
     if (!parsed.success) {
       return NextResponse.json(
         { error: "پارامترهای نامعتبر", details: parsed.error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
-    const { page, limit, status, userId, planId, dateFrom, dateTo, sortBy, sortOrder } = parsed.data;
+
+    const clientInfo = await getClientInfo(request);
+
+    const {
+      page,
+      limit,
+      status,
+      userId,
+      planId,
+      dateFrom,
+      dateTo,
+      sortBy,
+      sortOrder,
+    } = parsed.data;
     const skip = (page - 1) * limit;
-    
+
     // Build where clause
     let conditions: any[] = [];
-    
+
     if (status) {
       conditions.push(eq(subscriptions.status, status));
     }
@@ -75,47 +99,65 @@ export async function GET(request: NextRequest) {
     if (dateTo) {
       conditions.push(lte(subscriptions.createdAt, new Date(dateTo)));
     }
-    
+
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-    
+
     const [subscriptionsList, total] = await Promise.all([
-      db.select({
-        id: subscriptions.id,
-        userId: subscriptions.userId,
-        planId: subscriptions.planId,
-        status: subscriptions.status,
-        startDate: subscriptions.startDate,
-        endDate: subscriptions.endDate,
-        cancelledAt: subscriptions.cancelledAt,
-        autoRenew: subscriptions.autoRenew,
-        paymentGatewayRef: subscriptions.paymentGatewayRef,
-        createdAt: subscriptions.createdAt,
-        updatedAt: subscriptions.updatedAt,
-        user: {
-          id: users.id,
-          name: users.name,
-          email: users.email,
-        },
-        plan: {
-          id: subscriptionPlans.id,
-          name: subscriptionPlans.name,
-          displayName: subscriptionPlans.displayName,
-          price: subscriptionPlans.price,
-        }
-      })
-      .from(subscriptions)
-      .leftJoin(users, eq(subscriptions.userId, users.id))
-      .leftJoin(subscriptionPlans, eq(subscriptions.planId, subscriptionPlans.id))
-      .where(whereClause)
-      .orderBy(sortOrder === "asc" ? asc(subscriptions[sortBy]) : desc(subscriptions[sortBy]))
-      .offset(skip)
-      .limit(limit),
-      
-      db.select({ count: sql<number>`count(*)::int` })
+      db
+        .select({
+          id: subscriptions.id,
+          userId: subscriptions.userId,
+          planId: subscriptions.planId,
+          status: subscriptions.status,
+          startDate: subscriptions.startDate,
+          endDate: subscriptions.endDate,
+          cancelledAt: subscriptions.cancelledAt,
+          autoRenew: subscriptions.autoRenew,
+          paymentGatewayRef: subscriptions.paymentGatewayRef,
+          createdAt: subscriptions.createdAt,
+          updatedAt: subscriptions.updatedAt,
+          user: {
+            id: users.id,
+            name: users.name,
+            email: users.email,
+          },
+          plan: {
+            id: subscriptionPlans.id,
+            name: subscriptionPlans.name,
+            displayName: subscriptionPlans.displayName,
+            price: subscriptionPlans.price,
+          },
+        })
         .from(subscriptions)
+        .leftJoin(users, eq(subscriptions.userId, users.id))
+        .leftJoin(
+          subscriptionPlans,
+          eq(subscriptions.planId, subscriptionPlans.id),
+        )
         .where(whereClause)
+        .orderBy(
+          sortOrder === "asc"
+            ? asc(subscriptions[sortBy])
+            : desc(subscriptions[sortBy]),
+        )
+        .offset(skip)
+        .limit(limit),
+
+      db
+        .select({ count: sql<number>`CAST(count(*) AS INTEGER)` })
+        .from(subscriptions)
+        .where(whereClause),
     ]);
-    
+
+    await logAudit({
+      userId: user.id,
+      action: "SUBSCRIPTIONS_LIST_VIEWED",
+      entity: "subscription",
+      metadata: { page, limit, status, sortBy, sortOrder },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
+
     return NextResponse.json({
       data: subscriptionsList,
       pagination: {
@@ -128,8 +170,11 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Admin subscriptions fetch error:", err);
     return NextResponse.json(
-      { error: "خطا در دریافت اشتراک‌ها", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
+      {
+        error: "خطا در دریافت اشتراک‌ها",
+        details: err instanceof Error ? err.message : "خطای ناشناخته",
+      },
+      { status: 500 },
     );
   }
 }

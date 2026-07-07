@@ -173,7 +173,23 @@ export default function MeditationPage() {
 
   const orbStyle = {
     transform: `scale(${isBreathing ? currentConfig.scale : 1})`,
+    transformOrigin: "center",
+    willChange: "transform",
     transition: `transform ${isBreathing ? currentConfig.duration : 0.5}s cubic-bezier(0.4, 0, 0.2, 1)`,
+  };
+
+  const glowStyle = {
+    transformOrigin: "center",
+    willChange: "opacity",
+    opacity: isBreathing ? 0.15 : 0.08,
+    transition: `opacity ${currentConfig.duration}s ease`,
+  };
+
+  const borderStyle = {
+    transformOrigin: "center",
+    willChange: "opacity",
+    opacity: isBreathing ? 0.15 : 0.1,
+    transition: `opacity ${currentConfig.duration}s ease`,
   };
 
   if (loading && !zenMode) {
@@ -257,28 +273,27 @@ export default function MeditationPage() {
             <div
               className="absolute rounded-full"
               style={{
-                width: "280px",
-                height: "280px",
+                width: "clamp(220px, 40vw, 280px)",
+                height: "clamp(220px, 40vw, 280px)",
                 background:
                   "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)",
-                ...orbStyle,
+                ...glowStyle,
               }}
             />
             <div
               className="absolute rounded-full border border-emerald-400/10"
               style={{
-                width: "240px",
-                height: "240px",
-                ...orbStyle,
+                width: "clamp(180px, 35vw, 240px)",
+                height: "clamp(180px, 35vw, 240px)",
+                ...borderStyle,
               }}
             />
 
             <div
               className="relative rounded-full flex items-center justify-center"
               style={{
-                width: "180px",
-                height: "180px",
-                transformOrigin: "center",
+                width: "clamp(140px, 28vw, 180px)",
+                height: "clamp(140px, 28vw, 180px)",
                 ...orbStyle,
               }}
             >
@@ -362,10 +377,11 @@ export default function MeditationPage() {
                       setElapsed(0);
                       setShowTimerPicker(false);
                     }}
-                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${timerDuration === t
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                      : "bg-white/5 text-foreground/60 hover:bg-white/10 border border-transparent"
-                      }`}
+                    className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      timerDuration === t
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : "bg-white/5 text-foreground/60 hover:bg-white/10 border border-transparent"
+                    }`}
                   >
                     {t / 60} دقیقه
                   </button>
@@ -376,10 +392,11 @@ export default function MeditationPage() {
                     setElapsed(0);
                     setShowTimerPicker(false);
                   }}
-                  className={`col-span-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${timerDuration === 0
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/5 text-foreground/60 hover:bg-white/10 border border-transparent"
-                    }`}
+                  className={`col-span-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    timerDuration === 0
+                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      : "bg-white/5 text-foreground/60 hover:bg-white/10 border border-transparent"
+                  }`}
                 >
                   بدون محدودیت زمانی
                 </button>
@@ -523,10 +540,11 @@ export default function MeditationPage() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === cat
-                ? "bg-white text-black"
-                : "bg-white/5 text-foreground/70 hover:bg-white/10"
-                }`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeCategory === cat
+                  ? "bg-white text-black"
+                  : "bg-white/5 text-foreground/70 hover:bg-white/10"
+              }`}
             >
               {cat}
             </button>

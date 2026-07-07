@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import db from "@/lib/db";
 import * as schema from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { logAudit, getClientInfo } from "@/lib/audit";
 
 /**
  * GET /api/profile
@@ -15,10 +16,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await db.query.users.findFirst({
@@ -39,10 +37,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Fetch current subscription (no relations defined in schema, so manual join)
@@ -50,7 +45,7 @@ export async function GET(request: NextRequest) {
       where: (subscriptions, { and, eq }) =>
         and(
           eq(subscriptions.userId, session.user.id),
-          eq(subscriptions.status, "ACTIVE")
+          eq(subscriptions.status, "ACTIVE"),
         ),
     });
 
@@ -93,7 +88,7 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -109,10 +104,7 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -125,6 +117,8 @@ export async function PUT(request: NextRequest) {
     if (name !== undefined) updateData.name = name;
     if (bio !== undefined) updateData.bio = bio;
     if (phone !== undefined) updateData.phone = phone;
+
+    const clientInfo = await getClientInfo(request);
 
     await db
       .update(schema.users)
@@ -144,6 +138,16 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    await logAudit({
+      userId: session.user.id,
+      action: "PROFILE_UPDATED",
+      entity: "user",
+      entityId: session.user.id,
+      metadata: { updatedFields: Object.keys(updateData).filter(k => k !== "updatedAt") },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
+
     return NextResponse.json({
       id: updatedUser!.id,
       name: updatedUser!.name,
@@ -156,7 +160,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -172,10 +176,7 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -188,6 +189,8 @@ export async function PATCH(request: NextRequest) {
     if (name !== undefined) updateData.name = name;
     if (bio !== undefined) updateData.bio = bio;
     if (phone !== undefined) updateData.phone = phone;
+
+    const clientInfo = await getClientInfo(request);
 
     await db
       .update(schema.users)
@@ -207,6 +210,16 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
+    await logAudit({
+      userId: session.user.id,
+      action: "PROFILE_UPDATED",
+      entity: "user",
+      entityId: session.user.id,
+      metadata: { updatedFields: Object.keys(updateData).filter(k => k !== "updatedAt") },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
+
     return NextResponse.json({
       id: updatedUser!.id,
       name: updatedUser!.name,
@@ -219,7 +232,81 @@ export async function PATCH(request: NextRequest) {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * DELETE /api/profile
+ * Deletes the current user's account after password verification.
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { password } = body;
+
+    if (!password) {
+      return NextResponse.json(
+        { error: "رمز عبور الزامی است" },
+        { status: 400 },
+      );
+    }
+
+    // Verify password using auth API
+    const verifyResult = await auth.api.signInEmail({
+      body: {
+        email: session.user.email,
+        password,
+      },
+    });
+
+    if (!verifyResult || !verifyResult.token) {
+      return NextResponse.json(
+        { error: "رمز عبور نامعتبر است" },
+        { status: 401 },
+      );
+    }
+
+    const clientInfo = await getClientInfo(request);
+
+    // Delete user's subscriptions first
+    await db
+      .delete(schema.subscriptions)
+      .where(eq(schema.subscriptions.userId, session.user.id));
+
+    // Delete user's payments
+    await db
+      .delete(schema.payments)
+      .where(eq(schema.payments.userId, session.user.id));
+
+    // Delete user account
+    await db.delete(schema.users).where(eq(schema.users.id, session.user.id));
+
+    await logAudit({
+      userId: session.user.id,
+      action: "ACCOUNT_DELETED",
+      entity: "user",
+      entityId: session.user.id,
+      metadata: { email: session.user.email },
+      ipAddress: clientInfo.ipAddress,
+      userAgent: clientInfo.userAgent,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    return NextResponse.json(
+      { error: "خطا در حذف حساب کاربری" },
+      { status: 500 },
     );
   }
 }

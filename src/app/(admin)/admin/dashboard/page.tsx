@@ -197,8 +197,8 @@ export default function AdminDashboardPage() {
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Recent Activity */}
-          <Card className="bg-background/50 backdrop-blur-sm border-border/50">
+          {/* Recent Activity - Full width on large screens */}
+          <Card className="bg-background/50 backdrop-blur-sm border-border/50 lg:col-span-2">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -232,67 +232,6 @@ export default function AdminDashboardPage() {
                       time={log.time}
                     />
                   ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Subscription Expirations */}
-          <Card className="bg-background/50 backdrop-blur-sm border-border/50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary" />
-                  <span>اشتراک‌های منقضی شونده</span>
-                </CardTitle>
-                <Badge variant="destructive">
-                  {stats?.expiringSubscriptions || "۱۸"}
-                </Badge>
-              </div>
-              <CardDescription>
-                کاربرانی که اشتراک آن‌ها در ۷ روز آینده منقضی می‌شود
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex justify-between py-3">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-3 w-12" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex justify-between py-2">
-                    <span className="text-foreground font-medium">
-                      سروش احمدی
-                    </span>
-                    <span className="text-muted-foreground">
-                      ۲ روز باقی مانده
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-foreground font-medium">
-                      مهسا رضایی
-                    </span>
-                    <span className="text-muted-foreground">
-                      ۴ روز باقی مانده
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-foreground font-medium">
-                      عرفان کریمی
-                    </span>
-                    <span className="text-muted-foreground">
-                      ۶ روز باقی مانده
-                    </span>
-                  </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    مشاهده همه
-                  </Button>
                 </div>
               )}
             </CardContent>

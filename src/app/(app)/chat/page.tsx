@@ -27,6 +27,7 @@ export default function Chat() {
   const [isCreating, setIsCreating] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const creatingNewRef = useRef(false);
 
   const {
     conversations,
@@ -47,8 +48,13 @@ export default function Chat() {
   }, [loadConversations]);
 
   useEffect(() => {
-    if (activeId) loadMessages(activeId);
-    else clear();
+    if (activeId && !creatingNewRef.current) {
+      loadMessages(activeId);
+    } else if (!activeId) {
+      clear();
+    } else {
+      creatingNewRef.current = false;
+    }
   }, [activeId, loadMessages, clear]);
 
   useEffect(() => {
@@ -89,6 +95,7 @@ export default function Chat() {
       setIsCreating(false);
       if (!conv) return;
       convId = conv.id;
+      creatingNewRef.current = true;
       setActiveId(conv.id);
 
       // Small delay to ensure the conversation state is updated
