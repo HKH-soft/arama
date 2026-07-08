@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth-helpers";
 import db from "@/lib/db";
 import { emotionLogs } from "@/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
+import { dateExpr } from "@/db/driver-helpers";
 
 export async function GET(request: NextRequest) {
     try {
@@ -22,16 +23,17 @@ export async function GET(request: NextRequest) {
             .where(eq(emotionLogs.userId, user.id))
             .groupBy(emotionLogs.emotion);
 
-        // Get weekly emotion trends
+        // Get weekly emotion trends (dialect-aware date extraction)
+        const dayExpr = dateExpr(emotionLogs.loggedAt);
         const weeklyData = await db
             .select({
-                day: sql<string>`DATE(${emotionLogs.loggedAt}, 'unixepoch')`,
+                day: dayExpr,
                 avgScore: sql<number>`AVG(${emotionLogs.score})`,
             })
             .from(emotionLogs)
             .where(eq(emotionLogs.userId, user.id))
-            .groupBy(sql`DATE(${emotionLogs.loggedAt}, 'unixepoch')`)
-            .orderBy(sql`DATE(${emotionLogs.loggedAt}, 'unixepoch')`)
+            .groupBy(dayExpr)
+            .orderBy(dayExpr)
             .limit(7);
 
         return NextResponse.json({

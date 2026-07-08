@@ -2,10 +2,16 @@
   "name": "arama",
   "version": "1.0.0",
   "private": true,
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ],
   "scripts": {
-    "dev": "next dev --port 8080",
+    "dev": "next dev --port 3000",
     "build": "next build",
-    "start": "next start --port 8080",
+    "start": "next start --port 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
@@ -19,6 +25,7 @@
     "@better-auth/passkey": "1.6.23",
     "@hookform/resolvers": "5.4.0",
     "@libsql/client": "0.17.4",
+    "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-accordion": "1.2.14",
     "@radix-ui/react-alert-dialog": "1.1.17",
     "@radix-ui/react-avatar": "1.2.0",

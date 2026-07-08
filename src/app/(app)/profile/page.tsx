@@ -401,19 +401,42 @@ export default function ProfilePage() {
 
   // Sessions are now fetched from /api/profile/sessions
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be an API call
-    console.log("Changing password:", {
-      currentPassword,
-      newPassword,
-      confirmNewPassword,
-    });
-    // Reset form
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmNewPassword("");
-    setShowPasswordFields(false);
+    if (newPassword !== confirmNewPassword) {
+      toast({ title: "رمزهای عبور مطابقت ندارند", variant: "destructive" });
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast({
+        title: "رمز عبور باید حداقل ۸ کاراکتر باشد",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: "رمز عبور با موفقیت تغییر کرد" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setShowPasswordFields(false);
+      } else {
+        toast({
+          title: data.message || data.error || "خطا در تغییر رمز عبور",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Error changing password:", err);
+      toast({ title: "خطا در اتصال به سرور", variant: "destructive" });
+    }
   };
 
   const toggleTheme = () => {
@@ -549,9 +572,7 @@ export default function ProfilePage() {
                       {loading ? (
                         <Skeleton className="h-4 w-24" />
                       ) : userData?.lastLoginAt ? (
-                        new Date(userData.lastLoginAt).toLocaleDateString(
-                          "fa-IR",
-                        )
+                        new Date(userData.lastLoginAt).toLocaleString("fa-IR")
                       ) : (
                         "-"
                       )}

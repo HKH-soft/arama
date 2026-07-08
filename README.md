@@ -8,21 +8,21 @@
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| Database | SQLite (Turso/libsql) |
-| ORM | Drizzle ORM |
-| Authentication | Better-Auth |
-| Password Hashing | bcryptjs |
-| AI Provider | Anthropic Claude SDK |
-| UI | TailwindCSS v4 + Radix UI (shadcn/ui) |
-| Font | Vazirmatn (Persian) |
-| Animations | Framer Motion |
-| Logging | Pino |
-| Form Validation | React Hook Form + Zod |
-| Deployment | Docker + Docker Compose |
+| Layer            | Technology                            |
+| ---------------- | ------------------------------------- |
+| Framework        | Next.js 15 (App Router)               |
+| Language         | TypeScript                            |
+| Database         | SQLite (Turso/libsql)                 |
+| ORM              | Drizzle ORM                           |
+| Authentication   | Better-Auth                           |
+| Password Hashing | bcryptjs                              |
+| AI Provider      | Anthropic Claude SDK                  |
+| UI               | TailwindCSS v4 + Radix UI (shadcn/ui) |
+| Font             | Vazirmatn (Persian)                   |
+| Animations       | Framer Motion                         |
+| Logging          | Pino                                  |
+| Form Validation  | React Hook Form + Zod                 |
+| Deployment       | Docker + Docker Compose               |
 
 ## Features
 
@@ -124,19 +124,19 @@ src/
 
 **Business tables:**
 
-| Table | Purpose |
-|---|---|
-| `subscription_plans` | Plan definitions with feature limits |
-| `subscriptions` | User subscriptions with status lifecycle |
-| `payments` | Payment records with gateway references |
-| `conversations` | Chat conversation containers |
-| `messages` | Chat messages (user / assistant) |
-| `exercises` | Therapeutic exercises |
-| `reports` | Weekly/monthly user reports |
-| `emotion_logs` | Emotion tracking entries |
-| `mood_entries` | Mood tracking entries |
-| `meditation_tracks` | Meditation audio tracks |
-| `audit_logs` | System audit trail |
+| Table                | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| `subscription_plans` | Plan definitions with feature limits     |
+| `subscriptions`      | User subscriptions with status lifecycle |
+| `payments`           | Payment records with gateway references  |
+| `conversations`      | Chat conversation containers             |
+| `messages`           | Chat messages (user / assistant)         |
+| `exercises`          | Therapeutic exercises                    |
+| `reports`            | Weekly/monthly user reports              |
+| `emotion_logs`       | Emotion tracking entries                 |
+| `mood_entries`       | Mood tracking entries                    |
+| `meditation_tracks`  | Meditation audio tracks                  |
+| `audit_logs`         | System audit trail                       |
 
 ## Getting Started
 
@@ -170,22 +170,22 @@ npm run db:seed
 npm run dev
 ```
 
-The app runs at [http://localhost:8080](http://localhost:8080).
+The app runs at [http://localhost:3000](http://localhost:3000).
 
 ### Available Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start development server (port 8080) |
-| `npm run build` | Production build |
-| `npm run start` | Start production server (port 8080) |
-| `npm run lint` | Run ESLint |
-| `npm run typecheck` | TypeScript type checking |
-| `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:push` | Push schema to database |
-| `npm run db:migrate` | Run migrations |
-| `npm run db:studio` | Open Drizzle Studio |
-| `npm run db:seed` | Seed database |
+| Command               | Description                          |
+| --------------------- | ------------------------------------ |
+| `npm run dev`         | Start development server (port 3000) |
+| `npm run build`       | Production build                     |
+| `npm run start`       | Start production server (port 3000)  |
+| `npm run lint`        | Run ESLint                           |
+| `npm run typecheck`   | TypeScript type checking             |
+| `npm run db:generate` | Generate Drizzle migrations          |
+| `npm run db:push`     | Push schema to database              |
+| `npm run db:migrate`  | Run migrations                       |
+| `npm run db:studio`   | Open Drizzle Studio                  |
+| `npm run db:seed`     | Seed database                        |
 
 ### Environment Variables
 
@@ -211,7 +211,7 @@ PAYPING_API_TOKEN=your_token
 PAYPING_SANDBOX=true
 
 # App
-NEXT_PUBLIC_APP_URL=http://localhost:8080
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ## Docker
@@ -220,29 +220,29 @@ NEXT_PUBLIC_APP_URL=http://localhost:8080
 # Build and run
 docker compose up -d
 
-# The app is available at http://localhost:8080
+# The app is available at http://localhost:3000
 ```
 
 The Dockerfile uses a multi-stage build (deps → builder → runner) with standalone output for minimal image size.
 
 ## Route Groups
 
-| Group | Purpose | Auth Required |
-|---|---|---|
-| `(marketing)` | Public landing pages | No |
-| `(auth)` | Authentication flows | No |
-| `(app)` | Main application | Yes |
-| `(admin)` | Admin panel | Yes (admin role) |
+| Group         | Purpose              | Auth Required    |
+| ------------- | -------------------- | ---------------- |
+| `(marketing)` | Public landing pages | No               |
+| `(auth)`      | Authentication flows | No               |
+| `(app)`       | Main application     | Yes              |
+| `(admin)`     | Admin panel          | Yes (admin role) |
 
 ## RBAC
 
 Roles managed via Better-Auth admin plugin:
 
-| Role | Capabilities |
-|---|---|
-| `user` | Default — chat, profile, exercises, meditation, mood, reports |
-| `admin` | User management, payments, subscriptions, audit logs, plans |
-| `super_admin` | Full access including role management |
+| Role          | Capabilities                                                  |
+| ------------- | ------------------------------------------------------------- |
+| `user`        | Default — chat, profile, exercises, meditation, mood, reports |
+| `admin`       | User management, payments, subscriptions, audit logs, plans   |
+| `super_admin` | Full access including role management                         |
 
 ## License
 

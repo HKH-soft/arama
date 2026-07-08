@@ -36,6 +36,20 @@ const nextConfig: NextConfig = {
             value:
               "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.blob.vercel-storage.com; font-src 'self' data:; connect-src 'self' https:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
           },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+        ],
+      },
+      {
+        source: "/((?!api|_next/static|_next/image|uploads).*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=3600, stale-while-revalidate=86400",
+          },
         ],
       },
     ];

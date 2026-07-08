@@ -50,19 +50,36 @@ export default function SecurityPage() {
     fetchSessions();
   }, []);
 
-  const handlePasswordChange = (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would be an API call
-    console.log("Changing password:", {
-      currentPassword,
-      newPassword,
-      confirmNewPassword,
-    });
-    // Reset form
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmNewPassword("");
-    setShowPasswordFields(false);
+    if (newPassword !== confirmNewPassword) {
+      alert("رمزهای عبور مطابقت ندارند");
+      return;
+    }
+    if (newPassword.length < 8) {
+      alert("رمز عبور باید حداقل ۸ کاراکتر باشد");
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("رمز عبور با موفقیت تغییر کرد");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmNewPassword("");
+        setShowPasswordFields(false);
+      } else {
+        alert(data.message || data.error || "خطا در تغییر رمز عبور");
+      }
+    } catch (err) {
+      console.error("Error changing password:", err);
+      alert("خطا در اتصال به سرور");
+    }
   };
 
   const handleRevokeSession = async (sessionId: string) => {

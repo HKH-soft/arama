@@ -7,6 +7,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { preprocessBoolean } from "@/lib/validators/admin";
 import { logAudit, getClientInfo } from "@/lib/audit";
+import { isUniqueViolation, currentTimestamp } from "@/db/driver-helpers";
 
 const getUsersSchema = z.object({
   page: z.coerce.number().default(1),
@@ -177,7 +178,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newUser[0], { status: 201 });
   } catch (err: any) {
     console.error("Admin user creation error:", err);
-    if (err?.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    if (isUniqueViolation(err)) {
       return NextResponse.json(
         { error: "کاربری با این ایمیل قبلاً ثبت شده است" },
         { status: 409 },
@@ -223,7 +224,7 @@ export async function PUT(request: NextRequest) {
 
     const updateData: Record<string, any> = {
       ...parsed.data,
-      updatedAt: sql`(cast(unixepoch('subsecond') * 1000 as integer))`,
+      updatedAt: currentTimestamp,
     };
 
     const updated = await db.update(users)
@@ -244,7 +245,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updated[0]);
   } catch (err: any) {
     console.error("Admin user update error:", err);
-    if (err?.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    if (isUniqueViolation(err)) {
       return NextResponse.json(
         { error: "این ایمیل قبلاً توسط کاربر دیگری استفاده شده است" },
         { status: 409 },
