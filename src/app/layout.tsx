@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
+import { Vazirmatn } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
+
+const vazirmatn = Vazirmatn({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-vazirmatn",
+});
 
 export const metadata: Metadata = {
   title: "آراما — هوش مصنوعی سلامت روان",
@@ -30,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
+    <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"

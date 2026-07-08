@@ -96,6 +96,7 @@ export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
                 size="icon"
                 onClick={toggleTheme}
                 className="text-neutral-600 dark:text-neutral-300 hover:bg-neutral-950/5 dark:hover:bg-white/10 rounded-xl"
+                aria-label="تغییر تم"
               >
                 {mounted && theme === "dark" ? (
                   <Sun className="w-4.5 h-4.5" />
@@ -162,6 +163,7 @@ export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
                 size="icon"
                 onClick={toggleTheme}
                 className="text-neutral-600 dark:text-neutral-300 rounded-xl"
+                aria-label="تغییر تم"
               >
                 {mounted && theme === "dark" ? (
                   <Sun className="w-4.5 h-4.5" />
@@ -174,6 +176,7 @@ export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
                 size="icon"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="text-neutral-800 dark:text-neutral-100 rounded-xl"
+                aria-label={mobileMenuOpen ? "بستن منو" : "باز کردن منو"}
               >
                 {mobileMenuOpen ? (
                   <X className="w-5 h-5" />

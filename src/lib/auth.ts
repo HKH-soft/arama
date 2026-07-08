@@ -3,7 +3,6 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import {
   admin,
   twoFactor,
-  username,
   phoneNumber,
   magicLink,
   organization,
@@ -12,12 +11,17 @@ import { passkey } from "@better-auth/passkey";
 import bcrypt from "bcryptjs";
 import db from "./db";
 import * as schema from "@/db/schema";
+import * as relations from "@/db/relations";
 
 export const auth = betterAuth({
+  experimental: {
+    joins: true,
+  },
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: {
       ...schema,
+      ...relations,
       user: schema.users,
       session: schema.sessions,
       account: schema.accounts,
@@ -78,7 +82,6 @@ export const auth = betterAuth({
       adminRole: ["admin", "super_admin"],
     }),
     twoFactor(), // Future: 2FA for admin accounts
-    username(), // Future: username-based login
     phoneNumber(), // Future: SMS auth
     magicLink({
       // Future: passwordless email login

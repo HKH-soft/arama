@@ -296,5 +296,3 @@ export const meditationTracks = sqliteTable("meditation_tracks", {
     sql`(strftime('%s', 'now'))`,
   ),
 });
-
-

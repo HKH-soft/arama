@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "@/lib/auth-client";
+import { signIn, signUp } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,14 +25,13 @@ export default function SignupPage() {
     setError("");
     setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+      const { data, error: signUpError } = await signUp.email({
+        name,
+        email: email.trim(),
+        password,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "خطا در ثبت‌نام");
+      if (signUpError) {
+        setError(signUpError.message || "خطا در ثبت‌نام");
         return;
       }
       // Register route auto-logins, so just redirect
