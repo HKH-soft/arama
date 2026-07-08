@@ -29,12 +29,20 @@ dotenv.config({ path: ".env" });
 // Load environment-specific file (higher priority, overrides .env)
 dotenv.config({ path: envFileName });
 
+// ── Driver selection ──────────────────────────────────────────
+const driver = (process.env.DATABASE_DRIVER || "turso").toLowerCase();
+
 export default defineConfig({
-  schema: "./src/db/schema.ts",
+  schema: driver === "neon"
+    ? "./src/db/schema-pg.ts"
+    : "./src/db/schema-sqlite.ts",
   out: "./drizzle",
-  dialect: "turso",
-  dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN,
-  },
+  dialect: driver === "neon" ? "postgresql" : "turso",
+  dbCredentials:
+    driver === "neon"
+      ? { url: process.env.DATABASE_URL! }
+      : {
+          url: process.env.TURSO_DATABASE_URL!,
+          authToken: process.env.TURSO_AUTH_TOKEN,
+        },
 });

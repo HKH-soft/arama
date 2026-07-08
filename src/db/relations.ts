@@ -1,25 +1,22 @@
-import { relations } from "drizzle-orm";
-import { users, accounts, sessions } from "./schema";
+/**
+ * Relations barrel — re-exports the correct dialect based on DATABASE_DRIVER.
+ */
 
-// ============================================================
-// Drizzle Relations (required by Better Auth with experimental.joins)
-// ============================================================
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import type * as RelTypes from "./relations-sqlite";
 
-export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
-  sessions: many(sessions),
-}));
+const driver = (process.env.DATABASE_DRIVER || "turso").toLowerCase();
 
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, {
-    fields: [accounts.userId],
-    references: [users.id],
-  }),
-}));
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const mod: typeof RelTypes =
+  driver === "neon"
+    ? // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("./relations-pg")
+    : // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("./relations-sqlite");
 
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, {
-    fields: [sessions.userId],
-    references: [users.id],
-  }),
-}));
+export const usersRelations = mod.usersRelations;
+export const accountsRelations = mod.accountsRelations;
+export const sessionsRelations = mod.sessionsRelations;
+export const blogCategoriesRelations = mod.blogCategoriesRelations;
+export const blogPostsRelations = mod.blogPostsRelations;

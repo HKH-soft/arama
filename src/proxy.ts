@@ -5,15 +5,18 @@ import type { NextRequest } from "next/server";
 const publicPaths = [
   "/about",
   "/contact",
+  "/blog",
   "/login",
   "/signup",
   "/forgot-password",
   "/reset-password",
   "/verify-email",
+  "/robots.txt",
+  "/sitemap.xml",
 ];
 
 // API paths that don't require authentication
-const publicApiPaths = ["/api/auth", "/api/plans"];
+const publicApiPaths = ["/api/auth", "/api/plans", "/api/blog"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -36,6 +39,11 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/images") ||
     pathname === "/"
   ) {
+    return NextResponse.next();
+  }
+
+  // Allow robots.txt and sitemap
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
     return NextResponse.next();
   }
 

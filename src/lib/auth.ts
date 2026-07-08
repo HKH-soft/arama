@@ -9,16 +9,19 @@ import {
 } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import db from "./db";
 import * as schema from "@/db/schema";
 import * as relations from "@/db/relations";
+
+const dbDriver = (process.env.DATABASE_DRIVER || "turso").toLowerCase();
 
 export const auth = betterAuth({
   experimental: {
     joins: true,
   },
   database: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: dbDriver === "neon" ? "pg" : "sqlite",
     schema: {
       ...schema,
       ...relations,
@@ -29,7 +32,7 @@ export const auth = betterAuth({
     },
   }),
 
-  baseURL: process.env.APP_URL || "http://localhost:8080",
+  baseURL: process.env.APP_URL || "http://localhost:3000",
 
   // Email/password authentication (replaces NextAuth Credentials provider)
   emailAndPassword: {
@@ -114,4 +117,29 @@ export const auth = betterAuth({
 
   // Trust host (needed for production)
   trustHost: true,
+
+  // Update lastLoginAt whenever a session is created (sign-in)
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          // Update the user's lastLoginAt on each sign-in
+          if (session.userId) {
+            try {
+              await db
+                .update(schema.users)
+                .set({
+                  lastLoginAt: new Date(),
+                  lastLoginIp: session.ipAddress || null,
+                })
+                .where(eq(schema.users.id, session.userId));
+            } catch (err) {
+              console.error("Failed to update lastLoginAt:", err);
+            }
+          }
+          return { data: session };
+        },
+      },
+    },
+  },
 });
