@@ -16,7 +16,6 @@ import TextType from "@/components/TextType";
 import { useState, useEffect } from "react";
 import MagneticButton from "@/components/MagneticButton";
 import BorderGlowCard from "@/components/BorderGlowCard";
-import { Footer } from "@/components/Footer";
 import dynamic from "next/dynamic";
 
 const HomeBelowFold = dynamic(() => import("./HomeBelowFold"), {
@@ -271,7 +270,6 @@ export default function HomeClient() {
         {/* Below-fold content (dynamically loaded) */}
         <HomeBelowFold plans={plans} />
       </main>
-      <Footer />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
 import { useEffect, useRef } from "react";
 
-import "./Aurora.css";
+// Aurora.css inlined into globals.css to eliminate render-blocking request
 
 interface AuroraProps {
   colorStops?: string[];
@@ -145,62 +145,68 @@ export default function Aurora({
     const ctn = ctnDom.current;
     if (!ctn) return;
 
-    const renderer = new Renderer({
-      alpha: true,
-      premultipliedAlpha: false,
-      antialias: true,
-    });
-    const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 0);
-    gl.enable(gl.BLEND);
+    let animateId = 0;
+    let renderer: Renderer | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let gl: any = null;
+    let program: Program | null = null;
+    let mesh: Mesh | null = null;
+    let visible = false;
 
-    // Changed to standard Alpha Blending (Source Over)
-    // This allows the aurora to act as a translucent layer over both white and black backgrounds
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    function init() {
+      if (renderer || !ctn) return;
+      renderer = new Renderer({
+        alpha: true,
+        premultipliedAlpha: false,
+        antialias: true,
+      });
+      gl = renderer.gl;
+      gl.clearColor(0, 0, 0, 0);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    gl.canvas.style.backgroundColor = "transparent";
+      if ("style" in gl.canvas) {
+        (gl.canvas as HTMLCanvasElement).style.backgroundColor = "transparent";
+      }
 
-    let program: Program;
+      const colorStopsArray = colorStops.map((hex) => {
+        const c = new Color(hex);
+        return [c.r, c.g, c.b];
+      });
+
+      program = new Program(gl, {
+        vertex: VERT,
+        fragment: FRAG,
+        uniforms: {
+          uTime: { value: 0 },
+          uAmplitude: { value: amplitude },
+          uColorStops: { value: colorStopsArray },
+          uResolution: { value: [ctn!.offsetWidth, ctn!.offsetHeight] },
+          uBlend: { value: blend },
+        },
+      });
+
+      mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
+      ctn.appendChild(gl.canvas);
+      resize();
+    }
 
     function resize() {
-      if (!ctn) return;
+      if (!ctn || !renderer || !program) return;
       const width = ctn.offsetWidth;
       const height = ctn.offsetHeight;
       renderer.setSize(width, height);
-      if (program) {
-        program.uniforms.uResolution.value = [width, height];
-      }
+      program.uniforms.uResolution.value = [width, height];
     }
     window.addEventListener("resize", resize);
 
-    const geometry = new Triangle(gl);
-    if ((geometry.attributes as Record<string, unknown>).uv) {
-      delete (geometry.attributes as Record<string, unknown>).uv;
-    }
-
-    const colorStopsArray = colorStops.map((hex) => {
-      const c = new Color(hex);
-      return [c.r, c.g, c.b];
-    });
-
-    program = new Program(gl, {
-      vertex: VERT,
-      fragment: FRAG,
-      uniforms: {
-        uTime: { value: 0 },
-        uAmplitude: { value: amplitude },
-        uColorStops: { value: colorStopsArray },
-        uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
-        uBlend: { value: blend },
-      },
-    });
-
-    const mesh = new Mesh(gl, { geometry, program });
-    ctn.appendChild(gl.canvas);
-
-    let animateId = 0;
     const update = (t: number) => {
+      if (!visible) {
+        animateId = requestAnimationFrame(update);
+        return;
+      }
       animateId = requestAnimationFrame(update);
+      if (!gl || !program || !renderer || !mesh) return;
       const { time = t * 0.01, speed: s = 1.0 } = propsRef.current;
       program.uniforms.uTime.value = time * s * 0.1;
       program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
@@ -212,17 +218,29 @@ export default function Aurora({
       });
       renderer.render({ scene: mesh });
     };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible && !renderer) {
+          init();
+        }
+      },
+      { threshold: 0 },
+    );
+    observer.observe(ctn);
+    visible = true;
+    init();
     animateId = requestAnimationFrame(update);
 
-    resize();
-
     return () => {
+      observer.disconnect();
       cancelAnimationFrame(animateId);
       window.removeEventListener("resize", resize);
-      if (ctn && gl.canvas.parentNode === ctn) {
+      if (ctn && gl && gl.canvas.parentNode === ctn) {
         ctn.removeChild(gl.canvas);
       }
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      gl?.getExtension("WEBGL_lose_context")?.loseContext();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amplitude]);

@@ -43,6 +43,7 @@ export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
     { name: "امکانات", href: "/#features" },
     { name: "قیمت‌گذاری", href: "/#pricing" },
     { name: "درباره ما", href: "/about" },
+    { name: "وبلاگ", href: "/blog" },
     { name: "تماس", href: "/contact" },
   ];
 

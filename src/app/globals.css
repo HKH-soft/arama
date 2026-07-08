@@ -264,7 +264,7 @@
   --secondary-foreground: 150 40% 90%;
 
   --muted: 165 20% 11%;
-  --muted-foreground: 160 15% 60%;
+  --muted-foreground: 160 15% 66%;
 
   --accent: 160 60% 30%;
   --accent-foreground: 150 40% 94%;
@@ -461,4 +461,21 @@
 
 .animate-scale-in {
   animation: scale-in 0.2s ease-out;
+}
+
+/* TextType component styles (inlined from TextType.css to eliminate render-blocking request) */
+.text-type {
+  display: inline;
+}
+
+.text-type__cursor {
+  display: inline;
+  margin-inline-start: 2px;
+  font-weight: 100;
+}
+
+/* Aurora component styles (inlined from Aurora.css to eliminate render-blocking request) */
+.aurora-container {
+  width: 100%;
+  height: 100%;
 }
