@@ -1,8 +1,5 @@
 import { Resend } from "resend";
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface SendEmailOptions {
   to: string;
   subject: string;
@@ -10,8 +7,19 @@ interface SendEmailOptions {
   text?: string;
 }
 
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(key);
+}
+
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured — skipping email");
+    return false;
+  }
   try {
+    const resend = getResend();
     const data = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "noreply@arama.app",
       to: options.to,
