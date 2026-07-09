@@ -143,7 +143,7 @@ export default function Chat() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute left-0 top-0 h-full w-72 bg-card border-r border-border shadow-2xl rounded-r-xl"
+              className="absolute start-0 top-0 h-full w-72 bg-card border-r border-border shadow-2xl rounded-r-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-start p-3">
@@ -152,8 +152,9 @@ export default function Chat() {
                   size="icon"
                   onClick={() => setSidebarOpen(false)}
                   className="text-muted-foreground hover:text-foreground"
+                  aria-label="بستن فهرست مکالمات"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
               </div>
               <ConversationList
@@ -181,15 +182,16 @@ export default function Chat() {
               size="icon"
               className="lg:hidden h-8 w-8 text-muted-foreground hover:text-foreground"
               onClick={() => setSidebarOpen(true)}
+              aria-label="باز کردن فهرست مکالمات"
             >
-              <Menu className="w-4 h-4" />
+              <Menu className="w-4 h-4" aria-hidden="true" />
             </Button>
 
             <div className="relative">
               <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-sm shadow">
                 آ
               </div>
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full" />
+              <div className="absolute bottom-0 end-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full" />
             </div>
             <div>
               <h2 className="font-semibold text-foreground text-sm leading-tight">
@@ -207,8 +209,9 @@ export default function Chat() {
               size="icon"
               className="text-muted-foreground hover:text-foreground h-8 w-8"
               onClick={() => setSettingsOpen(true)}
+              aria-label="تنظیمات"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </header>
@@ -317,7 +320,7 @@ export default function Chat() {
               >
                 <Link href="/session-management">
                   <span>مدیریت نشست‌ها</span>
-                  <BrainCircuit className="w-4 h-4" />
+                  <BrainCircuit className="w-4 h-4" aria-hidden="true" />
                 </Link>
               </Button>
 
@@ -331,9 +334,10 @@ export default function Chat() {
                   }
                   setSettingsOpen(false);
                 }}
+                aria-label="پاک کردن گفتگوی فعلی"
               >
                 <span>پاک کردن گفتگوی فعلی</span>
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" aria-hidden="true" />
               </Button>
             </div>
           </div>

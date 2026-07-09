@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
     "argon2",
     "pino",
     "pino-pretty",
-    "better-sqlite3",
-    "@opennextjs/cloudflare",
     "drizzle-orm/d1",
   ],
   experimental: {
@@ -34,7 +32,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.blob.vercel-storage.com; font-src 'self' data:; connect-src 'self' https:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.blob.vercel-storage.com; font-src 'self' data:; connect-src 'self' https:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
           },
           {
             key: "Strict-Transport-Security",

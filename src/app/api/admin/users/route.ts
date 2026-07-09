@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db";
 import { users } from "@/db/schema";
-import { asc, desc, ilike, sql, and, eq, count } from "drizzle-orm";
+import { asc, desc, like, sql, and, eq, count } from "drizzle-orm";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { preprocessBoolean } from "@/lib/validators/admin";
 import { logAudit, getClientInfo } from "@/lib/audit";
 import { isUniqueViolation, currentTimestamp } from "@/db/driver-helpers";
+import { UnauthorizedError, ForbiddenError, isAuthError } from "@/lib/errors";
 
 const getUsersSchema = z.object({
   page: z.coerce.number().default(1),
@@ -41,9 +42,6 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requirePermission("users:read");
 
-    // Log for debugging
-    console.log("User accessing users API:", user?.email, "with roles:", user?.roles);
-
     const searchParams = request.nextUrl.searchParams;
     const parsed = getUsersSchema.safeParse({
       page: searchParams.get("page") ?? undefined,
@@ -57,7 +55,7 @@ export async function GET(request: NextRequest) {
     if (!parsed.success) {
       console.log("Validation error:", parsed.error.issues);
       return NextResponse.json(
-        { error: "پارامترهای نامعتبر", details: parsed.error.issues },
+        { error: "پارامترهای نامعتبر" },
         { status: 400 },
       );
     }
@@ -68,7 +66,7 @@ export async function GET(request: NextRequest) {
     const conditions: any[] = [];
     if (search) {
       conditions.push(
-        sql`(${ilike(users.name, `%${search}%`)} OR ${ilike(users.email, `%${search}%`)})`,
+        sql`(${like(users.name, `%${search}%`)} OR ${like(users.email, `%${search}%`)})`,
       );
     }
     if (isActive !== undefined) {
@@ -115,18 +113,15 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / pageLimit),
       },
     });
-  } catch (err: any) {
-    console.error("Admin users fetch error:", err);
-    if (err?.message?.includes("احراز هویت") || err?.message?.includes("ممنوع")) {
-      return NextResponse.json(
-        { error: err.message },
-        { status: 401 },
-      );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
     }
-    return NextResponse.json(
-      { error: "خطا در دریافت کاربران", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 400 },
-    );
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }
 
@@ -140,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
+        { error: "ورودی نامعتبر" },
         { status: 400 },
       );
     }
@@ -176,18 +171,15 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(newUser[0], { status: 201 });
-  } catch (err: any) {
-    console.error("Admin user creation error:", err);
-    if (isUniqueViolation(err)) {
-      return NextResponse.json(
-        { error: "کاربری با این ایمیل قبلاً ثبت شده است" },
-        { status: 409 },
-      );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
     }
-    return NextResponse.json(
-      { error: "خطا در ایجاد کاربر", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 },
-    );
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }
 
@@ -209,7 +201,7 @@ export async function PUT(request: NextRequest) {
     const parsed = updateUserSchema.safeParse(updateFields);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
+        { error: "ورودی نامعتبر" },
         { status: 400 },
       );
     }
@@ -243,18 +235,15 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json(updated[0]);
-  } catch (err: any) {
-    console.error("Admin user update error:", err);
-    if (isUniqueViolation(err)) {
-      return NextResponse.json(
-        { error: "این ایمیل قبلاً توسط کاربر دیگری استفاده شده است" },
-        { status: 409 },
-      );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
     }
-    return NextResponse.json(
-      { error: "خطا در به‌روزرسانی کاربر", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 },
-    );
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }
 
@@ -297,11 +286,14 @@ export async function DELETE(request: NextRequest) {
     });
 
     return NextResponse.json({ message: "کاربر با موفقیت حذف شد" });
-  } catch (err) {
-    console.error("Admin user delete error:", err);
-    return NextResponse.json(
-      { error: "خطا در حذف کاربر", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 },
-    );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }

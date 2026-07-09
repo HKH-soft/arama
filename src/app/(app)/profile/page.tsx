@@ -509,14 +509,15 @@ export default function ProfilePage() {
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="absolute top-0 left-0 -m-2 w-8 h-8 rounded-full p-0"
+                    className="absolute top-0 start-0 -m-2 w-8 h-8 rounded-full p-0"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingAvatar}
+                    aria-label="آپلود تصویر پروفایل"
                   >
                     {uploadingAvatar ? (
                       <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-4 h-4" aria-hidden="true" />
                     )}
                   </Button>
                 </div>
@@ -527,7 +528,7 @@ export default function ProfilePage() {
                     className={`mt-5 mx-auto text-destructive`}
                     onClick={handleDeleteAvatar}
                   >
-                    <Trash2 className="w-3 h-3 mr-1" />
+                    <Trash2 className="w-3 h-3 me-1" />
                     حذف تصویر
                   </Button>
                 )}
@@ -598,7 +599,7 @@ export default function ProfilePage() {
                   <CardTitle>جزئیات پروفایل</CardTitle>
                   {!editing && !loading && (
                     <Button onClick={() => setEditing(true)}>
-                      <Edit className="w-4 h-4 ml-2" />
+                      <Edit className="w-4 h-4 ms-2" />
                       ویرایش
                     </Button>
                   )}
@@ -693,7 +694,7 @@ export default function ProfilePage() {
 
                     <div className="flex gap-2">
                       <Button onClick={handleSave} className="w-full sm:w-auto">
-                        <Save className="w-4 h-4 ml-2" />
+                        <Save className="w-4 h-4 ms-2" />
                         ذخیره تغییرات
                       </Button>
                       <Button
@@ -731,7 +732,7 @@ export default function ProfilePage() {
                       onClick={() => setTheme("light")}
                       className="flex-1"
                     >
-                      <Sun className="w-4 h-4 ml-2" />
+                      <Sun className="w-4 h-4 ms-2" />
                       روشن
                     </Button>
                     <Button
@@ -739,7 +740,7 @@ export default function ProfilePage() {
                       onClick={() => setTheme("dark")}
                       className="flex-1"
                     >
-                      <Moon className="w-4 h-4 ml-2" />
+                      <Moon className="w-4 h-4 ms-2" />
                       تاریک
                     </Button>
                   </div>
@@ -992,7 +993,7 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <CardTitle>تراکنش‌های مالی</CardTitle>
                 <Button>
-                  <Download className="w-4 h-4 ml-2" />
+                  <Download className="w-4 h-4 ms-2" />
                   دانلود گزارش
                 </Button>
               </div>
@@ -1024,7 +1025,7 @@ export default function ProfilePage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center">
-                              <DollarSign className="w-4 h-4 ml-1 text-muted-foreground" />
+                              <DollarSign className="w-4 h-4 ms-1 text-muted-foreground" />
                               {payment.amount.toLocaleString()}{" "}
                               {payment.currency || "تومان"}
                             </div>
@@ -1042,7 +1043,7 @@ export default function ProfilePage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center">
-                              <Calendar className="w-4 h-4 ml-1 text-muted-foreground" />
+                              <Calendar className="w-4 h-4 ms-1 text-muted-foreground" />
                               {new Date(payment.createdAt).toLocaleDateString(
                                 "fa-IR",
                               )}
@@ -1050,7 +1051,7 @@ export default function ProfilePage() {
                           </TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm">
-                              <Receipt className="w-4 h-4 ml-2" />
+                              <Receipt className="w-4 h-4 ms-2" />
                               مشاهده
                             </Button>
                           </TableCell>
@@ -1171,9 +1172,9 @@ export default function ProfilePage() {
                       onClick={() => setShowPasswordFields(!showPasswordFields)}
                     >
                       {showPasswordFields ? (
-                        <EyeOff className="w-4 h-4 ml-2" />
+                        <EyeOff className="w-4 h-4 ms-2" />
                       ) : (
-                        <Eye className="w-4 h-4 ml-2" />
+                        <Eye className="w-4 h-4 ms-2" />
                       )}
                       {showPasswordFields ? "مخفی کردن" : "تغییر رمز"}
                     </Button>
@@ -1281,7 +1282,7 @@ export default function ProfilePage() {
                             size="sm"
                             onClick={() => handleRevokeSession(session.id)}
                           >
-                            <LogOut className="w-4 h-4 ml-2" />
+                            <LogOut className="w-4 h-4 ms-2" />
                             خروج
                           </Button>
                         )}

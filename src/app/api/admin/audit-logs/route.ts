@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db"; // Updated to use Drizzle
 import { auditLogs, users } from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc, gte, lte, sql, ilike } from "drizzle-orm"; // Import Drizzle operators
+import { eq, and, asc, desc, gte, lte, sql, like } from "drizzle-orm"; // Import Drizzle operators
 import { z } from "zod";
+import { UnauthorizedError, ForbiddenError, isAuthError } from "@/lib/errors";
 
 // Enhanced boolean preprocessing to handle string "true"/"false" values
 const preprocessBoolean = () =>
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "پارامترهای نامعتبر", details: parsed.error.issues },
+        { error: "پارامترهای نامعتبر" },
         { status: 400 },
       );
     }
@@ -85,13 +86,13 @@ export async function GET(request: NextRequest) {
     let conditions: any[] = [];
 
     if (action) {
-      conditions.push(ilike(auditLogs.action, `%${action}%`));
+      conditions.push(like(auditLogs.action, `%${action}%`));
     }
     if (userId) {
       conditions.push(eq(auditLogs.userId, userId));
     }
     if (entity) {
-      conditions.push(ilike(auditLogs.entity, `%${entity}%`));
+      conditions.push(like(auditLogs.entity, `%${entity}%`));
     }
     if (entityId) {
       conditions.push(eq(auditLogs.entityId, entityId));
@@ -149,22 +150,14 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total[0].count / limit),
       },
     });
-  } catch (err: any) {
-    console.error("Admin audit logs fetch error:", err);
-    // Check if it's an authentication error
-    if (
-      err?.message?.includes("احراز هویت") ||
-      err?.message?.includes("ممنوع") ||
-      err?.message?.includes("ممنوع")
-    ) {
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
       return NextResponse.json({ error: err.message }, { status: 401 });
     }
-    return NextResponse.json(
-      {
-        error: "خطا در دریافت لاگ‌های حسابرسی",
-        details: err instanceof Error ? err.message : "خطای ناشناخته",
-      },
-      { status: 500 },
-    );
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }

@@ -78,8 +78,9 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           disabled={!value.trim() || disabled}
           className="h-11 w-11 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground p-0 flex items-center justify-center shrink-0 shadow-md disabled:opacity-40"
           data-testid="button-send"
+          aria-label="ارسال پیام"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-4 h-4" aria-hidden="true" />
         </Button>
 
         {/* Textarea */}
@@ -106,8 +107,9 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           className="text-muted-foreground hover:text-primary h-11 w-11 shrink-0 rounded-full"
           data-testid="button-voice"
           title="ورودی صوتی (به زودی)"
+          aria-label="ضبط صدا"
         >
-          <Mic className="w-5 h-5" />
+          <Mic className="w-5 h-5" aria-hidden="true" />
         </Button>
       </form>
 

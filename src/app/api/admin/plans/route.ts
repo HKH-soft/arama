@@ -7,6 +7,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { logAudit, getClientInfo } from "@/lib/audit";
 import { preprocessBoolean } from "@/lib/validators/admin"; // Import the enhanced validator
+import { UnauthorizedError, ForbiddenError, isAuthError } from "@/lib/errors";
 
 // Zod schema for creating a plan
 const createPlanSchema = z.object({
@@ -108,12 +109,15 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(totalCount / limit),
       },
     });
-  } catch (err) {
-    console.error("Admin plans list error:", err);
-    return NextResponse.json(
-      { error: "خطا در دریافت لیست پلن‌ها", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }
 
@@ -127,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
+        { error: "ورودی نامعتبر" },
         { status: 400 }
       );
     }
@@ -175,12 +179,15 @@ export async function POST(request: NextRequest) {
     });
     
     return NextResponse.json(newPlan[0], { status: 201 });
-  } catch (err) {
-    console.error("Admin plan creation error:", err);
-    return NextResponse.json(
-      { error: "خطا در ایجاد پلن", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }
 

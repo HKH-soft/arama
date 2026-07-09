@@ -1,7 +1,5 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Heart, Shield, Users, Globe } from "lucide-react";
+import { FadeIn } from "@/components/marketing/FadeIn";
 
 export default function About() {
   return (
@@ -10,22 +8,17 @@ export default function About() {
       <section className="py-16 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-card -z-10" />
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-bold text-foreground mb-6"
-          >
-            ما آراما هستیم
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-xl text-muted-foreground leading-relaxed"
-          >
-            تیمی از متخصصان سلامت روان و مهندسان هوش مصنوعی که با یک هدف مشترک
-            گرد هم آمده‌ایم: ایجاد فضایی امن برای گفتگو در سخت‌ترین روزها.
-          </motion.p>
+          <FadeIn>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              ما آراما هستیم
+            </h1>
+          </FadeIn>
+          <FadeIn delay={0.1}>
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              تیمی از متخصصان سلامت روان و مهندسان هوش مصنوعی که با یک هدف مشترک
+              گرد هم آمده‌ایم: ایجاد فضایی امن برای گفتگو در سخت‌ترین روزها.
+            </p>
+          </FadeIn>
         </div>
       </section>
 

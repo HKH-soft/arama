@@ -1,6 +1,7 @@
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import { getUserByEmail, getUserById, hashPassword } from "./auth-helpers-no-auth";
+import { UnauthorizedError, ForbiddenError } from "@/lib/errors";
 
 export { getUserByEmail, getUserById, hashPassword };
 
@@ -56,13 +57,13 @@ export async function requireAuth() {
   });
 
   if (!session?.user?.email) {
-    throw new Error("احراز هویت الزامی: کاربر وارد نشده است");
+    throw new UnauthorizedError("احراز هویت الزامی: کاربر وارد نشده است");
   }
 
   const user = await getUserByEmail(session.user.email);
 
   if (!user) {
-    throw new Error("کاربر یافت نشد: حساب کاربری احراز هویت شده وجود ندارد");
+    throw new UnauthorizedError("کاربر یافت نشد: حساب کاربری احراز هویت شده وجود ندارد");
   }
 
   return user;
@@ -71,7 +72,7 @@ export async function requireAuth() {
 export async function requirePermission(permission: string) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    throw new Error("احراز هویت الزامی: کاربر وارد نشده است");
+    throw new UnauthorizedError("احراز هویت الزامی: کاربر وارد نشده است");
   }
 
   const roles = currentUser.roles ?? [];
@@ -79,7 +80,7 @@ export async function requirePermission(permission: string) {
   // Check if user has admin role (which grants all permissions)
   const isAdmin = roles.some((r) => r === "admin" || r === "super_admin");
   if (!isAdmin) {
-    throw new Error(`دسترسی ممنوع: کاربر مجوز لازم '${permission}' را ندارد`);
+    throw new ForbiddenError(`دسترسی ممنوع: کاربر مجوز لازم '${permission}' را ندارد`);
   }
 
   return {

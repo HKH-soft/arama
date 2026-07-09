@@ -3,6 +3,7 @@ import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db";
 import { users, subscriptions, payments } from "@/db/schema";
 import { eq, gte, count, sum, sql, and } from "drizzle-orm";
+import { UnauthorizedError, ForbiddenError, isAuthError } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,11 +45,14 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json({ stats, recentUsers: recentUsersResult });
-  } catch (err) {
-    console.error("Admin stats fetch error:", err);
-    return NextResponse.json(
-      { error: "خطا در دریافت آمار", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    console.error("Error:", err);
+    if (err instanceof UnauthorizedError) {
+      return NextResponse.json({ error: err.message }, { status: 401 });
+    }
+    if (err instanceof ForbiddenError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: "خطای داخلی سرور" }, { status: 500 });
   }
 }

@@ -87,10 +87,17 @@ export const auth = betterAuth({
     twoFactor(), // Future: 2FA for admin accounts
     phoneNumber(), // Future: SMS auth
     magicLink({
-      // Future: passwordless email login
       sendMagicLink: async ({ email, url }) => {
-        // TODO: Implement email sending via Resend
-        console.log(`Magic link for ${email}: ${url}`);
+        try {
+          const { sendEmail } = await import("@/lib/email");
+          await sendEmail({
+            to: email,
+            subject: "ورود به آراما",
+            html: `<div dir="rtl" style="font-family: Vazirmatn, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;"><h2>ورود به آراما</h2><p>برای ورود به حساب کاربری خود، روی دکمه زیر کلیک کنید:</p><a href="${url}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">ورود به آراما</a><p style="color: #666; font-size: 14px;">این لینک ۱۵ دقیقه معتبر است.</p><p style="color: #666; font-size: 14px;">اگر شما درخواست ورود نکرده‌اید، این ایمیل را نادیده بگیرید.</p></div>`,
+          });
+        } catch (err) {
+          console.error("Failed to send magic link email:", err);
+        }
       },
     }),
     passkey({
