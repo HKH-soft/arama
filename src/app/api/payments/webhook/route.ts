@@ -5,6 +5,7 @@ import db from "@/lib/db";
 import { payments } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { createHmac, timingSafeEqual } from "crypto";
 
 // Zod schema for webhook payload validation
 const WebhookPayloadSchema = z.object({
@@ -225,7 +226,6 @@ export async function POST(request: NextRequest) {
       action: "PAYMENT_WEBHOOK_ERROR",
       metadata: { 
         error: err instanceof Error ? err.message : "Unknown error",
-        stack: err instanceof Error ? err.stack : undefined
       },
     });
     return NextResponse.json(
@@ -236,18 +236,32 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Verify the webhook signature from the payment gateway
- * This is a placeholder - implement according to your payment gateway's specification
+ * Verify the webhook signature using HMAC-SHA256.
+ * Expects header: X-Webhook-Signature (hex-encoded HMAC)
+ * Secret from: process.env.PAYMENT_WEBHOOK_SECRET
  */
 async function verifyWebhookSignature(request: NextRequest, rawBody: string): Promise<boolean> {
-  // This is a simplified verification - implement according to your payment gateway's requirements
-  // For example, ZarinPal uses a signature in the header that should match the calculated signature of the body
-  
-  // Example implementation for ZarinPal:
-  // const signature = request.headers.get('signature');
-  // const calculatedSignature = calculateSignature(rawBody, process.env.ZARINPAL_MERCHANT_ID!);
-  // return signature === calculatedSignature;
-  
-  // For now, return true - this needs to be implemented per gateway specification
-  return true; // Placeholder - implement actual signature verification
+  const secret = process.env.PAYMENT_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error("PAYMENT_WEBHOOK_SECRET env var is not set");
+    return false;
+  }
+
+  const signature = request.headers.get("x-webhook-signature");
+  if (!signature) {
+    return false;
+  }
+
+  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+
+  try {
+    const sigBuffer = Buffer.from(signature, "hex");
+    const expectedBuffer = Buffer.from(expected, "hex");
+    if (sigBuffer.length !== expectedBuffer.length) {
+      return false;
+    }
+    return timingSafeEqual(sigBuffer, expectedBuffer);
+  } catch {
+    return false;
+  }
 }

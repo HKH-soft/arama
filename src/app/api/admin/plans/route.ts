@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db";
 import { subscriptionPlans } from "@/db/schema";
-import { eq, and, asc, desc, count } from "drizzle-orm";
+import { eq, and, asc, desc, count, like } from "drizzle-orm";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { logAudit, getClientInfo } from "@/lib/audit";
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     const conditions = [];
     if (searchTerm) {
       conditions.push(
-        eq(subscriptionPlans.displayName, searchTerm)
+        like(subscriptionPlans.displayName, `%${searchTerm}%`)
       );
     }
     if (isActive) {

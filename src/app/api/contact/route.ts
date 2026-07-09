@@ -6,6 +6,15 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@arama.app";
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 3;
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Simple in-memory rate limit
 const submissions = new Map<string, number[]>();
 

@@ -6,22 +6,7 @@ import { eq, and, asc, desc, gte, lte, sql, like } from "drizzle-orm"; // Import
 import { z } from "zod";
 import { logAudit, getClientInfo } from "@/lib/audit";
 import { UnauthorizedError, ForbiddenError, isAuthError } from "@/lib/errors";
-
-// Enhanced boolean preprocessing to handle string "true"/"false" values
-const preprocessBoolean = () =>
-  z
-    .any()
-    .transform((val) => {
-      if (val === null || val === undefined || val === "") return undefined;
-      if (typeof val === "string") {
-        if (val.toLowerCase() === "true" || val === "1") return true;
-        if (val.toLowerCase() === "false" || val === "0") return false;
-      }
-      if (typeof val === "boolean") return val;
-      if (typeof val === "number") return val !== 0;
-      return undefined;
-    })
-    .pipe(z.boolean().optional());
+import { preprocessBoolean } from "@/lib/validators/admin";
 
 const getPaymentsSchema = z.object({
   page: z.coerce.number().min(1).default(1),

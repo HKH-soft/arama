@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://arama.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

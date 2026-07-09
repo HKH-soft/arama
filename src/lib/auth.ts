@@ -14,6 +14,10 @@ import db from "./db";
 import * as schema from "@/db/schema";
 import * as relations from "@/db/relations";
 
+if (!process.env.AUTH_SECRET) {
+  throw new Error("AUTH_SECRET environment variable is required");
+}
+
 const dbDriver = (process.env.DATABASE_DRIVER || "turso").toLowerCase();
 
 export const auth = betterAuth({

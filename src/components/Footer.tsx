@@ -21,18 +21,14 @@ export function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="توییتر"
               >
                 <SiX className="w-5 h-5" aria-hidden="true" />
               </a>
               <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#"
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="اینستاگرام"
               >
@@ -130,31 +126,33 @@ export function Footer() {
                   وبلاگ
                 </Link>
               </li>
-              <li>
+              {/* TODO: Uncomment when /careers page is created */}
+              {/* <li>
                 <Link
                   href="/careers"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   فرصت‌های شغلی
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold text-foreground mb-4">پشتیبانی</h3>
             <ul className="space-y-2">
-              <li>
+              {/* TODO: Uncomment when /help-center page is created */}
+              {/* <li>
                 <Link
                   href="/help-center"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   مرکز راهنما
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link
-                  href="/privacy-policy"
+                  href="/about"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   حریم خصوصی
@@ -162,7 +160,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/terms-of-service"
+                  href="/about"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   شرایط استفاده

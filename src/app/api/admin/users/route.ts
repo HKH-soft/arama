@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db";
-import { users } from "@/db/schema";
+import { users, accounts } from "@/db/schema";
 import { asc, desc, like, sql, and, eq, count } from "drizzle-orm";
 import { z } from "zod";
 import { randomUUID } from "crypto";
@@ -142,10 +142,6 @@ export async function POST(request: NextRequest) {
 
     const { name, email, password, role, isActive, phone, bio } = parsed.data;
 
-    // Hash password using better-sqlite3 compatible approach
-    const bcrypt = await import("bcryptjs");
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await db
       .insert(users)
       .values({
@@ -159,6 +155,20 @@ export async function POST(request: NextRequest) {
         emailVerified: false,
       })
       .returning();
+
+    // Store password in the accounts table (better-auth credential pattern)
+    const bcrypt = await import("bcryptjs");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const now = new Date();
+    await db.insert(accounts).values({
+      id: randomUUID(),
+      userId: newUser[0].id,
+      accountId: email,
+      providerId: "credential",
+      password: hashedPassword,
+      createdAt: now,
+      updatedAt: now,
+    });
 
     await logAudit({
       userId: adminUser.id,

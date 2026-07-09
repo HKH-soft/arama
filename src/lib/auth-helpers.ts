@@ -69,6 +69,9 @@ export async function requireAuth() {
   return user;
 }
 
+import { hasPermission } from "@/lib/permissions";
+import type { PermissionValue } from "@/types/auth";
+
 export async function requirePermission(permission: string) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
@@ -77,9 +80,11 @@ export async function requirePermission(permission: string) {
 
   const roles = currentUser.roles ?? [];
 
-  // Check if user has admin role (which grants all permissions)
-  const isAdmin = roles.some((r) => r === "admin" || r === "super_admin");
-  if (!isAdmin) {
+  // Check if user has the required permission
+  const hasRequiredPermission = roles.some((role) =>
+    hasPermission(role, permission as PermissionValue),
+  );
+  if (!hasRequiredPermission) {
     throw new ForbiddenError(`دسترسی ممنوع: کاربر مجوز لازم '${permission}' را ندارد`);
   }
 

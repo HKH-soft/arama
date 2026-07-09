@@ -1,5 +1,7 @@
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
+import { drizzle as drizzleNeonHttp } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
 import {
   users,
   accounts,
@@ -35,22 +37,27 @@ switch (nodeEnv) {
     envFileName = ".env.test";
     break;
   default:
-    envFileName = ".env.local"; // Default for development
+    envFileName = ".env.local";
 }
 
-// Load base .env file first (lowest priority)
 dotenv.config({ path: ".env" });
-
-// Load environment-specific file (higher priority, overrides .env)
 dotenv.config({ path: envFileName });
 
-// Create the Turso client
-const turso = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+// ── Driver selection ──────────────────────────────────────────
+const driver = (process.env.DATABASE_DRIVER || "turso").toLowerCase();
 
-const db = drizzle(turso);
+let db: ReturnType<typeof drizzleLibsql>;
+
+if (driver === "neon") {
+  const sql = neon(process.env.DATABASE_URL!);
+  db = drizzleNeonHttp(sql);
+} else {
+  const client = createClient({
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+  db = drizzleLibsql(client);
+}
 
 // Helper to get timestamp for date calculations
 const now = Math.floor(Date.now() / 1000);

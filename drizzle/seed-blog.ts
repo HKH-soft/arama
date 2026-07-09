@@ -1,5 +1,7 @@
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
+import { drizzle as drizzleNeonHttp } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
 import { blogCategories, blogPosts } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -27,12 +29,21 @@ switch (nodeEnv) {
 dotenv.config({ path: ".env" });
 dotenv.config({ path: envFileName });
 
-const turso = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+// ── Driver selection ──────────────────────────────────────────
+const driver = (process.env.DATABASE_DRIVER || "turso").toLowerCase();
 
-const db = drizzle(turso);
+let db: ReturnType<typeof drizzleLibsql>;
+
+if (driver === "neon") {
+  const sql = neon(process.env.DATABASE_URL!);
+  db = drizzleNeonHttp(sql);
+} else {
+  const client = createClient({
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
+  db = drizzleLibsql(client);
+}
 
 const now = Math.floor(Date.now() / 1000);
 const daysAgo = (days: number) => now - days * 24 * 60 * 60;

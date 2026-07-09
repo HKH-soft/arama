@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
       activeSubscriptionsResult,
       monthlyPaymentsResult,
       recentUsersResult,
+      successPaymentsResult,
+      totalPaymentsResult,
     ] = await Promise.all([
       db.select({ count: count() }).from(users),
       db.select({ count: count() }).from(subscriptions).where(eq(subscriptions.status, "ACTIVE")),
@@ -33,13 +35,21 @@ export async function GET(request: NextRequest) {
         email: users.email,
         createdAt: users.createdAt,
       }).from(users).orderBy(users.createdAt).limit(5),
+      db.select({ count: count() }).from(payments).where(eq(payments.status, "SUCCESS")),
+      db.select({ count: count() }).from(payments),
     ]);
+
+    const successCount = Number(successPaymentsResult[0]?.count ?? 0);
+    const totalCount = Number(totalPaymentsResult[0]?.count ?? 0);
+    const successRate = totalCount > 0
+      ? `${Math.round((successCount / totalCount) * 100)}٪`
+      : "۰٪";
 
     const stats = {
       totalUsers: totalUsersResult[0]?.count?.toString() || "0",
       monthlyRevenue: `${monthlyPaymentsResult[0]?.total?.toLocaleString() || "0"} تومان`,
       activeSubscriptions: activeSubscriptionsResult[0]?.count?.toString() || "0",
-      successRate: "۹۸٪",
+      successRate,
       newUsers: `+${recentUsersResult.length}`,
       expiringSubscriptions: "۰",
     };

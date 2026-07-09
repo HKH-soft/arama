@@ -100,16 +100,24 @@ export async function PUT(
 
     const originalMessage = originalMessageResult[0];
     
-    // Parse request body to get content and role
+    // Parse request body and validate with schema
     const body = await request.json();
-    const { content, role } = body;
+    const parsed = updateMessageSchema.safeParse(body);
 
-    // Update the message
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "ورودی نامعتبر", details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { content } = parsed.data;
+
+    // Update only content — never accept role from client
     const updatedMessage = await db
       .update(messages)
       .set({
-        content: content,
-        role: role,
+        content,
         updatedAt: new Date(),
       })
       .where(and(
@@ -130,7 +138,6 @@ export async function PUT(
         conversationId: conversationId,
         oldContent: originalMessage.content,
         newContent: content,
-        role: role,
       },
       ipAddress: clientInfo.ipAddress,  // This should now work since clientInfo is awaited
       userAgent: clientInfo.userAgent,

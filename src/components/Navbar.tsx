@@ -9,16 +9,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/UserContext";
+import { signOut } from "@/lib/auth-client";
 
-type SessionPayload = {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  avatarUrl?: string | null;
-};
-
-export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
+export function Navbar({ user: initialUser }: { user: { id: string; name?: string | null; email?: string | null; image?: string | null; avatarUrl?: string | null } | null }) {
   const { user } = useUser();
   const effectiveUser = user || initialUser;
   const { theme, setTheme } = useTheme();
@@ -35,7 +28,7 @@ export function Navbar({ user: initialUser }: { user: SessionPayload | null }) {
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await signOut();
     window.location.href = "/login";
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -12,11 +12,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user } = useUser();
 
-  // If user is null (not authenticated), redirect to login
-  if (!user) {
-    router.push("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+    }
+  }, [user, router]);
+
+  if (!user) return null;
 
   return (
     <div

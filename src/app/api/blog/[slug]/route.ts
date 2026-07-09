@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { blogPosts, blogCategories } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export async function GET(
   _request: NextRequest,
@@ -9,12 +9,6 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-
-    // Increment view count
-    await db
-      .update(blogPosts)
-      .set({ viewCount: sql`${blogPosts.viewCount} + 1` })
-      .where(eq(blogPosts.slug, slug));
 
     const posts = await db
       .select({
@@ -37,12 +31,18 @@ export async function GET(
       })
       .from(blogPosts)
       .leftJoin(blogCategories, eq(blogPosts.categoryId, blogCategories.id))
-      .where(eq(blogPosts.slug, slug))
+      .where(and(eq(blogPosts.slug, slug), eq(blogPosts.isPublished, true)))
       .limit(1);
 
     if (posts.length === 0) {
       return NextResponse.json({ error: "مقاله یافت نشد" }, { status: 404 });
     }
+
+    // Only increment view count for published posts
+    await db
+      .update(blogPosts)
+      .set({ viewCount: sql`${blogPosts.viewCount} + 1` })
+      .where(eq(blogPosts.slug, slug));
 
     return NextResponse.json(posts[0]);
   } catch (err) {
