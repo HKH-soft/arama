@@ -48,10 +48,10 @@ export function Navbar({ user: initialUser }: { user: { id: string; name?: strin
       {/* Main glass bar */}
       <div className=" relative rounded-2xl overflow-hidden transition-all duration-300 shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.42)]">
         {/* Apple Premium Glass Base Layer */}
-        <div className="absolute inset-0 rounded-2xl bg-background/90 dark:bg-neutral-900/[0.45] backdrop-blur-[32px] saturate-[210%] transition-colors duration-300" />
+        <div className="absolute inset-0 rounded-2xl bg-white/85 dark:bg-neutral-900/[0.45] backdrop-blur-[32px] saturate-[210%] transition-colors duration-300" />
 
         {/* Liquid Fluid Gloss/Sheen Surface Injection */}
-        <div className="absolute inset-0 rounded-2xl pointer-events-none bg-linear-to-b from-white/35 dark:from-white/8 via-white/[0.03] dark:via-transparent to-transparent" />
+        <div className="absolute inset-0 rounded-2xl pointer-events-none bg-linear-to-b from-white/60 dark:from-white/8 via-white/[0.03] dark:via-transparent to-transparent" />
 
         {/* Dynamic Micro-Refraction Borders (Crisp Specular Edge Highlight) */}
         <div className="absolute inset-0 rounded-2xl border-0 pointer-events-none mix-blend-overlay dark:mix-blend-normal" />

@@ -515,7 +515,7 @@ export default function ProfilePageClient({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="absolute top-0 start-0 -m-2 w-8 h-8 rounded-full p-0"
+                    className="absolute top-0 left-0 -m-2 w-8 h-8 rounded-full p-0"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingAvatar}
                     aria-label="آپلود تصویر پروفایل"

@@ -24,17 +24,20 @@ export function useConversations() {
     }
   }, []);
 
-  const create = useCallback(async (title: string): Promise<Conversation | null> => {
-    const res = await fetch(`${BASE}/chat/conversations`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title }),
-    });
-    if (!res.ok) return null;
-    const conv: Conversation = await res.json();
-    setConversations((prev) => [conv, ...prev]);
-    return conv;
-  }, []);
+  const create = useCallback(
+    async (title: string): Promise<Conversation | null> => {
+      const res = await fetch(`${BASE}/chat/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) return null;
+      const conv: Conversation = await res.json();
+      setConversations((prev) => [conv, ...prev]);
+      return conv;
+    },
+    [],
+  );
 
   const remove = useCallback(async (id: string) => {
     await fetch(`${BASE}/chat/conversations/${id}`, { method: "DELETE" });
@@ -60,24 +63,31 @@ export function useMessages(conversationId: string | null) {
     if (!res.ok) return;
     const data = await res.json();
     setMessages(
-      (data.messages ?? []).map((m: { id: string; role: string; content: string; createdAt: string }) => ({
-        id: String(m.id),
-        role: m.role as "user" | "assistant",
-        content: m.content,
-        createdAt: new Date(m.createdAt),
-      }))
+      (data.messages ?? []).map(
+        (m: {
+          id: string;
+          role: string;
+          content: string;
+          createdAt: string;
+        }) => ({
+          id: String(m.id),
+          role: m.role as "user" | "assistant",
+          content: m.content,
+          createdAt: new Date(m.createdAt),
+        }),
+      ),
     );
   }, []);
 
   const send = useCallback(
     async (content: string, overrideConvId?: string) => {
       const effectiveId = overrideConvId ?? conversationId;
-      
+
       if (!effectiveId) {
         console.warn("No conversation ID available to send message");
         return;
       }
-      
+
       // Use ref to avoid stale closure issues
       if (isStreamingRef.current) {
         console.warn("Already streaming a message, ignoring new send request");
@@ -88,26 +98,35 @@ export function useMessages(conversationId: string | null) {
       setMessages((prev) => [...prev, userMsg]);
 
       const streamingId = makeId();
-      setMessages((prev) => [...prev, { id: streamingId, role: "assistant", content: "" }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: streamingId, role: "assistant", content: "" },
+      ]);
       setIsStreaming(true);
 
       abortRef.current = new AbortController();
 
       try {
-        const res = await fetch(`${BASE}/chat/conversations/${effectiveId}/messages`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
-          signal: abortRef.current.signal,
-        });
+        const res = await fetch(
+          `${BASE}/chat/conversations/${effectiveId}/messages`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content }),
+            signal: abortRef.current.signal,
+          },
+        );
 
         if (!res.ok || !res.body) {
           setMessages((prev) =>
             prev.map((m) =>
               m.id === streamingId
-                ? { ...m, content: "متأسفم، خطایی رخ داد. لطفاً دوباره تلاش کن." }
-                : m
-            )
+                ? {
+                    ...m,
+                    content: "متأسفم، خطایی رخ داد. لطفاً دوباره تلاش کن.",
+                  }
+                : m,
+            ),
           );
           setIsStreaming(false);
           return;
@@ -132,18 +151,21 @@ export function useMessages(conversationId: string | null) {
               if (json.content) {
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === streamingId ? { ...m, content: m.content + json.content } : m
-                  )
+                    m.id === streamingId
+                      ? { ...m, content: m.content + json.content }
+                      : m,
+                  ),
                 );
               }
               if (json.done || json.error) {
                 if (json.error) {
                   setMessages((prev) =>
                     prev.map((m) =>
-                      m.id === streamingId ? { ...m, content: json.error } : m
-                    )
+                      m.id === streamingId ? { ...m, content: json.error } : m,
+                    ),
                   );
                 }
+                setIsStreaming(false);
               }
             } catch {}
           }
@@ -154,8 +176,8 @@ export function useMessages(conversationId: string | null) {
             prev.map((m) =>
               m.id === streamingId
                 ? { ...m, content: "ارتباط قطع شد. لطفاً دوباره تلاش کن." }
-                : m
-            )
+                : m,
+            ),
           );
         }
       } finally {
@@ -163,7 +185,7 @@ export function useMessages(conversationId: string | null) {
         abortRef.current = null;
       }
     },
-    [conversationId]
+    [conversationId],
   );
 
   const clear = useCallback(() => setMessages([]), []);
