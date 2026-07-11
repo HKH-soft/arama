@@ -4,6 +4,7 @@ import db from "@/lib/db"; // Updated to use Drizzle
 import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
 import { eq, and, asc, desc } from "drizzle-orm"; // Import Drizzle operators
 import Anthropic from "@anthropic-ai/sdk";
+import { checkUserRateLimit } from "@/lib/rate-limit";
 
 export async function POST(
   request: NextRequest,
@@ -18,6 +19,18 @@ export async function POST(
       return NextResponse.json(
         { error: "محتوا نمی‌تواند خالی باشد" },
         { status: 400 },
+      );
+    }
+
+    // Rate limit: 20 messages per minute per user (AI calls are expensive)
+    const rateLimit = checkUserRateLimit(user.id, 20, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "تعداد درخواست‌ها بیش از حد مجاز است. لطفاً چند لحظه صبر کنید.",
+        },
+        { status: 429 },
       );
     }
 
@@ -175,16 +188,7 @@ export async function POST(
   } catch (error) {
     console.error("ارسال پیام انجام نشد:", error);
     return NextResponse.json(
-      {
-        error: "ارسال پیام انجام نشد",
-        details:
-          error instanceof Error
-            ? {
-                message: error.message,
-                name: error.name,
-              }
-            : "خطای ناشناخته رخ داده است",
-      },
+      { error: "ارسال پیام انجام نشد" },
       { status: 500 },
     );
   }

@@ -18,17 +18,43 @@ const publicPaths = [
 // API paths that don't require authentication
 const publicApiPaths = ["/api/auth", "/api/plans", "/api/blog"];
 
+// Generate CSP with nonce for security
+function generateCSP(nonce: string): string {
+  const isDev = process.env.NODE_ENV === "development";
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'", // Next.js requires unsafe-inline for styles
+    "img-src 'self' blob: data:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "frame-src 'none'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
   // Allow public paths
   if (publicPaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("Content-Security-Policy", generateCSP(nonce));
+    response.headers.set("x-nonce", nonce);
+    return response;
   }
 
   // Allow public API paths
   if (publicApiPaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("Content-Security-Policy", generateCSP(nonce));
+    response.headers.set("x-nonce", nonce);
+    return response;
   }
 
   // Allow static files and Next.js internal paths
@@ -39,12 +65,18 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/images") ||
     pathname === "/"
   ) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("Content-Security-Policy", generateCSP(nonce));
+    response.headers.set("x-nonce", nonce);
+    return response;
   }
 
   // Allow robots.txt and sitemap
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("Content-Security-Policy", generateCSP(nonce));
+    response.headers.set("x-nonce", nonce);
+    return response;
   }
 
   // Check authentication using Better-Auth
@@ -56,10 +88,16 @@ export async function proxy(request: NextRequest) {
     // Redirect to login for protected routes
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    response.headers.set("Content-Security-Policy", generateCSP(nonce));
+    response.headers.set("x-nonce", nonce);
+    return response;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("Content-Security-Policy", generateCSP(nonce));
+  response.headers.set("x-nonce", nonce);
+  return response;
 }
 
 export const config = {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
 import db from "@/lib/db"; // Updated to use Drizzle
 import { conversations, messages } from "@/db/schema"; // Import Drizzle tables
-import { eq, and, asc, desc } from 'drizzle-orm'; // Import Drizzle operators
+import { eq, and, asc, desc } from "drizzle-orm"; // Import Drizzle operators
 
 export async function GET(
   _request: NextRequest,
@@ -13,21 +13,26 @@ export async function GET(
     const { id } = await params;
 
     // Check if conversation exists and belongs to user
-    const conversationResult = await db.select()
+    const conversationResult = await db
+      .select()
       .from(conversations)
-      .where(and(
-        eq(conversations.id, id),
-        eq(conversations.userId, user.id)
-      ));
-      
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found or does not belong to the authenticated user" }, { status: 404 });
+      return NextResponse.json(
+        {
+          error:
+            "Conversation not found or does not belong to the authenticated user",
+        },
+        { status: 404 },
+      );
     }
 
     const conversation = conversationResult[0];
 
     // Get messages for the conversation
-    const messageResults = await db.select()
+    const messageResults = await db
+      .select()
       .from(messages)
       .where(eq(messages.conversationId, id))
       .orderBy(asc(messages.createdAt));
@@ -36,7 +41,7 @@ export async function GET(
   } catch (error) {
     console.error("Failed to fetch conversation:", error);
     return NextResponse.json(
-      { error: "Failed to fetch conversation", details: error instanceof Error ? error.message : "Unknown error occurred" },
+      { error: "خطا در دریافت مکالمه" },
       { status: 500 },
     );
   }
@@ -53,23 +58,31 @@ export async function PATCH(
     const { title } = body;
 
     if (!title || typeof title !== "string" || !title.trim()) {
-      return NextResponse.json({ error: "Title is required and must be a non-empty string" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Title is required and must be a non-empty string" },
+        { status: 400 },
+      );
     }
 
     // Check if conversation exists and belongs to user
-    const conversationResult = await db.select()
+    const conversationResult = await db
+      .select()
       .from(conversations)
-      .where(and(
-        eq(conversations.id, id),
-        eq(conversations.userId, user.id)
-      ));
-      
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "Conversation not found or does not belong to the authenticated user" }, { status: 404 });
+      return NextResponse.json(
+        {
+          error:
+            "Conversation not found or does not belong to the authenticated user",
+        },
+        { status: 404 },
+      );
     }
 
     // Update conversation
-    const updatedConversationResult = await db.update(conversations)
+    const updatedConversationResult = await db
+      .update(conversations)
       .set({ title: title.trim() })
       .where(eq(conversations.id, id))
       .returning();
@@ -78,7 +91,7 @@ export async function PATCH(
   } catch (error) {
     console.error("Failed to update conversation:", error);
     return NextResponse.json(
-      { error: "Failed to update conversation", details: error instanceof Error ? error.message : "Unknown error occurred" },
+      { error: "خطا در به‌روزرسانی مکالمه" },
       { status: 500 },
     );
   }
@@ -86,22 +99,23 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const user = await requireAuth();
     const { id } = await params;
 
     // Check if conversation exists and belongs to user
-    const conversationResult = await db.select()
+    const conversationResult = await db
+      .select()
       .from(conversations)
-      .where(and(
-        eq(conversations.id, id),
-        eq(conversations.userId, user.id)
-      ));
-      
+      .where(and(eq(conversations.id, id), eq(conversations.userId, user.id)));
+
     if (conversationResult.length === 0) {
-      return NextResponse.json({ error: "مکالمه یافت نشد یا متعلق به کاربر احراز هویت شده نیست" }, { status: 404 });
+      return NextResponse.json(
+        { error: "مکالمه یافت نشد یا متعلق به کاربر احراز هویت شده نیست" },
+        { status: 404 },
+      );
     }
 
     // Delete conversation and its messages
@@ -110,9 +124,6 @@ export async function DELETE(
     return NextResponse.json({ message: "مکالمه با موفقیت حذف شد" });
   } catch (error) {
     console.error("حذف مکالمه انجام نشد:", error);
-    return NextResponse.json(
-      { error: "حذف مکالمه انجام نشد", details: error instanceof Error ? error.message : "خطای ناشناخته رخ داده است" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "خطا در حذف مکالمه" }, { status: 500 });
   }
 }

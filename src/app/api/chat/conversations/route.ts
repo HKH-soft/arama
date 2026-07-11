@@ -2,19 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helpers";
 import db from "@/lib/db"; // Updated to use Drizzle
 import { conversations } from "@/db/schema"; // Import Drizzle tables
-import { eq, desc } from 'drizzle-orm';
-import { randomUUID } from 'crypto';
+import { eq, desc } from "drizzle-orm";
+import { randomUUID } from "crypto";
 import { z } from "zod";
 
 const createConversationSchema = z.object({
-  title: z.string().max(200, "عنوان گفتگو نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد").optional(),
+  title: z
+    .string()
+    .max(200, "عنوان گفتگو نمی‌تواند بیشتر از ۲۰۰ کاراکتر باشد")
+    .optional(),
 });
 
 export async function GET(_request: NextRequest) {
   try {
     const user = await requireAuth();
 
-    const conversationsResult = await db.select()
+    const conversationsResult = await db
+      .select()
       .from(conversations)
       .where(eq(conversations.userId, user.id))
       .orderBy(desc(conversations.createdAt));
@@ -36,18 +40,18 @@ export async function POST(_request: NextRequest) {
     const parsed = createConversationSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ورودی نامعتبر" }, { status: 400 });
     }
 
     // Create conversation
-    const conversationResult = await db.insert(conversations).values({
-      id: randomUUID(),
-      userId: user.id,
-      title: parsed.data.title || "مکالمه جدید",
-    }).returning();
+    const conversationResult = await db
+      .insert(conversations)
+      .values({
+        id: randomUUID(),
+        userId: user.id,
+        title: parsed.data.title || "مکالمه جدید",
+      })
+      .returning();
 
     return NextResponse.json(conversationResult[0]);
   } catch (error) {

@@ -16,7 +16,6 @@ export async function GET() {
     return NextResponse.json(
       {
         error: "خطا در دریافت دسته‌بندی‌ها",
-        details: err instanceof Error ? err.message : "خطای ناشناخته",
       },
       { status: 500 },
     );

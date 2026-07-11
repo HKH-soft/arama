@@ -19,10 +19,7 @@ export async function POST(request: NextRequest) {
     const parsed = refundSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ورودی نامعتبر" }, { status: 400 });
     }
 
     const { paymentId } = parsed.data;
@@ -34,10 +31,7 @@ export async function POST(request: NextRequest) {
       .where(eq(payments.id, paymentId));
 
     if (originalPaymentResult.length === 0) {
-      return NextResponse.json(
-        { error: "پرداخت یافت نشد" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "پرداخت یافت نشد" }, { status: 404 });
     }
 
     const originalPayment = originalPaymentResult[0];
@@ -45,23 +39,23 @@ export async function POST(request: NextRequest) {
     if (originalPayment.userId !== user.id) {
       return NextResponse.json(
         { error: "شما اجازه دسترسی به این پرداخت را ندارید" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     if (originalPayment.status !== "SUCCESS") {
       return NextResponse.json(
         { error: "فقط پرداخت‌های موفق می‌توانند مسترد شوند" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Update payment status to refunded
     const updatedPayment = await db
       .update(payments)
-      .set({ 
-        status: "REFUNDED", 
-        updatedAt: new Date() 
+      .set({
+        status: "REFUNDED",
+        updatedAt: new Date(),
       })
       .where(eq(payments.id, paymentId))
       .returning();
@@ -70,16 +64,16 @@ export async function POST(request: NextRequest) {
     if (originalPayment.subscriptionId) {
       await db
         .update(subscriptions)
-        .set({ 
-          status: "CANCELED", 
+        .set({
+          status: "CANCELED",
           cancelledAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(subscriptions.id, originalPayment.subscriptionId));
     }
 
-    const clientInfo = await getClientInfo();  // Changed to await
-    
+    const clientInfo = await getClientInfo(); // Changed to await
+
     // Log audit
     await logAudit({
       userId: user.id,
@@ -92,20 +86,20 @@ export async function POST(request: NextRequest) {
         gatewayName: originalPayment.gatewayName,
         subscriptionId: originalPayment.subscriptionId,
       },
-      ipAddress: clientInfo.ipAddress,  // This should now work since clientInfo is awaited
+      ipAddress: clientInfo.ipAddress, // This should now work since clientInfo is awaited
       userAgent: clientInfo.userAgent,
     });
 
     return NextResponse.json({
       success: true,
       payment: updatedPayment[0],
-      message: "بازپرداخت با موفقیت انجام شد"
+      message: "بازپرداخت با موفقیت انجام شد",
     });
   } catch (err) {
     console.error("Payment refund error:", err);
     return NextResponse.json(
-      { error: "خطا در انجام بازپرداخت", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
+      { error: "خطا در انجام بازپرداخت" },
+      { status: 500 },
     );
   }
 }

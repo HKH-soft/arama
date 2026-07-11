@@ -89,7 +89,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: "خطا در دریافت مقالات",
-        details: err instanceof Error ? err.message : "خطای ناشناخته",
       },
       { status: 500 },
     );

@@ -20,7 +20,7 @@ import * as dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 
 // Define the possible values for NODE_ENV
-type NodeEnv = 'development' | 'production' | 'test' | 'staging';
+type NodeEnv = "development" | "production" | "test" | "staging";
 
 // Determine environment and load appropriate .env file
 const nodeEnv: NodeEnv = (process.env.NODE_ENV as NodeEnv) || "development";
@@ -71,8 +71,8 @@ async function main() {
   // ============================================================
   const usersData = [
     {
-      email: "admin@arama.ir",
-      password: "Admin@123456",
+      email: process.env.ADMIN_EMAIL || "admin@arama.life",
+      password: process.env.ADMIN_PASSWORD || "Admin@123456",
       name: "مدیر سیستم",
     },
     {
@@ -83,7 +83,10 @@ async function main() {
   ];
 
   for (const userData of usersData) {
-    const existingUser = await db.select().from(users).where(eq(users.email, userData.email));
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, userData.email));
 
     if (existingUser.length === 0) {
       const userId = randomUUID();
@@ -100,7 +103,10 @@ async function main() {
         emailVerified: true,
         isActive: true,
         isDeleted: false,
-        role: userData.email === "admin@arama.ir" ? "super_admin" : "user",
+        role:
+          userData.email === (process.env.ADMIN_EMAIL || "admin@arama.life")
+            ? "super_admin"
+            : "user",
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
       });
@@ -120,13 +126,17 @@ async function main() {
     } else {
       console.log(`- User already exists: ${userData.email}`);
       // Update role for existing admin user if needed
-      if (userData.email === "admin@arama.ir") {
-        await db.update(users)
+      if (userData.email === (process.env.ADMIN_EMAIL || "admin@arama.life")) {
+        await db
+          .update(users)
           .set({ role: "super_admin" })
-          .where(eq(users.email, "admin@arama.ir"));
+          .where(
+            eq(users.email, process.env.ADMIN_EMAIL || "admin@arama.life"),
+          );
         console.log(`✓ Admin user role updated to super_admin`);
       } else if (userData.email === "user@arama.ir") {
-        await db.update(users)
+        await db
+          .update(users)
           .set({ role: "user" })
           .where(eq(users.email, "user@arama.ir"));
         console.log(`✓ Regular user role updated to user`);
@@ -339,7 +349,7 @@ async function main() {
       artist: "موسیقی آرام‌بخش",
       duration: 600,
       category: "آرامش",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      audioUrl: "/audio/calm-warm-drone.mp3",
       coverImageUrl: null,
       sortOrder: 1,
     },
@@ -348,7 +358,7 @@ async function main() {
       artist: "صدای مراقب",
       duration: 900,
       category: "خواب",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      audioUrl: "/audio/calm-ambient-space.mp3",
       coverImageUrl: null,
       sortOrder: 2,
     },
@@ -357,7 +367,7 @@ async function main() {
       artist: "راهنمای تنفسی",
       duration: 300,
       category: "تنفسی",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+      audioUrl: "/audio/calm-wandering.mp3",
       coverImageUrl: null,
       sortOrder: 3,
     },
@@ -366,9 +376,27 @@ async function main() {
       artist: "گروه روانشناسی مثبت",
       duration: 720,
       category: "ذهن‌آگاهی",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+      audioUrl: "/audio/calm-forest-meditation.mp3",
       coverImageUrl: null,
       sortOrder: 4,
+    },
+    {
+      title: "شکرگزاری صبح",
+      artist: "موسیقی مثبت‌اندیشی",
+      duration: 480,
+      category: "مثبت‌اندیشی",
+      audioUrl: "/audio/calm-peaceful-water.mp3",
+      coverImageUrl: null,
+      sortOrder: 5,
+    },
+    {
+      title: "شفقت با خود",
+      artist: "موسیقی کم‌نوا",
+      duration: 720,
+      category: "شفقت",
+      audioUrl: "/audio/calm-decline.mp3",
+      coverImageUrl: null,
+      sortOrder: 6,
     },
   ];
 
@@ -391,7 +419,9 @@ async function main() {
   console.log("\n=== Seeding Complete ===");
   console.log("Database seeded successfully!");
   console.log("\nDefault users created:");
-  console.log("  Admin: admin@arama.ir / Admin@123456");
+  console.log(
+    `  Admin: ${process.env.ADMIN_EMAIL || "admin@arama.life"} / ${process.env.ADMIN_PASSWORD || "Admin@123456"}`,
+  );
   console.log("  User:  user@arama.ir / User@123456");
   console.log("\nYou can now login at /login");
 }
@@ -405,5 +435,3 @@ main()
     console.error(e);
     process.exit(1);
   });
-
-

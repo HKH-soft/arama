@@ -215,7 +215,7 @@ export function BlogListClient({
                       </div>
                     )}
                     <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 end-4">
                       <Badge className="bg-primary text-primary-foreground border-0">
                         ویژه
                       </Badge>
@@ -307,7 +307,7 @@ export function BlogListClient({
                         </div>
                       )}
                       {post.categoryName && (
-                        <div className="absolute top-3 right-3">
+                        <div className="absolute top-3 end-3">
                           <Badge
                             variant="secondary"
                             className="bg-background/80 backdrop-blur-sm text-foreground border-0 text-xs"

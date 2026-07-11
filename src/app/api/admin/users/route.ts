@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth-helpers";
 import db from "@/lib/db";
 import { users, accounts } from "@/db/schema";
-import { asc, desc, like, sql, and, eq, count } from "drizzle-orm";
+import { asc, desc, like, or, and, eq, count } from "drizzle-orm";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { preprocessBoolean } from "@/lib/validators/admin";
@@ -15,8 +15,14 @@ const getUsersSchema = z.object({
   limit: z.coerce.number().default(10),
   search: z.string().optional(),
   isActive: preprocessBoolean(),
-  sortBy: z.enum(["createdAt", "lastLoginAt", "name", "email"]).optional().transform(val => val ?? "createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).optional().transform(val => val ?? "desc"),
+  sortBy: z
+    .enum(["createdAt", "lastLoginAt", "name", "email"])
+    .optional()
+    .transform((val) => val ?? "createdAt"),
+  sortOrder: z
+    .enum(["asc", "desc"])
+    .optional()
+    .transform((val) => val ?? "desc"),
 });
 
 const createUserSchema = z.object({
@@ -60,13 +66,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { page, limit: pageLimit, search, isActive, sortBy, sortOrder } = parsed.data;
+    const {
+      page,
+      limit: pageLimit,
+      search,
+      isActive,
+      sortBy,
+      sortOrder,
+    } = parsed.data;
     const skip = (page - 1) * pageLimit;
 
     const conditions: any[] = [];
     if (search) {
       conditions.push(
-        sql`(${like(users.name, `%${search}%`)} OR ${like(users.email, `%${search}%`)})`,
+        or(like(users.name, `%${search}%`), like(users.email, `%${search}%`)),
       );
     }
     if (isActive !== undefined) {
@@ -74,7 +87,8 @@ export async function GET(request: NextRequest) {
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-    const orderByClause = sortOrder === "asc" ? asc(users[sortBy]) : desc(users[sortBy]);
+    const orderByClause =
+      sortOrder === "asc" ? asc(users[sortBy]) : desc(users[sortBy]);
 
     const [rows, totalQuery] = await Promise.all([
       db
@@ -134,10 +148,7 @@ export async function POST(request: NextRequest) {
     const parsed = createUserSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ورودی نامعتبر" }, { status: 400 });
     }
 
     const { name, email, password, role, isActive, phone, bio } = parsed.data;
@@ -210,18 +221,15 @@ export async function PUT(request: NextRequest) {
 
     const parsed = updateUserSchema.safeParse(updateFields);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ورودی نامعتبر" }, { status: 400 });
     }
 
-    const existing = await db.select({ id: users.id }).from(users).where(eq(users.id, id));
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.id, id));
     if (existing.length === 0) {
-      return NextResponse.json(
-        { error: "کاربر یافت نشد" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "کاربر یافت نشد" }, { status: 404 });
     }
 
     const updateData: Record<string, any> = {
@@ -229,7 +237,8 @@ export async function PUT(request: NextRequest) {
       updatedAt: currentTimestamp,
     };
 
-    const updated = await db.update(users)
+    const updated = await db
+      .update(users)
       .set(updateData)
       .where(eq(users.id, id))
       .returning();
@@ -277,10 +286,7 @@ export async function DELETE(request: NextRequest) {
       .from(users)
       .where(eq(users.id, id));
     if (existing.length === 0) {
-      return NextResponse.json(
-        { error: "کاربر یافت نشد" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "کاربر یافت نشد" }, { status: 404 });
     }
 
     await db.delete(users).where(eq(users.id, id));
@@ -290,7 +296,10 @@ export async function DELETE(request: NextRequest) {
       action: "USER_DELETED",
       entity: "user",
       entityId: id,
-      metadata: { deletedEmail: existing[0].email, deletedRole: existing[0].role },
+      metadata: {
+        deletedEmail: existing[0].email,
+        deletedRole: existing[0].role,
+      },
       ipAddress: clientInfo.ipAddress,
       userAgent: clientInfo.userAgent,
     });

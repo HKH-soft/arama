@@ -54,9 +54,7 @@ export default function SignupPage() {
       {/* Logo */}
       <div className="text-center mb-8">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl shadow-lg shadow-primary/20">
-            آ
-          </div>
+          <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
           <span className="font-bold text-2xl tracking-tight text-foreground">
             آراما
           </span>

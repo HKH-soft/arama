@@ -19,10 +19,7 @@ export async function POST(request: NextRequest) {
     const parsed = createPaymentSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "ورودی نامعتبر" }, { status: 400 });
     }
 
     const { planId, returnUrl, clientRequestId } = parsed.data;
@@ -33,7 +30,7 @@ export async function POST(request: NextRequest) {
       planId,
       "zarinpal",
       returnUrl,
-      clientRequestId // Pass idempotency key
+      clientRequestId, // Pass idempotency key
     );
 
     await logAudit({
@@ -53,9 +50,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("Create payment error:", err);
-    return NextResponse.json(
-      { error: "خطا در ایجاد پرداخت", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "خطا در ایجاد پرداخت" }, { status: 500 });
   }
 }

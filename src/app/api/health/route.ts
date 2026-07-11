@@ -19,9 +19,7 @@ export async function GET(_request: NextRequest) {
         status: "unhealthy",
         timestamp: new Date().toISOString(),
         database: "disconnected",
-        error: error instanceof Error
-          ? { message: error.message, name: error.name }
-          : "خطای ناشناخته در زمان بررسی سلامت رخ داد",
+        error: "خطای ناشناخته در بررسی سلامت",
       },
       { status: 503 },
     );

@@ -4,6 +4,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
+import Script from "next/script";
+import { headers } from "next/headers";
 
 const vazirmatn = Vazirmatn({
   subsets: ["arabic"],
@@ -32,13 +34,22 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg" },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Get nonce from proxy middleware
+  const nonce = (await headers()).get("x-nonce");
+
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
+    <html
+      lang="fa"
+      dir="rtl"
+      suppressHydrationWarning
+      className={vazirmatn.variable}
+      nonce={nonce ?? undefined}
+    >
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"

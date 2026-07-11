@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "پارامترهای نامعتبر", details: parsed.error.issues },
-        { status: 400 }
+        { error: "پارامترهای نامعتبر" },
+        { status: 400 },
       );
     }
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by status if provided
     const filteredPayments = status
-      ? paymentsList.filter(p => p.status === status)
+      ? paymentsList.filter((p) => p.status === status)
       : paymentsList;
 
     // Sort payments
@@ -46,12 +46,12 @@ export async function GET(request: NextRequest) {
       const aValue = a[sortBy as keyof typeof a];
       const bValue = b[sortBy as keyof typeof b];
 
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
       }
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortOrder === 'asc'
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortOrder === "asc"
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Payments history fetch error:", err);
     return NextResponse.json(
-      { error: "خطا در دریافت تاریخچه پرداخت‌ها", details: err instanceof Error ? err.message : "خطای ناشناخته" },
-      { status: 500 }
+      { error: "خطا در دریافت تاریخچه پرداخت‌ها" },
+      { status: 500 },
     );
   }
 }

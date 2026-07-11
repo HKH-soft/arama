@@ -4,6 +4,32 @@ import { logAudit } from "@/lib/audit";
 // Simple in-memory store for rate limiting (use Redis in production)
 const attempts = new Map<string, { count: number; timestamp: number }>();
 
+// Per-user rate limiter for expensive endpoints (AI chat, etc.)
+const userRateLimits = new Map<string, { count: number; windowStart: number }>();
+
+export function checkUserRateLimit(
+  userId: string,
+  limit: number,
+  windowMs: number,
+): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const key = userId;
+  const entry = userRateLimits.get(key);
+
+  if (!entry || now - entry.windowStart > windowMs) {
+    userRateLimits.set(key, { count: 1, windowStart: now });
+    return { allowed: true, remaining: limit - 1 };
+  }
+
+  if (entry.count >= limit) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  entry.count++;
+  userRateLimits.set(key, entry);
+  return { allowed: true, remaining: limit - entry.count };
+}
+
 export interface RateLimitResult {
   blocked: boolean;
   remaining: number;

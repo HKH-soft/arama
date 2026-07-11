@@ -54,7 +54,6 @@ export async function GET(
     return NextResponse.json(
       {
         error: "خطا در دریافت پلن",
-        details: err instanceof Error ? err.message : "خطای ناشناخته",
       },
       { status: 500 },
     );
@@ -74,10 +73,7 @@ export async function PUT(
     const parsed = updatePlanSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "ورودی نامعتبر", details: parsed.error.issues },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ورودی نامعتبر" }, { status: 400 });
     }
 
     const {
@@ -157,7 +153,6 @@ export async function PUT(
     return NextResponse.json(
       {
         error: "خطا در به‌روزرسانی پلن",
-        details: err instanceof Error ? err.message : "خطای ناشناخته",
       },
       { status: 500 },
     );
@@ -230,7 +225,6 @@ export async function DELETE(
     return NextResponse.json(
       {
         error: "خطا در حذف پلن",
-        details: err instanceof Error ? err.message : "خطای ناشناخته",
       },
       { status: 500 },
     );
