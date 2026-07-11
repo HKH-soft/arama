@@ -10,21 +10,33 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function VerifyEmailPage() {
   const params = useParams();
   const token = params?.token as string | undefined;
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
 
   useEffect(() => {
-    if (!token) { setStatus("error"); return; }
+    if (!token) {
+      setStatus("error");
+      return;
+    }
     fetch(`/api/auth/verify-email/${token}`)
       .then((res) => setStatus(res.ok ? "success" : "error"))
       .catch(() => setStatus("error"));
   }, [token]);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="w-full max-w-md"
+    >
       <div className="text-center mb-8">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl shadow-lg shadow-primary/20">آ</div>
-          <span className="font-bold text-2xl tracking-tight text-foreground">آراما</span>
+          <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
+          <span className="font-bold text-2xl tracking-tight text-foreground">
+            آراما
+          </span>
         </Link>
         <h1 className="text-2xl font-bold text-foreground">تأیید ایمیل</h1>
       </div>
@@ -51,10 +63,15 @@ export default function VerifyEmailPage() {
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto">
               <XCircle className="w-8 h-8 text-red-600" />
             </div>
-            <p className="text-foreground">لینک تأیید نامعتبر یا منقضی شده است.</p>
+            <p className="text-foreground">
+              لینک تأیید نامعتبر یا منقضی شده است.
+            </p>
           </>
         )}
-        <Link href="/login" className="text-primary font-medium hover:text-primary/80 text-sm inline-flex items-center gap-1">
+        <Link
+          href="/login"
+          className="text-primary font-medium hover:text-primary/80 text-sm inline-flex items-center gap-1"
+        >
           <ArrowRight className="w-3 h-3" /> رفتن به صفحه ورود
         </Link>
       </div>

@@ -23,7 +23,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className={`flex items-end gap-3 ${isAI ? "justify-end flex-row-reverse" : "flex-row justify-start"}`}
+      className={`flex items-end gap-3 ${isAI ? "justify-content-end flex-row-reverse" : "flex-row justify-start"}`}
       data-testid={`message-${message.role}-${message.id}`}
     >
       {/* Avatar */}
@@ -40,9 +40,10 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
       {/* Bubble */}
       <div
         className={`max-w-[85%] sm:max-w-[72%] px-4 py-3 text-sm leading-7 rounded-2xl shadow-sm
-          ${isAI
-            ? "bg-background text-foreground rounded-bl-sm"
-            : "bg-primary text-primary-foreground rounded-br-sm"
+          ${
+            isAI
+              ? "bg-background text-foreground rounded-bl-sm"
+              : "bg-primary text-primary-foreground rounded-br-sm"
           }
           ${isStreaming ? "animate-pulse" : ""}
         `}

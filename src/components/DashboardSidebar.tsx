@@ -67,9 +67,7 @@ export function DashboardSidebar({
       {/* Navigation panel */}
       <div className="bg-sidebar rounded-lg p-4 grow border border-sidebar-border">
         <Link href="/" className="flex items-center gap-2 mb-4 px-2">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
-            آ
-          </div>
+          <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
           <span className="font-bold text-xl tracking-tight text-sidebar-foreground">
             آراما
           </span>

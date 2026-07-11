@@ -143,10 +143,10 @@ export default function Chat() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute start-0 top-0 h-full w-72 bg-card border-r border-border shadow-2xl rounded-r-xl"
+              className="absolute left-0 top-0 h-full w-72 bg-card border-r border-border shadow-2xl rounded-r-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-start p-3">
+              {/* <div className="flex justify-start p-3">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -156,7 +156,7 @@ export default function Chat() {
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
-              </div>
+              </div> */}
               <ConversationList
                 conversations={conversations}
                 activeId={activeId}
@@ -188,9 +188,8 @@ export default function Chat() {
             </Button>
 
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-linear-to-br from-primary to-secondary flex items-center justify-center text-foreground font-bold text-sm shadow">
-                آ
-              </div>
+              <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
+
               <div className="absolute bottom-0 end-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-background rounded-full" />
             </div>
             <div>
@@ -313,12 +312,8 @@ export default function Chat() {
             </div>
 
             <div className="grid gap-3">
-              <Button
-                variant="outline"
-                className="justify-between"
-                asChild
-              >
-                <Link href="/session-management">
+              <Button variant="outline" className="justify-between" asChild>
+                <Link href="/profile">
                   <span>مدیریت نشست‌ها</span>
                   <BrainCircuit className="w-4 h-4" aria-hidden="true" />
                 </Link>

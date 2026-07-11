@@ -11,7 +11,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/UserContext";
 import { signOut } from "@/lib/auth-client";
 
-export function Navbar({ user: initialUser }: { user: { id: string; name?: string | null; email?: string | null; image?: string | null; avatarUrl?: string | null } | null }) {
+export function Navbar({
+  user: initialUser,
+}: {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    avatarUrl?: string | null;
+  } | null;
+}) {
   const { user } = useUser();
   const effectiveUser = user || initialUser;
   const { theme, setTheme } = useTheme();
@@ -62,9 +72,8 @@ export function Navbar({ user: initialUser }: { user: { id: string; name?: strin
           <div className="flex items-center justify-between h-14">
             {/* Logo & Brand */}
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-sm">
-                آ
-              </div>
+              <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
+
               <span className="font-bold text-lg tracking-tight text-foreground transition-colors">
                 آراما
               </span>

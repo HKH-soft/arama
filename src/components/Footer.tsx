@@ -8,9 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">
-                آ
-              </div>
+              <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
               <span className="font-bold text-xl tracking-tight text-foreground">
                 آراما
               </span>

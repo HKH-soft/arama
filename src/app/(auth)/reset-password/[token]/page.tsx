@@ -30,7 +30,10 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ token, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      if (!res.ok) {
+        setError(data.error);
+        return;
+      }
       setSuccess(true);
       setTimeout(() => router.push("/login"), 3000);
     } catch {
@@ -41,14 +44,24 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="w-full max-w-md">
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="w-full max-w-md"
+    >
       <div className="text-center mb-8">
         <Link href="/" className="inline-flex items-center gap-2 mb-6">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl shadow-lg shadow-primary/20">آ</div>
-          <span className="font-bold text-2xl tracking-tight text-foreground">آراما</span>
+          <span className="font-bold text-2xl tracking-tight text-foreground">
+            آراما
+          </span>
         </Link>
-        <h1 className="text-2xl font-bold text-foreground">بازنشانی رمز عبور</h1>
-        <p className="text-muted-foreground mt-2 text-sm">رمز عبور جدید خود را وارد کنید.</p>
+        <h1 className="text-2xl font-bold text-foreground">
+          بازنشانی رمز عبور
+        </h1>
+        <p className="text-muted-foreground mt-2 text-sm">
+          رمز عبور جدید خود را وارد کنید.
+        </p>
       </div>
 
       <div className="bg-card rounded-2xl border border-border shadow-sm p-8">
@@ -57,23 +70,52 @@ export default function ResetPasswordPage() {
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mx-auto">
               <Lock className="w-8 h-8 text-green-600" />
             </div>
-            <p className="text-foreground">رمز عبور با موفقیت تغییر کرد. در حال انتقال به صفحه ورود...</p>
+            <p className="text-foreground">
+              رمز عبور با موفقیت تغییر کرد. در حال انتقال به صفحه ورود...
+            </p>
           </div>
         ) : (
           <>
-            {error && <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
+            {error && (
+              <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">رمز عبور جدید</label>
+                <label className="text-sm font-medium text-foreground">
+                  رمز عبور جدید
+                </label>
                 <div className="relative">
                   <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input type={showPassword ? "text" : "password"} placeholder="حداقل ۸ کاراکتر" className="pr-10 pl-10 bg-background text-left" dir="ltr" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="حداقل ۸ کاراکتر"
+                    className="pr-10 pl-10 bg-background text-left"
+                    dir="ltr"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
-              <Button type="submit" disabled={isLoading} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              >
                 {isLoading ? "در حال تغییر..." : "تغییر رمز عبور"}
               </Button>
             </form>
@@ -82,7 +124,10 @@ export default function ResetPasswordPage() {
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-6">
-        <Link href="/login" className="text-primary font-medium hover:text-primary/80 inline-flex items-center gap-1">
+        <Link
+          href="/login"
+          className="text-primary font-medium hover:text-primary/80 inline-flex items-center gap-1"
+        >
           <ArrowRight className="w-3 h-3" /> بازگشت به صفحه ورود
         </Link>
       </p>
