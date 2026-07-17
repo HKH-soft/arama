@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/billing?payment=failed`);
     }
 
-    // Amount sent was plan price * 10 (Rials)
+    // Payment was stored in Toman, convert to Rial for verification (same as request)
     const amountInRial = payment.amount * 10;
 
     const merchantId = process.env.ZARINPAL_MERCHANT_ID || "00000000-0000-0000-0000-000000000000";

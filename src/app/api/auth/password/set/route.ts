@@ -20,13 +20,11 @@ export async function POST(request: NextRequest) {
     }
     
     const passwordHash = hashPassword(password);
-    const salt = passwordHash.slice(0, 48);
     
     const [profile] = await db
       .update(profiles)
       .set({
         passwordHash,
-        passwordSalt: salt,
         updatedAt: new Date(),
       })
       .where(eq(profiles.userId, user.userId))

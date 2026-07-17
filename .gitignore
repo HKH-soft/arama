@@ -5,3 +5,4 @@
 *.log
 drizzle.config.json
 .env.local
+.playwright-mcp

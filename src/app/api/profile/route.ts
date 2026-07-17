@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest) {
       currentPassword?: string;
       newPassword?: string;
     };
-    const update: Record<string, string | boolean | null> = {};
+    const update: Record<string, unknown> = {};
 
     if (body.name) {
       const name = body.name.trim();
@@ -108,7 +108,7 @@ export async function PUT(request: NextRequest) {
       update.passwordHash = hashPassword(body.newPassword);
     }
 
-    update.updatedAt = new Date().toISOString();
+    update.updatedAt = new Date();
 
     const [profile] = await db
       .update(profiles)
