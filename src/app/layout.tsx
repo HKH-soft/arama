@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import localFont from "next/font/local";
+import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import { MeditationProvider } from "@/components/meditation-provider";
 
-const vazirmatn = localFont({
-  src: "../fonts/Vazirmatn-var.ttf",
+const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
   display: "swap",
-  weight: "100 900",
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {

@@ -9,30 +9,28 @@ const fallbackAnswer =
   "می‌شنومَت. همین که این احساس را با من در میان گذاشتی، یک قدم مهم است. اگر موافقی، با هم آن را به بخش‌های کوچک‌تر تقسیم کنیم؛ الان کدام قسمت بیشتر از همه فشار می‌آورد؟";
 
 const openai = new OpenAI({
-  baseURL: "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.NVIDIA_API_KEY,
+  baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function nvidiaAnswer(
+async function openaiAnswer(
   text: string,
   history: Array<{ role: string; content: string }>,
 ) {
-  const key = process.env.NVIDIA_API_KEY;
+  const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
   const stream = await openai.chat.completions.create({
-    model: "z-ai/glm-5.2",
+    model: process.env.AI_MODEL || "gpt-4o-mini",
     messages: [
       {
         role: "system",
         content:
           "تو آراما هستی؛ یک همراه همدل فارسی‌زبان. تشخیص پزشکی نده، وعدهٔ درمان نده، کوتاه و انسانی پاسخ بده و در بحران کاربر را به اورژانس اجتماعی ۱۲۳ ارجاع بده.",
       },
-      ...history
-        .slice(-8)
-        .map((m) => ({
-          role: m.role as "user" | "assistant",
-          content: m.content,
-        })),
+      ...history.slice(-8).map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
       { role: "user", content: text },
     ],
     temperature: 1,
@@ -120,7 +118,7 @@ export async function POST(request: NextRequest) {
       };
 
       try {
-        const providerStream = await nvidiaAnswer(text, history);
+        const providerStream = await openaiAnswer(text, history);
         if (providerStream) {
           for await (const chunk of providerStream) {
             const delta = chunk.choices?.[0]?.delta?.content;
@@ -138,13 +136,11 @@ export async function POST(request: NextRequest) {
           }
         }
         if (complete)
-          await db
-            .insert(messages)
-            .values({
-              conversationId: conversationId!,
-              role: "assistant",
-              content: complete,
-            });
+          await db.insert(messages).values({
+            conversationId: conversationId!,
+            role: "assistant",
+            content: complete,
+          });
         emit({ type: "done", conversationId: conversationId! });
       } catch {
         emit({
