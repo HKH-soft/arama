@@ -1,68 +1,44 @@
 import type { Metadata } from "next";
-import { Vazirmatn } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
+import type { ReactNode } from "react";
+import localFont from "next/font/local";
 import "./globals.css";
-import Script from "next/script";
-import { headers } from "next/headers";
+import { MeditationProvider } from "@/components/meditation-provider";
 
-const vazirmatn = Vazirmatn({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
+const vazirmatn = localFont({
+  src: "../fonts/Vazirmatn-var.ttf",
   variable: "--font-vazirmatn",
+  display: "swap",
+  weight: "100 900",
 });
 
 export const metadata: Metadata = {
-  title: "آراما — هوش مصنوعی سلامت روان",
+  title: {
+    default: "آراما — همراه هوشمند سلامت روان",
+    template: "%s — آراما",
+  },
   description:
-    "آراما — هم‌صحبت امن روزهای سخت. دستیار هوشمند سلامت روان که همیشه در کنار توست.",
-  robots: { index: true, follow: true },
-  openGraph: {
-    title: "آراما — هوش مصنوعی سلامت روان",
-    description:
-      "آراما — هم‌صحبت امن روزهای سخت. دستیار هوشمند سلامت روان که همیشه در کنار توست.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "آراما — هوش مصنوعی سلامت روان",
-    description:
-      "آراما — هم‌صحبت امن روزهای سخت. دستیار هوشمند سلامت روان که همیشه در کنار توست.",
-  },
-  icons: { icon: "/favicon.svg" },
+    "آراما یک همراه هوشمند سلامت روان است؛ گفتگوی همدلانه با هوش مصنوعی، ردیابی خلق‌وخو، مدیتیشن هدایت‌شده و تمرین‌های درمانی — در فضایی امن، گرم و بدون قضاوت.",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Get nonce from proxy middleware
-  const nonce = (await headers()).get("x-nonce");
+const themeInit = `
+(function () {
+  try {
+    var stored = localStorage.getItem("arama-theme");
+    var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (dark) document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  } catch (e) {}
+})();
+`;
 
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="fa"
-      dir="rtl"
-      suppressHydrationWarning
-      className={vazirmatn.variable}
-      nonce={nonce ?? undefined}
-    >
-      <body className="font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          storageKey="arama-theme"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TooltipProvider>
-            {children}
-            <Toaster />
-          </TooltipProvider>
-        </ThemeProvider>
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+      </head>
+      <body className={`${vazirmatn.variable} font-sans antialiased`}>
+        <MeditationProvider>{children}</MeditationProvider>
       </body>
     </html>
   );

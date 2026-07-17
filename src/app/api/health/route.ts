@@ -1,27 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
-import { users } from "@/db/schema";
+import { db } from "@/db";
+import { sql } from "drizzle-orm";
 
-export async function GET(_request: NextRequest) {
+export const dynamic = "force-dynamic";
+
+export async function GET() {
   try {
-    // Test database connection — works with both Turso/sqlite and Neon/PG drivers
-    await db.select().from(users).limit(1);
-
-    return NextResponse.json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      database: "connected",
-    });
-  } catch (error) {
-    console.error("بررسی سلامت انجام نشد:", error);
-    return NextResponse.json(
-      {
-        status: "unhealthy",
-        timestamp: new Date().toISOString(),
-        database: "disconnected",
-        error: "خطای ناشناخته در بررسی سلامت",
-      },
-      { status: 503 },
-    );
+    await db.execute(sql`select 1`);
+    return Response.json({ ok: true });
+  } catch {
+    return Response.json({ ok: false }, { status: 500 });
   }
 }

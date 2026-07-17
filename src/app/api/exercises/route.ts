@@ -1,22 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { asc, eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { db } from "@/db";
 import { exercises } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { ensureExercises } from "@/lib/demo-data";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const exercisesList = await db
-      .select()
-      .from(exercises)
-      .where(eq(exercises.isActive, true))
-      .orderBy(exercises.sortOrder);
-
-    return NextResponse.json(exercisesList);
-  } catch (err) {
-    console.error("Exercises fetch error:", err);
-    return NextResponse.json(
-      { error: "خطا در دریافت تمرینات" },
-      { status: 500 },
-    );
+    await ensureExercises();
+    const rows = await db.select().from(exercises).orderBy(asc(exercises.createdAt));
+    return NextResponse.json({ exercises: rows, categories: ["همه", "کاهش اضطراب", "شناختی", "تنفس", "خودمراقبتی", "روابط", "قدردانی"] });
+  } catch {
+    return NextResponse.json({ error: "تمرین‌ها فعلاً در دسترس نیستند." }, { status: 503 });
   }
 }

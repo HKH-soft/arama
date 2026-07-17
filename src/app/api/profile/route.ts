@@ -1,311 +1,134 @@
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import db from "@/lib/db";
-import * as schema from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { logAudit, getClientInfo } from "@/lib/audit";
+import { db } from "@/db";
+import { profiles } from "@/db/schema";
+import { hashPassword, requireUser } from "@/lib/auth-helpers";
 
-/**
- * GET /api/profile
- * Returns the current user's profile data including subscription info.
- */
 export async function GET(request: NextRequest) {
+  const user = requireUser(request);
+  if (user instanceof NextResponse) return user;
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const [profile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.userId, user.userId))
+      .limit(1);
+    if (!profile) {
+      return NextResponse.json({ error: "کاربر یافت نشد." }, { status: 404 });
     }
-
-    const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, session.user.id),
-      columns: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        bio: true,
-        image: true,
-        avatarUrl: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        lastLoginAt: true,
+    return NextResponse.json({
+      profile: {
+        userId: profile.userId,
+        phone: profile.phone,
+        name: profile.name,
+        email: profile.email,
+        avatarUrl: profile.avatarUrl,
+        timezone: profile.timezone,
+        remindersEnabled: profile.remindersEnabled,
       },
     });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Fetch current subscription (no relations defined in schema, so manual join)
-    const subscription = await db.query.subscriptions.findFirst({
-      where: (subscriptions, { and, eq }) =>
-        and(
-          eq(subscriptions.userId, session.user.id),
-          eq(subscriptions.status, "ACTIVE"),
-        ),
-    });
-
-    // Fetch plan separately
-    let planData = null;
-    if (subscription) {
-      planData = await db.query.subscriptionPlans.findFirst({
-        where: (plans, { eq }) => eq(plans.id, subscription.planId),
-      });
-    }
-
-    const profileData = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone || "",
-      bio: user.bio || "",
-      avatarUrl: user.avatarUrl || user.image || null,
-      role: user.role || "user",
-      isActive: user.isActive,
-      createdAt: user.createdAt?.getTime() || 0,
-      lastLoginAt: user.lastLoginAt?.getTime() || 0,
-      subscription: subscription
-        ? {
-            plan: {
-              displayName: planData?.displayName || "رایگان",
-              price: planData?.price || 0,
-              durationDays: planData?.durationDays || 0,
-              features: planData?.features || [],
-            },
-            status: subscription.status,
-            startDate: subscription.startDate?.getTime() || 0,
-            endDate: subscription.endDate?.getTime() || 0,
-          }
-        : null,
-    };
-
-    return NextResponse.json(profileData);
-  } catch (error) {
-    console.error("Error fetching profile:", error);
+  } catch {
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
+      { error: "پروفایل فعلاً در دسترس نیست." },
+      { status: 503 },
     );
   }
 }
 
-/**
- * PUT /api/profile
- * Updates the current user's profile data.
- */
 export async function PUT(request: NextRequest) {
+  const user = requireUser(request);
+  if (user instanceof NextResponse) return user;
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { name, bio, phone } = body;
-
-    const updateData: Record<string, any> = {
-      updatedAt: new Date(),
+    const body = (await request.json()) as {
+      name?: string;
+      timezone?: string;
+      remindersEnabled?: boolean;
+      avatarUrl?: string | null;
+      currentPassword?: string;
+      newPassword?: string;
     };
+    const update: Record<string, string | boolean | null> = {};
 
-    if (name !== undefined) updateData.name = name;
-    if (bio !== undefined) updateData.bio = bio;
-    if (phone !== undefined) updateData.phone = phone;
+    if (body.name) {
+      const name = body.name.trim();
+      if (name.length < 2) {
+        return NextResponse.json(
+          { error: "نام باید دست‌کم دو حرف باشد." },
+          { status: 400 },
+        );
+      }
+      update.name = name;
+    }
 
-    const clientInfo = await getClientInfo(request);
+    if (body.timezone) update.timezone = body.timezone;
+    if (body.remindersEnabled !== undefined)
+      update.remindersEnabled = body.remindersEnabled;
+    if (body.avatarUrl !== undefined) update.avatarUrl = body.avatarUrl;
 
-    await db
-      .update(schema.users)
-      .set(updateData)
-      .where(eq(schema.users.id, session.user.id));
+    // Change password flow
+    if (body.currentPassword || body.newPassword) {
+      if (!body.currentPassword || !body.newPassword) {
+        return NextResponse.json(
+          { error: "برای تغییر رمز، رمز فعلی و جدید را وارد کن." },
+          { status: 400 },
+        );
+      }
+      if (body.newPassword.length < 8) {
+        return NextResponse.json(
+          { error: "رمز جدید باید دست‌کم ۸ نویسه باشد." },
+          { status: 400 },
+        );
+      }
+      const [existing] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, user.userId))
+        .limit(1);
+      if (!existing) {
+        return NextResponse.json(
+          { error: "کاربر یافت نشد." },
+          { status: 404 },
+        );
+      }
 
-    const updatedUser = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, session.user.id),
-      columns: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        bio: true,
-        avatarUrl: true,
-        image: true,
-      },
-    });
+      // Verify current password using stored hash+salt
+      if (!existing.passwordHash) {
+        return NextResponse.json(
+          { error: "رمز عبوری تنظیم نشده است." },
+          { status: 400 },
+        );
+      }
+      const { verifyPassword } = await import("@/lib/auth-helpers");
+      if (!verifyPassword(body.currentPassword, existing.passwordHash)) {
+        return NextResponse.json(
+          { error: "رمز فعلی درست نیست." },
+          { status: 403 },
+        );
+      }
+      update.passwordHash = hashPassword(body.newPassword);
+    }
 
-    await logAudit({
-      userId: session.user.id,
-      action: "PROFILE_UPDATED",
-      entity: "user",
-      entityId: session.user.id,
-      metadata: { updatedFields: Object.keys(updateData).filter(k => k !== "updatedAt") },
-      ipAddress: clientInfo.ipAddress,
-      userAgent: clientInfo.userAgent,
-    });
+    update.updatedAt = new Date().toISOString();
 
+    const [profile] = await db
+      .update(profiles)
+      .set(update)
+      .where(eq(profiles.userId, user.userId))
+      .returning();
     return NextResponse.json({
-      id: updatedUser!.id,
-      name: updatedUser!.name,
-      email: updatedUser!.email,
-      phone: updatedUser!.phone || "",
-      bio: updatedUser!.bio || "",
-      avatarUrl: updatedUser!.avatarUrl || updatedUser!.image || null,
-    });
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}
-
-/**
- * PATCH /api/profile
- * Partial update for the current user's profile data.
- */
-export async function PATCH(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { name, bio, phone } = body;
-
-    const updateData: Record<string, any> = {
-      updatedAt: new Date(),
-    };
-
-    if (name !== undefined) updateData.name = name;
-    if (bio !== undefined) updateData.bio = bio;
-    if (phone !== undefined) updateData.phone = phone;
-
-    const clientInfo = await getClientInfo(request);
-
-    await db
-      .update(schema.users)
-      .set(updateData)
-      .where(eq(schema.users.id, session.user.id));
-
-    const updatedUser = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, session.user.id),
-      columns: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        bio: true,
-        avatarUrl: true,
-        image: true,
+      profile: {
+        userId: profile.userId,
+        phone: profile.phone,
+        name: profile.name,
+        email: profile.email,
+        avatarUrl: profile.avatarUrl,
+        timezone: profile.timezone,
+        remindersEnabled: profile.remindersEnabled,
       },
     });
-
-    await logAudit({
-      userId: session.user.id,
-      action: "PROFILE_UPDATED",
-      entity: "user",
-      entityId: session.user.id,
-      metadata: { updatedFields: Object.keys(updateData).filter(k => k !== "updatedAt") },
-      ipAddress: clientInfo.ipAddress,
-      userAgent: clientInfo.userAgent,
-    });
-
-    return NextResponse.json({
-      id: updatedUser!.id,
-      name: updatedUser!.name,
-      email: updatedUser!.email,
-      phone: updatedUser!.phone || "",
-      bio: updatedUser!.bio || "",
-      avatarUrl: updatedUser!.avatarUrl || updatedUser!.image || null,
-    });
-  } catch (error) {
-    console.error("Error updating profile:", error);
+  } catch {
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}
-
-/**
- * DELETE /api/profile
- * Deletes the current user's account after password verification.
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { password } = body;
-
-    if (!password) {
-      return NextResponse.json(
-        { error: "رمز عبور الزامی است" },
-        { status: 400 },
-      );
-    }
-
-    // Verify password using auth API
-    const verifyResult = await auth.api.signInEmail({
-      body: {
-        email: session.user.email,
-        password,
-      },
-    });
-
-    if (!verifyResult || !verifyResult.token) {
-      return NextResponse.json(
-        { error: "رمز عبور نامعتبر است" },
-        { status: 401 },
-      );
-    }
-
-    const clientInfo = await getClientInfo(request);
-
-    // Delete user's subscriptions first
-    await db
-      .delete(schema.subscriptions)
-      .where(eq(schema.subscriptions.userId, session.user.id));
-
-    // Delete user's payments
-    await db
-      .delete(schema.payments)
-      .where(eq(schema.payments.userId, session.user.id));
-
-    // Delete user account
-    await db.delete(schema.users).where(eq(schema.users.id, session.user.id));
-
-    await logAudit({
-      userId: session.user.id,
-      action: "ACCOUNT_DELETED",
-      entity: "user",
-      entityId: session.user.id,
-      metadata: { email: session.user.email },
-      ipAddress: clientInfo.ipAddress,
-      userAgent: clientInfo.userAgent,
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting account:", error);
-    return NextResponse.json(
-      { error: "خطا در حذف حساب کاربری" },
+      { error: "ذخیرهٔ تنظیمات انجام نشد." },
       { status: 500 },
     );
   }

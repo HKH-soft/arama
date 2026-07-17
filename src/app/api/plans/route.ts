@@ -1,22 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
-import { subscriptionPlans } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { NextResponse } from "next/server";
+import { asc } from "drizzle-orm";
+import { db } from "@/db";
+import { plans } from "@/db/schema";
+import { ensurePlans } from "@/lib/demo-data";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const plans = await db
-      .select()
-      .from(subscriptionPlans)
-      .where(eq(subscriptionPlans.isActive, true))
-      .orderBy(subscriptionPlans.sortOrder);
-
-    return NextResponse.json(plans);
-  } catch (err) {
-    console.error("Plans fetch error:", err);
-    return NextResponse.json(
-      { error: "خطا در دریافت پلن‌ها" },
-      { status: 500 },
-    );
+    await ensurePlans();
+    const rows = await db.select().from(plans).orderBy(asc(plans.sortOrder));
+    return NextResponse.json({ plans: rows });
+  } catch {
+    return NextResponse.json({ error: "تعرفه‌ها فعلاً در دسترس نیستند." }, { status: 503 });
   }
 }

@@ -1,188 +1,96 @@
-import Link from "next/link";
-import { SiInstagram, SiX } from "react-icons/si";
+import { AtSign, Camera, Heart, Mail, Phone, Send } from "lucide-react";
+import { Logo } from "./logo";
+
+const columns = [
+  {
+    title: "محصول",
+    links: ["گفتگوی هوش مصنوعی", "ردیابی خلق‌وخو", "مدیتیشن و تمرین", "تعرفه‌ها"],
+    hrefs: ["#features", "#features", "#features", "#pricing"],
+  },
+  {
+    title: "آراما",
+    links: ["دربارهٔ ما", "مجله آراما", "روایت کاربران", "فرصت‌های همکاری"],
+    hrefs: ["#stories", "#blog", "#stories", "#"],
+  },
+  {
+    title: "پشتیبانی",
+    links: ["حریم خصوصی", "قوانین استفاده", "راهنمای بحران", "تماس با ما"],
+    hrefs: ["#", "#", "#", "#"],
+  },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-background border-t border-border/40 pt-16 pb-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <img src="/logo.svg" alt="آراما" className="w-10 h-10" />
-              <span className="font-bold text-xl tracking-tight text-foreground">
-                آراما
-              </span>
-            </Link>
-            <p className="text-sm text-muted-foreground mb-6">
-              هم‌صحبت امن روزهای سخت. دستیار هوشمند سلامت روان که همیشه در کنار
-              توست.
+    <footer className="border-t border-line bg-card/60">
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
+          <div>
+            <Logo size="md" />
+            <p className="mt-5 max-w-xs text-sm leading-7 text-soft">
+              آراما، همراه هوشمند سلامت روان؛ ساخته‌شده با عشق در ایران، برای همهٔ فارسی‌زبانانی که به یک هم‌صحبت امن نیاز دارند.
             </p>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-                aria-label="توییتر"
-              >
-                <SiX className="w-5 h-5" aria-hidden="true" />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-                aria-label="اینستاگرام"
-              >
-                <SiInstagram className="w-5 h-5" aria-hidden="true" />
-              </a>
-              <a
-                href="https://t.me/arama"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-                aria-label="تلگرام"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+            <div className="mt-6 flex items-center gap-2.5">
+              {[
+                { icon: Camera, label: "اینستاگرام آراما" },
+                { icon: Send, label: "تلگرام آراما" },
+                { icon: AtSign, label: "شبکه‌های اجتماعی آراما" },
+                { icon: Mail, label: "ایمیل آراما" },
+              ].map((s) => (
+                <a
+                  key={s.label}
+                  href="#"
+                  aria-label={s.label}
+                  className="grid size-10 place-items-center rounded-full border border-line bg-card text-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/40 hover:text-brand-ink"
                 >
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                  <rect width="4" height="12" x="2" y="9" />
-                  <circle cx="4" cy="4" r="2" />
-                </svg>
-              </a>
+                  <s.icon className="size-4.5" />
+                </a>
+              ))}
             </div>
           </div>
 
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">محصول</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/#features"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  امکانات
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#pricing"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  قیمت‌گذاری
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#how-it-works"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  چطور کار می‌کند
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#testimonials"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  نظرات کاربران
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">شرکت</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  درباره ما
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  تماس با ما
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  وبلاگ
-                </Link>
-              </li>
-              {/* TODO: Uncomment when /careers page is created */}
-              {/* <li>
-                <Link
-                  href="/careers"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  فرصت‌های شغلی
-                </Link>
-              </li> */}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-foreground mb-4">پشتیبانی</h3>
-            <ul className="space-y-2">
-              {/* TODO: Uncomment when /help-center page is created */}
-              {/* <li>
-                <Link
-                  href="/help-center"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  مرکز راهنما
-                </Link>
-              </li> */}
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  حریم خصوصی
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  شرایط استفاده
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#faq"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  سوالات متداول
-                </Link>
-              </li>
-            </ul>
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+            {columns.map((c) => (
+              <nav key={c.title} aria-label={c.title}>
+                <h3 className="text-sm font-extrabold text-ink">{c.title}</h3>
+                <ul className="mt-4 flex flex-col gap-3">
+                  {c.links.map((l, i) => (
+                    <li key={l}>
+                      <a
+                        href={c.hrefs[i]}
+                        className="text-sm text-soft transition-colors duration-300 hover:text-brand-ink"
+                      >
+                        {l}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
           </div>
         </div>
 
-        <div className="pt-8 border-t border-border/40 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            © ۱۴۰۳ آراما. تمامی حقوق محفوظ است.
+        {/* mental health disclaimer */}
+        <div className="mt-14 rounded-3xl border border-sand bg-sand-soft/60 p-6 sm:p-7">
+          <h3 className="flex items-center gap-2 text-sm font-extrabold text-clay">
+            <Phone className="size-4" />
+            تو مهم هستی — راهنمای بحران
+          </h3>
+          <p className="mt-3 text-xs leading-6 text-soft sm:text-[13px] sm:leading-7">
+            آراما یک ابزار همراهی و پیشگیری است و جایگزین تشخیص یا درمان تخصصی نیست. اگر تو یا عزیزت در بحران روانی
+            حاد، افکار آسیب به خود یا اضطرار هستید، لطفاً همین حالا با
+            <strong className="text-ink"> اورژانس اجتماعی ۱۲۳ </strong>،
+            <strong className="text-ink"> صدای مشاور ۱۴۸۰ </strong>
+            یا نزدیک‌ترین مرکز درمانی تماس بگیرید. تنها نیستید.
           </p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            ساخته شده با <span className="text-red-500">♥</span> برای سلامت روان
-          </div>
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-8 text-xs text-faint">
+          <p>© ۱۴۰۴ آراما · تمامی حقوق محفوظ است.</p>
+          <p className="inline-flex items-center gap-1.5">
+            ساخته‌شده با
+            <Heart className="size-3.5 fill-clay text-clay" />
+            برای آرامشِ شما
+          </p>
         </div>
       </div>
     </footer>
