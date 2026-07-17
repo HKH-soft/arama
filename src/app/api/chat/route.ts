@@ -3,31 +3,45 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { conversations, messages } from "@/db/schema";
 import { checkChatRateLimit, requireUser } from "@/lib/auth-helpers";
+import OpenAI from "openai";
 
 const fallbackAnswer =
   "می‌شنومَت. همین که این احساس را با من در میان گذاشتی، یک قدم مهم است. اگر موافقی، با هم آن را به بخش‌های کوچک‌تر تقسیم کنیم؛ الان کدام قسمت بیشتر از همه فشار می‌آورد؟";
 
-async function anthropicAnswer(text: string, history: Array<{ role: string; content: string }>) {
-  const key = process.env.ANTHROPIC_API_KEY;
+const openai = new OpenAI({
+  baseURL: "https://integrate.api.nvidia.com/v1",
+  apiKey: process.env.NVIDIA_API_KEY,
+});
+
+async function nvidiaAnswer(
+  text: string,
+  history: Array<{ role: string; content: string }>,
+) {
+  const key = process.env.NVIDIA_API_KEY;
   if (!key) return null;
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-      accept: "text/event-stream",
-    },
-    body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest",
-      max_tokens: 500,
-      stream: true,
-      system: "تو آراما هستی؛ یک همراه همدل فارسی‌زبان. تشخیص پزشکی نده، وعدهٔ درمان نده، کوتاه و انسانی پاسخ بده و در بحران کاربر را به اورژانس اجتماعی ۱۲۳ ارجاع بده.",
-      messages: [...history.slice(-8), { role: "user", content: text }],
-    }),
+  const stream = await openai.chat.completions.create({
+    model: "z-ai/glm-5.2",
+    messages: [
+      {
+        role: "system",
+        content:
+          "تو آراما هستی؛ یک همراه همدل فارسی‌زبان. تشخیص پزشکی نده، وعدهٔ درمان نده، کوتاه و انسانی پاسخ بده و در بحران کاربر را به اورژانس اجتماعی ۱۲۳ ارجاع بده.",
+      },
+      ...history
+        .slice(-8)
+        .map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+      { role: "user", content: text },
+    ],
+    temperature: 1,
+    top_p: 1,
+    max_tokens: 16384,
+    seed: 42,
+    stream: true,
   });
-  if (!response.ok || !response.body) throw new Error("AI provider failed");
-  return response.body;
+  return stream;
 }
 
 export async function POST(request: NextRequest) {
@@ -45,10 +59,14 @@ export async function POST(request: NextRequest) {
   try {
     body = (await request.json()) as { text?: string; conversationId?: string };
   } catch {
-    return NextResponse.json({ error: "پیام قابل خواندن نیست." }, { status: 400 });
+    return NextResponse.json(
+      { error: "پیام قابل خواندن نیست." },
+      { status: 400 },
+    );
   }
   const text = body.text?.trim();
-  if (!text) return NextResponse.json({ error: "پیامت خالی است." }, { status: 400 });
+  if (!text)
+    return NextResponse.json({ error: "پیامت خالی است." }, { status: 400 });
 
   let conversationId = body.conversationId;
   try {
@@ -70,9 +88,14 @@ export async function POST(request: NextRequest) {
       }
     }
     if (!conversationId) throw new Error("Conversation could not be created");
-    await db.insert(messages).values({ conversationId, role: "user", content: text });
+    await db
+      .insert(messages)
+      .values({ conversationId, role: "user", content: text });
   } catch {
-    return NextResponse.json({ error: "گفتگو ذخیره نشد؛ دوباره امتحان کن." }, { status: 503 });
+    return NextResponse.json(
+      { error: "گفتگو ذخیره نشد؛ دوباره امتحان کن." },
+      { status: 503 },
+    );
   }
 
   let history: Array<{ role: string; content: string }> = [];
@@ -91,34 +114,19 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       let complete = "";
       const emit = (event: Record<string, string>) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify(event)}\n\n`),
+        );
       };
 
       try {
-        const providerStream = await anthropicAnswer(text, history);
+        const providerStream = await nvidiaAnswer(text, history);
         if (providerStream) {
-          const reader = providerStream.getReader();
-          const decoder = new TextDecoder();
-          let buffer = "";
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            const events = buffer.split("\n\n");
-            buffer = events.pop() ?? "";
-            for (const event of events) {
-              const line = event.split("\n").find((part) => part.startsWith("data: "));
-              if (!line) continue;
-              try {
-                const payload = JSON.parse(line.slice(6)) as { type?: string; delta?: { type?: string; text?: string } };
-                const chunk = payload.delta?.type === "text_delta" ? payload.delta.text ?? "" : "";
-                if (chunk) {
-                  complete += chunk;
-                  emit({ type: "delta", text: chunk });
-                }
-              } catch {
-                // Ignore provider keep-alive fragments.
-              }
+          for await (const chunk of providerStream) {
+            const delta = chunk.choices?.[0]?.delta?.content;
+            if (delta) {
+              complete += delta;
+              emit({ type: "delta", text: delta });
             }
           }
         } else {
@@ -129,10 +137,21 @@ export async function POST(request: NextRequest) {
             await new Promise((resolve) => setTimeout(resolve, 55));
           }
         }
-        if (complete) await db.insert(messages).values({ conversationId: conversationId!, role: "assistant", content: complete });
+        if (complete)
+          await db
+            .insert(messages)
+            .values({
+              conversationId: conversationId!,
+              role: "assistant",
+              content: complete,
+            });
         emit({ type: "done", conversationId: conversationId! });
       } catch {
-        emit({ type: "error", message: "آراما نتوانست پاسخ را کامل کند. اتصال را بررسی کن و دوباره تلاش کن." });
+        emit({
+          type: "error",
+          message:
+            "آراما نتوانست پاسخ را کامل کند. اتصال را بررسی کن و دوباره تلاش کن.",
+        });
       } finally {
         controller.close();
       }
