@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
     // Send SMS via MeliPayamak
     const smsResult = await sendOtpSms(phone, code);
     if (!smsResult.success) {
+      console.error(`[OTP SMS FAILED] phone=${phone}, error=${smsResult.error}`);
       return NextResponse.json(
         { error: smsResult.error || "ارسال کد تأیید انجام نشد." },
         { status: 503 },
