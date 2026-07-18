@@ -192,45 +192,79 @@ export function checkChatRateLimit(userId: string): { allowed: boolean; error?: 
   return { allowed: true };
 }
 
-/** Send OTP via MeliPayamak pattern-based SMS API */
+/**
+ * Send OTP via MeliPayamak's official SendOtp REST webservice.
+ * Docs: https://rest.payamak-panel.com/api/SendSMS/SendOtp
+ * The message text itself ("کد تایید شما / Code: ...") is fixed by
+ * MeliPayamak — we only supply the numeric code.
+ */
 export async function sendOtpSms(phone: string, code: string): Promise<{ success: boolean; error?: string }> {
   const username = process.env.MELIPAYAMAK_USERNAME;
   const password = process.env.MELIPAYAMAK_PASSWORD;
-  const patternCode = process.env.MELIPAYAMAK_PATTERN_CODE;
-  
-  if (!username || !password || !patternCode) {
+  const from = process.env.MELIPAYAMAK_FROM; // sender/service line number from your panel
+
+  if (!username || !password || !from) {
     // In development or missing config, log the code for testing
     console.log(`[MeliPayamak DEV MODE] OTP for ${phone}: ${code}`);
     return { success: true };
   }
-  
+
+  // Known MeliPayamak error codes for SendOtp (anything not in this set,
+  // and parseable as a number, is treated as a successful recId).
+  const ERROR_MESSAGES: Record<string, string> = {
+    "0": "نام کاربری یا رمز عبور ملی‌پیامک اشتباه است.",
+    "2": "اعتبار پنل ملی‌پیامک کافی نیست.",
+    "3": "محدودیت ارسال روزانه پنل ملی‌پیامک.",
+    "4": "محدودیت حجم ارسال پنل ملی‌پیامک.",
+    "5": "شمارهٔ فرستنده (from) معتبر نیست.",
+    "6": "سامانهٔ ملی‌پیامک در حال به‌روزرسانی است.",
+    "10": "کاربر ملی‌پیامک فعال نیست.",
+    "11": "پیامک ارسال نشد.",
+    "12": "مدارک حساب ملی‌پیامک کامل نیست.",
+    "16": "شمارهٔ گیرنده یافت نشد.",
+    "18": "شمارهٔ گیرنده نامعتبر است.",
+    "35": "این شماره در لیست سیاه مخابرات است.",
+    "-108": "IP سرور مسدود شده است.",
+    "-109": "باید IP مجاز برای API را در پنل ملی‌پیامک تنظیم کنی.",
+    "-110": "باید به‌جای رمز عبور از ApiKey استفاده کنی.",
+    "-111": "IP درخواست‌دهنده نامعتبر است.",
+  };
+
   try {
-    // MeliPayamak pattern-based SMS API
-    const response = await fetch("https://api.payamak.ir/v2/SendByBaseNumber2", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-        from: patternCode,
-        to: phone,
-        text: code, // Pattern code receives the OTP as the message body
-      }),
+    const body = new URLSearchParams({
+      username,
+      password,
+      from,
+      to: phone,
+      code,
     });
-    
+
+    const response = await fetch(
+      "https://rest.payamak-panel.com/api/SendSMS/SendOtp",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      },
+    );
+
     if (!response.ok) {
       return { success: false, error: "ارسال کد تأیید انجام نشد." };
     }
-    
-    const result = await response.json() as { status?: number; message?: string };
-    if (result.status !== 200) {
+
+    const result = (await response.json()) as { ReturnValue?: string | number };
+    const returnValue = String(result.ReturnValue ?? "");
+
+    if (ERROR_MESSAGES[returnValue]) {
+      return { success: false, error: ERROR_MESSAGES[returnValue] };
+    }
+    // A large numeric recId means the SMS was accepted for sending.
+    if (!returnValue || Number.isNaN(Number(returnValue))) {
       return { success: false, error: "ارسال کد تأیید انجام نشد." };
     }
-    
+
     return { success: true };
   } catch {
-    return { success: false, error: "ارسال کد تأیید انجام نشد." };
+    return { success: false, error: "ارتباط با سرویس پیامک برقرار نشد." };
   }
 }
