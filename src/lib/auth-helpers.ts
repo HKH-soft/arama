@@ -193,10 +193,8 @@ export function checkChatRateLimit(userId: string): { allowed: boolean; error?: 
 }
 
 /**
- * Send OTP via MeliPayamak's official SendOtp REST webservice.
- * Docs: https://rest.payamak-panel.com/api/SendSMS/SendOtp
- * The message text itself ("کد تایید شما / Code: ...") is fixed by
- * MeliPayamak — we only supply the numeric code.
+ * Send OTP via MeliPayamak's standard SendSMS REST endpoint.
+ * Uses the same parameters as official library: send(to, from, text)
  */
 export async function sendOtpSms(phone: string, code: string): Promise<{ success: boolean; error?: string }> {
   const username = process.env.MELIPAYAMAK_USERNAME;
@@ -212,7 +210,7 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
     console.log(`[MeliPayamak INFO] Sending OTP to ${phone}`);
   }
 
-  // Known MeliPayamak error codes for SendOtp (anything not in this set,
+  // Known MeliPayamak error codes for SendSMS (anything not in this set,
   // and parseable as a number, is treated as a successful recId).
   const ERROR_MESSAGES: Record<string, string> = {
     "0": "نام کاربری یا رمز عبور ملی‌پیامک اشتباه است.",
@@ -234,16 +232,18 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
   };
 
   try {
+    const text = `کد تایید آراما: ${code}`;
     const body = new URLSearchParams({
       username,
       password,
       from,
       to: phone,
-      code,
+      text,
+      isFlash: "false",
     });
 
     const response = await fetch(
-      "https://rest.payamak-panel.com/api/SendSMS/SendOtp",
+      "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
