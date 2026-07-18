@@ -205,8 +205,11 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
 
   if (!username || !password || !from) {
     // In development or missing config, log the code for testing
-    console.log(`[MeliPayamak DEV MODE] OTP for ${phone}: ${code}`);
+    console.log(`[MeliPayamak DEV MODE - MISSING CREDENTIALS] OTP for ${phone}: ${code}`);
+    console.log(`[MeliPayamak CONFIG] username=${!!username}, password=${!!password}, from=${!!from}`);
     return { success: true };
+  } else {
+    console.log(`[MeliPayamak INFO] Sending OTP to ${phone}`);
   }
 
   // Known MeliPayamak error codes for SendOtp (anything not in this set,
@@ -249,11 +252,13 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
     );
 
     if (!response.ok) {
+      console.error(`[MeliPayamak HTTP ERROR] status=${response.status}, body=${await response.text()}`);
       return { success: false, error: "ارسال کد تأیید انجام نشد." };
     }
 
     const result = (await response.json()) as { ReturnValue?: string | number };
     const returnValue = String(result.ReturnValue ?? "");
+    console.error(`[MeliPayamak RESPONSE] ReturnValue=${returnValue}`);
 
     if (ERROR_MESSAGES[returnValue]) {
       return { success: false, error: ERROR_MESSAGES[returnValue] };
@@ -264,7 +269,8 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
     }
 
     return { success: true };
-  } catch {
+  } catch (err) {
+    console.error(`[MeliPayamak NETWORK ERROR]`, err);
     return { success: false, error: "ارتباط با سرویس پیامک برقرار نشد." };
   }
 }

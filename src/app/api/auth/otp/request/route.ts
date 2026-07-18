@@ -37,11 +37,15 @@ export async function POST(request: NextRequest) {
     
     // Invalidate any existing unused codes for this phone
     const now = new Date();
-    await db
-      .delete(otpCodes)
-      .where(
-        eq(otpCodes.phone, phone),
-      );
+    try {
+      await db
+        .delete(otpCodes)
+        .where(
+          eq(otpCodes.phone, phone),
+        );
+    } catch (dbErr) {
+      console.error(`[OTP DB DELETE ERROR]`, dbErr);
+    }
     
     // Generate and store new OTP
     const code = generateOtpCode();
@@ -70,7 +74,8 @@ export async function POST(request: NextRequest) {
       message: "کد تأیید ارسال شد.",
       expiresAt: expiresAt.toISOString(),
     });
-  } catch {
+  } catch (err) {
+    console.error(`[OTP REQUEST ERROR]`, err);
     return NextResponse.json(
       { error: "ارتباط با سرور برقرار نشد. دوباره امتحان کن." },
       { status: 503 },
