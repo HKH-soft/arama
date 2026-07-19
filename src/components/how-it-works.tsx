@@ -39,7 +39,7 @@ export function HowItWorks() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           eyebrow="چطور کار می‌کند"
-          title="چهار قدم کوچک، یک تغییر بزرگ"
+          title="مسیر رسیدن به احساس بهتر"
           description="آراما جای درمانگر تو را نمی‌گیرد؛ همراهی است که همیشه در دسترس است — ساده، صمیمی و انسانی."
         />
 
