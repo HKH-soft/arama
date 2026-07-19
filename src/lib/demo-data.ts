@@ -18,7 +18,7 @@ export const demoTracks = [
   {
     title: "جنگل بعد از باران",
     category: "خواب",
-    durationSeconds: 123,
+    durationSeconds: 60,
     coverArt: "/images/blog-sleep.jpg",
     audioUrl: "/audio/forest-ambience.wav",
     description: "صدای آرام جنگل و باران برای خاموش‌کردن چراغ‌های ذهن.",
@@ -37,7 +37,7 @@ export const demoTracks = [
     durationSeconds: 45,
     coverArt: "/images/blog-selftalk.jpg",
     audioUrl: "/audio/ocean-calm.wav",
-    description: "سه دقیقه همراهی با ریتم طبیعت برای وقتی که ضربان قلب بالاست.",
+    description: "چند دقیقه همراهی با ریتم طبیعت برای وقتی که ضربان قلب بالاست.",
   },
   {
     title: "شروعِ یک نفس",
