@@ -99,7 +99,7 @@ export function Features() {
       <div className="relative mx-auto max-w-6xl px-6">
         <SectionHeading
           eyebrow="امکانات آراما"
-          title="هر چه برای مراقبت از ذهنت لازم داری"
+          title="مجموعه ابزارهای مراقبت از خود"
           description="پنج ابزار کاربردی در کنار هم: گفتگو، ثبت خلق، مدیتیشن، تمرین و گزارش — ساده، به‌هم‌پیوسته و در دسترس."
         />
 
