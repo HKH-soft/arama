@@ -193,51 +193,98 @@ export function checkChatRateLimit(userId: string): { allowed: boolean; error?: 
 }
 
 /**
- * Send OTP via MeliPayamak's standard SendSMS REST endpoint.
- * Uses the same parameters as official library: send(to, from, text)
+ * Send OTP via MeliPayamak's officially-documented SendSMS REST webservice.
+ * Docs (official PDF, "راهنمای وب سرویس ارسال Rest"):
+ *   POST https://rest.payamak-panel.com/api/SendSMS/SendSMS
+ *
+ * IMPORTANT: per the official docs, the `password` field for this REST
+ * webservice is NOT your normal account login password — it must be an
+ * ApiKey generated from پنل ملی‌پیامک → منوی «توسعه‌دهندگان» → تنظیمات
+ * وب‌سرویس. Using the regular account password here is what previously
+ * caused failures (matches error code -110 below).
+ *
+ * There is no documented SendOtp method in the official REST guide, so we
+ * send a normal SMS with our own OTP text via SendSMS instead.
+ *
+ * If MeliPayamak blocks requests from this server's IP (common for
+ * foreign-hosted apps like Vercel — see melipayamak-relay), set
+ * SMS_RELAY_URL + SMS_RELAY_SECRET to route the request through a small
+ * relay running on an Iranian host instead of calling MeliPayamak directly.
  */
 export async function sendOtpSms(phone: string, code: string): Promise<{ success: boolean; error?: string }> {
-  const username = process.env.MELIPAYAMAK_USERNAME;
-  const password = process.env.MELIPAYAMAK_PASSWORD;
-  const from = process.env.MELIPAYAMAK_FROM; // sender/service line number from your panel
+  const relayUrl = process.env.SMS_RELAY_URL;
+  const relaySecret = process.env.SMS_RELAY_SECRET;
+  const text = `کد تایید آراما: ${code}`;
 
-  if (!username || !password || !from) {
-    // In development or missing config, log the code for testing
-    console.log(`[MeliPayamak DEV MODE - MISSING CREDENTIALS] OTP for ${phone}: ${code}`);
-    console.log(`[MeliPayamak CONFIG] username=${!!username}, password=${!!password}, from=${!!from}`);
-    return { success: true };
-  } else {
-    console.log(`[MeliPayamak INFO] Sending OTP to ${phone}`);
+  if (relayUrl && relaySecret) {
+    try {
+      const response = await fetch(relayUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-relay-secret": relaySecret,
+        },
+        body: JSON.stringify({ to: phone, text }),
+      });
+
+      const rawText = await response.text();
+      let result: { success?: boolean; error?: string; code?: string };
+      try {
+        result = JSON.parse(rawText);
+      } catch {
+        console.error(`[SMS relay] Non-JSON response: ${rawText.slice(0, 300)}`);
+        return { success: false, error: "پاسخ نامعتبر از سرویس رله دریافت شد." };
+      }
+
+      if (result.success) return { success: true };
+      console.error(`[SMS relay] Failed: ${JSON.stringify(result)}`);
+      return { success: false, error: "ارسال کد تأیید انجام نشد." };
+    } catch (err) {
+      console.error("[SMS relay] Network error:", err);
+      return { success: false, error: "ارتباط با سرویس پیامک برقرار نشد." };
+    }
   }
 
-  // Known MeliPayamak error codes for SendSMS (anything not in this set,
-  // and parseable as a number, is treated as a successful recId).
+  const username = process.env.MELIPAYAMAK_USERNAME;
+  const apiKey = process.env.MELIPAYAMAK_APIKEY; // ApiKey from پنل → توسعه‌دهندگان, NOT your login password
+  const from = process.env.MELIPAYAMAK_FROM; // your dedicated sender line number
+
+  if (!username || !apiKey || !from) {
+    // In development or missing config, log the code for testing
+    console.log(`[MeliPayamak DEV MODE] OTP for ${phone}: ${code}`);
+    return { success: true };
+  }
+
+  // Error codes documented for SendSMS (RetStatus !== 1 means failure;
+  // Value holds the specific code below).
   const ERROR_MESSAGES: Record<string, string> = {
-    "0": "نام کاربری یا رمز عبور ملی‌پیامک اشتباه است.",
+    "0": "نام کاربری یا ApiKey ملی‌پیامک اشتباه است.",
     "2": "اعتبار پنل ملی‌پیامک کافی نیست.",
     "3": "محدودیت ارسال روزانه پنل ملی‌پیامک.",
     "4": "محدودیت حجم ارسال پنل ملی‌پیامک.",
     "5": "شمارهٔ فرستنده (from) معتبر نیست.",
     "6": "سامانهٔ ملی‌پیامک در حال به‌روزرسانی است.",
+    "7": "متن پیامک حاوی کلمهٔ فیلترشده است.",
+    "9": "ارسال از خطوط عمومی از طریق وب‌سرویس امکان‌پذیر نیست.",
     "10": "کاربر ملی‌پیامک فعال نیست.",
     "11": "پیامک ارسال نشد.",
     "12": "مدارک حساب ملی‌پیامک کامل نیست.",
+    "14": "متن پیامک حاوی لینک است.",
     "16": "شمارهٔ گیرنده یافت نشد.",
-    "18": "شمارهٔ گیرنده نامعتبر است.",
-    "35": "این شماره در لیست سیاه مخابرات است.",
+    "17": "متن پیامک خالی است.",
+    "18": "شمارهٔ گیرنده معتبر نیست.",
     "-108": "IP سرور مسدود شده است.",
     "-109": "باید IP مجاز برای API را در پنل ملی‌پیامک تنظیم کنی.",
-    "-110": "باید به‌جای رمز عبور از ApiKey استفاده کنی.",
+    "-110": "باید از ApiKey (نه رمز عبور) استفاده کنی — از منوی توسعه‌دهندگان بگیرش.",
     "-111": "IP درخواست‌دهنده نامعتبر است.",
   };
 
   try {
-    const text = `کد تایید آراما: ${code}`;
     const body = new URLSearchParams({
       username,
-      password,
-      from,
+      password: apiKey, // the "password" field is documented to be the ApiKey
       to: phone,
+      from,
       text,
       isFlash: "false",
     });
@@ -251,26 +298,39 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
       },
     );
 
+    const rawText = await response.text();
+
     if (!response.ok) {
-      console.error(`[MeliPayamak HTTP ERROR] status=${response.status}, body=${await response.text()}`);
+      console.error(
+        `[MeliPayamak] HTTP ${response.status} ${response.statusText}. Body: ${rawText.slice(0, 500)}`,
+      );
       return { success: false, error: "ارسال کد تأیید انجام نشد." };
     }
 
-    const result = (await response.json()) as { ReturnValue?: string | number };
-    const returnValue = String(result.ReturnValue ?? "");
-    console.error(`[MeliPayamak RESPONSE] ReturnValue=${returnValue}`);
-
-    if (ERROR_MESSAGES[returnValue]) {
-      return { success: false, error: ERROR_MESSAGES[returnValue] };
+    let result: { Value?: string; RetStatus?: number; StrRetStatus?: string };
+    try {
+      result = JSON.parse(rawText) as { Value?: string; RetStatus?: number; StrRetStatus?: string };
+    } catch {
+      // Not JSON — usually an HTML/XML error page when credentials, IP,
+      // or the endpoint itself are wrong. Log the raw body so the real
+      // cause shows up in server logs instead of a generic 503.
+      console.error(`[MeliPayamak] Non-JSON response: ${rawText.slice(0, 500)}`);
+      return { success: false, error: "پاسخ نامعتبر از سرویس پیامک دریافت شد." };
     }
-    // A large numeric recId means the SMS was accepted for sending.
-    if (!returnValue || Number.isNaN(Number(returnValue))) {
-      return { success: false, error: "ارسال کد تأیید انجام نشد." };
+
+    console.log(`[MeliPayamak] RetStatus: ${result.RetStatus}, Value: ${result.Value}`);
+
+    if (result.RetStatus === 1 && result.StrRetStatus === "Ok") {
+      return { success: true };
     }
 
-    return { success: true };
+    const code_ = String(result.Value ?? "");
+    return {
+      success: false,
+      error: ERROR_MESSAGES[code_] || "ارسال کد تأیید انجام نشد.",
+    };
   } catch (err) {
-    console.error(`[MeliPayamak NETWORK ERROR]`, err);
+    console.error("[MeliPayamak] Network error:", err);
     return { success: false, error: "ارتباط با سرویس پیامک برقرار نشد." };
   }
 }
