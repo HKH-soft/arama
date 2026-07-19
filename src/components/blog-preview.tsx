@@ -34,23 +34,11 @@ export function BlogPreview() {
   return (
     <section id="blog" className="scroll-mt-28 py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <SectionHeading
-            align="start"
-            eyebrow="مجله آراما"
-            title="خواندنی‌هایی برای دل و ذهن"
-            description="مقاله‌های کوتاه و علمی، با زبانی صمیمی — برای لحظه‌هایی که می‌خواهی خودت را بهتر بشناسی."
-          />
-          <Reveal delay={180}>
-            <a
-              href="#blog"
-              className="group mb-2 inline-flex items-center gap-2 rounded-full border border-line bg-card px-5 py-3 text-sm font-bold text-brand-ink transition-all duration-500 hover:border-brand/40 hover:bg-tint"
-            >
-              همهٔ مقاله‌ها
-              <ArrowLeft className="size-4 transition-transform duration-500 group-hover:-translate-x-1" />
-            </a>
-          </Reveal>
-        </div>
+        <SectionHeading
+          eyebrow="مجله آراما"
+          title="مقالاتی برای آگاهی و یادگیری"
+          description="مقاله‌های کوتاه و علمی، با زبانی صمیمی — برای لحظه‌هایی که می‌خواهی خودت را بهتر بشناسی."
+        />
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p, i) => (
@@ -83,6 +71,18 @@ export function BlogPreview() {
               </a>
             </Reveal>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Reveal delay={180}>
+            <a
+              href="#blog"
+              className="group inline-flex items-center gap-2 rounded-full border border-line bg-card px-6 py-3 text-sm font-bold text-brand-ink transition-all duration-500 hover:border-brand/40 hover:bg-tint shadow-[var(--shadow-soft)]"
+            >
+              همهٔ مقاله‌ها
+              <ArrowLeft className="size-4 transition-transform duration-500 group-hover:-translate-x-1" />
+            </a>
+          </Reveal>
         </div>
       </div>
     </section>
