@@ -35,7 +35,7 @@ export function Testimonials() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           eyebrow="روایت‌های آرامش"
-          title="دل‌هایی که سبک‌تر شدند"
+          title="تجربه کسانی که همراه ما هستند"
           description="صدها نفر هر شب، روزشان را با آراما مرور می‌کنند. این چند روایت، با اجازهٔ خودشان از صمیم قلب نوشته شده است."
         />
 
