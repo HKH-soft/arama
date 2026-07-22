@@ -60,7 +60,7 @@ export function Pricing() {
             <div className="grid items-stretch gap-6 lg:grid-cols-3">
               {plans.map((plan, i) => (
                 <Reveal key={plan.id} delay={i * 130} className="h-full">
-                  <article className={`relative flex h-full flex-col overflow-hidden rounded-[2.5rem] p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
+                  <article className={`relative flex h-full flex-col overflow-hidden rounded-[2.5rem] p-6 sm:p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
                     plan.featured 
                       ? "bg-brand-deep text-onbrand shadow-xl shadow-brand-deep/30 ring-1 ring-brand/50 lg:-my-4 lg:py-12" 
                       : "bg-card/80 backdrop-blur-md border border-line shadow-lg"
@@ -96,7 +96,7 @@ export function Pricing() {
                         )}
                       </div>
                       {plan.dailyEquivalentNote && (
-                        <span className={`mt-1.5 text-xs font-bold ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1 rounded-md w-fit" : "text-brand-deep bg-brand/10 px-2.5 py-1 rounded-md w-fit"}`}>
+                        <span className={`mt-2 text-xs font-bold leading-relaxed inline-block ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1.5 rounded-md" : "text-brand-deep bg-brand/10 px-2.5 py-1.5 rounded-md"}`}>
                           {plan.dailyEquivalentNote}
                         </span>
                       )}

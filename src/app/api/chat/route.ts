@@ -9,18 +9,18 @@ const fallbackAnswer =
   "می‌شنومَت. همین که این احساس را با من در میان گذاشتی، یک قدم مهم است. اگر موافقی، با هم آن را به بخش‌های کوچک‌تر تقسیم کنیم؛ الان کدام قسمت بیشتر از همه فشار می‌آورد؟";
 
 const openai = new OpenAI({
-  baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
-  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
+  apiKey: process.env.AI_API_KEY || "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",
 });
 
 async function openaiAnswer(
   text: string,
   history: Array<{ role: string; content: string }>,
 ) {
-  const key = process.env.OPENAI_API_KEY;
+  const key = process.env.AI_API_KEY || "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";
   if (!key) return null;
   const stream = await openai.chat.completions.create({
-    model: process.env.AI_MODEL || "gpt-4o-mini",
+    model: process.env.AI_MODEL || "z-ai/glm-5.2",
     messages: [
       {
         role: "system",

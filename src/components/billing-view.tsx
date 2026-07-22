@@ -236,7 +236,7 @@ function BillingViewInner() {
         {/* Main section */}
         <div className="space-y-6">
           {!sub ? (
-            <div className="card-soft rounded-[1.75rem] p-8 sm:p-12 text-center relative overflow-hidden">
+            <div className="card-soft rounded-[1.75rem] p-5 sm:p-8 md:p-12 text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-tr from-brand-deep/5 via-transparent to-brand/5"></div>
               <CreditCard className="relative mx-auto size-10 text-brand opacity-80" />
               <h2 className="relative mt-5 text-xl font-black text-ink">ارتقا به آراما پریمیوم</h2>
@@ -244,7 +244,7 @@ function BillingViewInner() {
                 با تهیه اشتراک، قفل تمام مدیتیشن‌ها، تمرین‌های تخصصی و گفتگوی نامحدود با دستیار هوشمند را باز کنید.
               </p>
               {plans.length > 0 && (
-                <div className="relative mx-auto mt-10 grid max-w-2xl gap-5 sm:grid-cols-2">
+                <div className="relative mx-auto mt-8 grid max-w-none gap-4 sm:gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                   {plans
                     .filter((p) => p.id !== "free")
                     .map((plan) => {
@@ -255,7 +255,7 @@ function BillingViewInner() {
                           type="button"
                           onClick={() => void startCheckout(plan.id)}
                           disabled={upgradingPlanId !== null}
-                          className={`relative group rounded-[2rem] p-7 text-start transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl disabled:opacity-60 overflow-hidden ${
+                          className={`relative group rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-7 text-start transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl disabled:opacity-60 overflow-hidden ${
                             plan.featured
                               ? "bg-brand-deep text-onbrand shadow-xl shadow-brand-deep/30 ring-1 ring-brand/50"
                               : "bg-card/80 backdrop-blur-md border border-line shadow-lg"
@@ -286,7 +286,7 @@ function BillingViewInner() {
                               </span>
                             </div>
                             {plan.dailyEquivalentNote && (
-                              <span className={`mt-1.5 text-xs font-bold ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1 rounded-md w-fit" : "text-brand-deep bg-brand/10 px-2.5 py-1 rounded-md w-fit"}`}>
+                              <span className={`mt-2 text-xs font-bold leading-relaxed inline-block ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1.5 rounded-md" : "text-brand-deep bg-brand/10 px-2.5 py-1.5 rounded-md"}`}>
                                 {plan.dailyEquivalentNote}
                               </span>
                             )}
@@ -315,8 +315,8 @@ function BillingViewInner() {
               )}
             </div>
           ) : (
-            <div className="card-soft rounded-[1.75rem] p-7">
-              <div className="flex items-center justify-between gap-3">
+            <div className="card-soft rounded-[1.75rem] p-5 sm:p-7">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-3">
                 <div className="flex items-center gap-3">
                   <span className="grid size-12 place-items-center rounded-2xl bg-brand-deep text-onbrand">
                     <Sparkles className="size-5" />
@@ -327,7 +327,7 @@ function BillingViewInner() {
                   </div>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-black ${
+                  className={`rounded-full px-3 py-1.5 text-[11px] font-black w-fit ${
                     sub.subscription.status === "active"
                       ? "bg-tint-strong text-brand-ink"
                       : "bg-sand-soft text-clay"
@@ -451,7 +451,7 @@ function BillingViewInner() {
           )}
 
           {/* Payment History List */}
-          <div className="card-soft rounded-[1.75rem] p-7">
+          <div className="card-soft rounded-[1.75rem] p-5 sm:p-7">
             <h3 className="text-base font-extrabold text-ink flex items-center gap-2">
               <History className="size-5 text-brand" />
               سابقه تراکنش‌ها
@@ -511,14 +511,14 @@ function BillingViewInner() {
 
         {/* Sidebar section */}
         <div className="space-y-5 h-fit">
-          <div className="card-soft rounded-[1.75rem] p-7">
+          <div className="card-soft rounded-[1.75rem] p-5 sm:p-7">
             <Shield className="size-7 text-brand" />
             <h3 className="mt-4 text-base font-extrabold text-ink">حریم مالی تو امن است</h3>
             <p className="mt-3 text-sm leading-7 text-soft">
               پرداخت از درگاه امن زرین‌پال انجام می‌شود. اطلاعات کارت تو نزد آراما ذخیره نمی‌شود.
             </p>
           </div>
-          <div className="card-soft rounded-[1.75rem] p-7">
+          <div className="card-soft rounded-[1.75rem] p-5 sm:p-7">
             <h3 className="text-sm font-extrabold text-ink">۷ روز ضمانت بازگشت وجه</h3>
             <p className="mt-2 text-xs leading-6 text-soft">
               اگر در هفتهٔ اول احساس کردی آراما مناسبت نیست، تمام مبلغ برگردانده می‌شود.
