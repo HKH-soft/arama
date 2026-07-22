@@ -14,6 +14,7 @@ type Report = {
   exercisesCompleted: number;
   exercisesThisWeek: number;
   exerciseStreak: number;
+  aiInsight?: string;
 };
 
 export function ReportsView() {
@@ -62,8 +63,8 @@ export function ReportsView() {
         </div>
         <div className="card-soft rounded-[1.75rem] p-6 sm:p-7">
           <CheckCircle2 className="size-7 text-brand" />
-          <h2 className="mt-5 text-base font-extrabold text-ink">یک یادآوری مهربانانه</h2>
-          <p className="mt-3 text-sm leading-7 text-soft">{report.exercisesCompleted > 0 ? `تا امروز ${report.exercisesCompleted.toLocaleString("fa-IR")} تمرین را کامل کرده‌ای. هر کدام یک قدم رو به جلو بوده — همین پیوستگی است که تفاوت می‌سازد.` : "رشد همیشه شبیه بالا رفتن نیست. همین که به خودت سر می‌زنی، خودش مراقبت است."}</p>
+          <h2 className="mt-5 text-base font-extrabold text-ink">یادداشت اختصاصی این هفته</h2>
+          <p className="mt-3 text-sm leading-7 text-soft">{report.aiInsight || (report.exercisesCompleted > 0 ? `تا امروز ${report.exercisesCompleted.toLocaleString("fa-IR")} تمرین را کامل کرده‌ای. هر کدام یک قدم رو به جلو بوده — همین پیوستگی است که تفاوت می‌سازد.` : "رشد همیشه شبیه بالا رفتن نیست. همین که به خودت سر می‌زنی، خودش مراقبت است.")}</p>
         </div>
       </div>
     </div>

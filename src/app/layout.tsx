@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 import { MeditationProvider } from "@/components/meditation-provider";
+import { AmbientProvider } from "@/components/ambient-provider";
 
 const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
@@ -13,10 +14,33 @@ const vazirmatn = Vazirmatn({
 export const metadata: Metadata = {
   title: {
     default: "آراما — همراه هوشمند سلامت روان",
-    template: "%s — آراما",
+    template: "%s | آراما",
   },
   description:
     "آراما یک همراه هوشمند سلامت روان است؛ گفتگوی همدلانه با هوش مصنوعی، ردیابی خلق‌وخو، مدیتیشن هدایت‌شده و تمرین‌های درمانی — در فضایی امن، گرم و بدون قضاوت.",
+  keywords: ["سلامت روان", "مدیتیشن", "تراپی آنلاین", "آرامش", "هوش مصنوعی", "چت بات", "مدیریت اضطراب"],
+  openGraph: {
+    title: "آراما — همراه هوشمند سلامت روان",
+    description: "گفتگوی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های درمانی در فضایی امن و گرم.",
+    url: "https://arama.app",
+    siteName: "Arama",
+    images: [
+      {
+        url: "/images/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Arama App",
+      },
+    ],
+    locale: "fa_IR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "آراما — همراه هوشمند سلامت روان",
+    description: "گفتگوی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های درمانی در فضایی امن و گرم.",
+    images: ["/images/og-image.jpg"],
+  },
 };
 
 const themeInit = `
@@ -37,7 +61,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
       <body className={`${vazirmatn.variable} font-sans antialiased`}>
-        <MeditationProvider>{children}</MeditationProvider>
+        <AmbientProvider>
+          <MeditationProvider>{children}</MeditationProvider>
+        </AmbientProvider>
       </body>
     </html>
   );

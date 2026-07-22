@@ -50,13 +50,67 @@ export function Pricing() {
           title="طرح‌های متناسب با نیاز شما"
           description="با نسخهٔ رایگان شروع کن؛ هر وقت آماده بودی، بدون هیچ فشاری ارتقا بده. همیشه می‌توانی لغو کنی."
         />
-        <div className="mt-16" aria-live="polite">
+        <div className="mt-20" aria-live="polite">
           {loading && <div className="grid gap-6 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="card-soft h-[430px] rounded-[2rem] p-8"><div className="calm-skeleton h-5 w-32 rounded-full" /><div className="calm-skeleton mt-4 h-12 w-full rounded-2xl" /><div className="calm-skeleton mt-6 h-10 w-36 rounded-full" /><div className="mt-8 space-y-4">{[0, 1, 2, 3, 4].map((j) => <div key={j} className="calm-skeleton h-4 w-full rounded-full" />)}</div></div>)}</div>}
           {!loading && error && <div className="card-soft rounded-[2rem] p-12 text-center"><WifiOff className="mx-auto size-8 text-danger" /><p className="mt-4 text-sm font-bold text-ink">{error}</p><button type="button" onClick={() => void load()} className="mt-5 inline-flex items-center gap-2 rounded-full bg-brand-deep px-5 py-2.5 text-xs font-bold text-onbrand"><RefreshCw className="size-3.5" />تلاش دوباره</button></div>}
           {!loading && !error && plans.length === 0 && <div className="card-soft rounded-[2rem] p-12 text-center"><p className="text-sm font-bold text-ink">فعلاً طرحی برای نمایش نداریم.</p></div>}
-          {!loading && !error && plans.length > 0 && <div className="grid items-stretch gap-6 lg:grid-cols-3">{plans.map((plan, i) => <Reveal key={plan.id} delay={i * 130} className="h-full"><article className={`relative flex h-full flex-col rounded-[2rem] p-8 transition-all duration-500 hover:-translate-y-1.5 ${plan.featured ? "border border-brand/30 bg-card shadow-[var(--shadow-lift)] lg:-my-4 lg:py-12" : "card-soft"}`}>{plan.featured && <span className="absolute -top-4 start-8 inline-flex items-center gap-1.5 rounded-full bg-brand-deep px-4 py-1.5 text-xs font-bold text-onbrand shadow-[var(--shadow-brand)]"><Sparkles className="size-3.5" />محبوب‌ترین انتخاب</span>}<h3 className="text-lg font-extrabold text-ink">{plan.name}</h3><p className="mt-2 min-h-12 text-sm leading-6 text-soft">{plan.description}</p><div className="mt-6 flex items-end gap-2"><span className={`text-4xl font-black tracking-tight ${plan.price === 0 ? "text-brand-ink" : "text-ink"}`}>{formatPrice(plan.price)}</span>{plan.price > 0 && <span className="pb-1.5 text-xs font-semibold text-faint">{plan.unit}</span>}</div><p className="mt-1.5 text-[11px] font-medium text-clay">{plan.period}</p><ul className="mt-7 flex flex-col gap-3 border-t border-line pt-7">{plan.features.map((feature) => <li key={feature} className="flex items-start gap-2.5 text-sm leading-6 text-soft"><span className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ${plan.featured ? "bg-brand-deep text-onbrand" : "bg-tint-strong text-brand-ink"}`}><Check className="size-3" strokeWidth={3} /></span>{feature}</li>)}</ul><Link href="/login" className={`mt-8 inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold transition-all duration-500 ${plan.featured ? "bg-brand-deep text-onbrand shadow-[var(--shadow-brand)] hover:-translate-y-0.5 hover:brightness-110" : "border border-line-strong bg-card text-ink hover:border-brand/40 hover:bg-tint"}`}>{plan.cta}</Link></article></Reveal>)}</div>}
+          {!loading && !error && plans.length > 0 && (
+            <div className="grid items-stretch gap-6 lg:grid-cols-3">
+              {plans.map((plan, i) => (
+                <Reveal key={plan.id} delay={i * 130} className="h-full">
+                  <article className={`relative flex h-full flex-col overflow-hidden rounded-[2.5rem] p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
+                    plan.featured 
+                      ? "bg-brand-deep text-onbrand shadow-xl shadow-brand-deep/30 ring-1 ring-brand/50 lg:-my-4 lg:py-12" 
+                      : "bg-card/80 backdrop-blur-md border border-line shadow-lg"
+                  }`}>
+                    {plan.featured && (
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
+                    )}
+                    {plan.featured && (
+                      <span className="absolute top-6 left-6 inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-4 py-1.5 text-[10px] font-bold text-white shadow-sm border border-white/20">
+                        <Sparkles className="size-3" /> پیشنهاد ویژه
+                      </span>
+                    )}
+                    <h3 className={`text-xl font-black tracking-tight ${plan.featured ? "text-white" : "text-ink"}`}>
+                      {plan.name}
+                    </h3>
+                    <p className={`mt-3 min-h-[3rem] text-sm leading-6 ${plan.featured ? "text-white/80" : "text-soft"}`}>
+                      {plan.description}
+                    </p>
+                    <div className="mt-8 flex items-end gap-1.5">
+                      <span className={`text-5xl font-black tracking-tight ${plan.featured ? "text-white" : "text-ink"}`}>
+                        {formatPrice(plan.price)}
+                      </span>
+                      {plan.price > 0 && (
+                        <span className={`pb-2 text-xs font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
+                          تومان / {plan.unit}
+                        </span>
+                      )}
+                    </div>
+                    <ul className={`mt-8 flex flex-col gap-3.5 border-t pt-8 flex-grow ${plan.featured ? "border-white/10" : "border-line"}`}>
+                      {plan.features.map((feature) => (
+                        <li key={feature} className={`flex items-start gap-3 text-sm leading-6 ${plan.featured ? "text-white/90" : "text-soft"}`}>
+                          <span className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full ${plan.featured ? "bg-white/20 text-white" : "bg-brand/10 text-brand-deep"}`}>
+                            <Check className="size-3" strokeWidth={3} />
+                          </span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/login" className={`mt-10 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-black transition-transform hover:scale-[1.02] ${
+                      plan.featured 
+                        ? "bg-white text-brand-deep shadow-lg" 
+                        : "bg-brand-deep text-onbrand shadow-md"
+                    }`}>
+                      {plan.cta}
+                    </Link>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+          )}
         </div>
-        <Reveal delay={220}><p className="mt-12 flex flex-wrap items-center justify-center gap-2 text-center text-xs font-medium text-faint"><HeartHandshake className="size-4 text-clay" />۷ روز ضمانت بازگشت وجه · لغو در هر لحظه، بدون سؤال و بدون قفل‌شدن داده‌ها</p></Reveal>
+        <Reveal delay={220}><p className="mt-14 flex flex-wrap items-center justify-center gap-2 text-center text-sm font-bold text-soft"><HeartHandshake className="size-5 text-brand" />۷ روز ضمانت بازگشت وجه · لغو در هر لحظه، بدون سؤال و بدون قفل‌شدن داده‌ها</p></Reveal>
       </div>
     </section>
   );

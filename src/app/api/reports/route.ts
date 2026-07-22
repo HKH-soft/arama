@@ -1,8 +1,14 @@
 import { asc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { exerciseCompletions, moodEntries } from "@/db/schema";
+import { exerciseCompletions, moodEntries, profiles } from "@/db/schema";
 import { requireUser } from "@/lib/auth-helpers";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
+  apiKey: process.env.OPENAI_API_KEY || "dummy-key-to-prevent-crash",
+});
 
 /** Count consecutive days (ending today or yesterday) that have >=1 completion. */
 function computeStreak(dates: Date[]): number {
@@ -56,6 +62,56 @@ export async function GET(request: NextRequest) {
     const completionsThisWeek = completions.filter(
       (c) => c.completedAt >= weekAgo,
     ).length;
+    const exerciseStreak = computeStreak(completions.map((c) => c.completedAt));
+
+    const [profile] = await db.select().from(profiles).where(eq(profiles.userId, user.userId)).limit(1);
+    const userName = profile?.name || "دوست من";
+
+    let aiInsight = "";
+    if (rows.length > 0 || completionsThisWeek > 0) {
+      try {
+        const prompt = `شما تراپیست همدل آراما هستید.
+نام کاربر: ${userName}
+آمار این هفته او:
+- تعداد ثبت خلق‌‌وخو: ${rows.length} بار
+- میانگین خلق (از ۱۰): ${Number(average.toFixed(1))}
+- بهترین خلق ثبت‌شده: ${best}
+- تمرین‌های کامل‌شده در این هفته: ${completionsThisWeek} تمرین
+- زنجیره متوالی تمرین: ${exerciseStreak} روز
+
+لطفاً یک یادداشت کوتاه، بسیار صمیمی و همدلانه (حدود ۳ تا ۴ جمله) برای گزارش هفتگی او بنویس.
+- مستقیماً با خود او (دوم شخص) صحبت کن و نامش را بیاور.
+- اگر حالش در طول هفته پایین بوده، به او بگو که داشتن روزهای سخت طبیعی است و همین که به خودش توجه کرده ارزشمند است.
+- اگر تمرین‌ها را پیوسته انجام داده، او را تشویق کن و از تلاشش قدردانی کن.
+- اگر ثبت کمی داشته، بدون قضاوت به او یادآوری کن که هر زمان برگردد آراما اینجاست.
+- لحنت باید گرم، حمایت‌گر و شبیه به یک دوست و روانشناس باشد.
+
+خروجی حتماً یک آبجکت JSON معتبر باشد:
+{
+  "insight": "یادداشت همدلانه شما"
+}`;
+
+        const completion = await openai.chat.completions.create({
+          model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+          messages: [{ role: "system", content: prompt }],
+          response_format: { type: "json_object" },
+          temperature: 0.7,
+        });
+
+        const aiContent = completion.choices[0]?.message.content;
+        if (aiContent) {
+          aiInsight = JSON.parse(aiContent).insight;
+        }
+      } catch (err) {
+        console.error("[Reports API AI Error]", err);
+        // Fallback if AI fails
+        aiInsight = completions.length > 0 
+          ? `تا امروز ${completions.length} تمرین را کامل کرده‌ای. هر کدام یک قدم رو به جلو بوده — همین پیوستگی است که تفاوت می‌سازد.` 
+          : "رشد همیشه شبیه بالا رفتن نیست. همین که به خودت سر می‌زنی، خودش مراقبت است.";
+      }
+    } else {
+      aiInsight = "رشد همیشه شبیه بالا رفتن نیست. همین که به خودت سر می‌زنی، خودش مراقبت است.";
+    }
 
     return NextResponse.json({
       report: {
@@ -71,10 +127,12 @@ export async function GET(request: NextRequest) {
         })),
         exercisesCompleted: completions.length,
         exercisesThisWeek: completionsThisWeek,
-        exerciseStreak: computeStreak(completions.map((c) => c.completedAt)),
+        exerciseStreak,
+        aiInsight,
       },
     });
-  } catch {
+  } catch (error) {
+    console.error("[Reports API Error]", error);
     return NextResponse.json(
       { error: "گزارش هفتگی فعلاً آماده نیست." },
       { status: 503 },

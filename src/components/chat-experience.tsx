@@ -14,6 +14,7 @@ import {
   Wind,
 } from "lucide-react";
 import { AramaMark } from "./logo";
+import { Ambient } from "./ambient";
 
 type Msg = { id: string; from: "ai" | "user"; text: string; time: string };
 
@@ -111,7 +112,7 @@ export function ChatExperience() {
         {
           id: "welcome",
           from: "ai",
-          text: "سلام، خوش برگشتی. امروز چه چیزی بر دلت سنگینی می‌کند — یا شاید هم چیزی هست که بخواهی جشن بگیریم؟",
+          text: "سلام، خوش برگشتی. امروز چطور می‌توانم کنارت باشم؟",
           time: nowFa(),
         },
       ]);
@@ -132,7 +133,7 @@ export function ChatExperience() {
       {
         id: "welcome",
         from: "ai",
-        text: "سلام، خوش برگشتی. امروز چه چیزی بر دلت سنگینی می‌کند — یا شاید هم چیزی هست که بخواهی جشن بگیریم؟",
+        text: "سلام، خوش برگشتی. امروز چطور می‌توانم کنارت باشم؟",
         time: nowFa(),
       },
     ]);
@@ -248,7 +249,14 @@ export function ChatExperience() {
     messages.length === 1 && messages[0].id === "welcome" && !streamingId;
 
   return (
-    <div className="relative flex h-[calc(100dvh-7.5rem)] min-h-0 lg:h-dvh">
+    <div className="relative flex h-[calc(100svh-7.5rem)] min-h-0 lg:h-svh bg-canvas overflow-hidden">
+      {/* ── background ambient ── */}
+      <div className="pointer-events-none absolute inset-0 z-0 opacity-40 dark:opacity-20 mix-blend-multiply dark:mix-blend-screen transition-opacity duration-1000">
+        <Ambient variant="warm" />
+        {/* Glass overlay to ensure readability */}
+        <div className="absolute inset-0 bg-canvas/40 backdrop-blur-[60px]" />
+      </div>
+
       {/* mobile history drawer overlay */}
       {sidebarOpen && (
         <button
@@ -261,17 +269,17 @@ export function ChatExperience() {
 
       {/* ── conversation sidebar ── */}
       <aside
-        className={`absolute inset-y-0 end-0 z-30 flex w-[min(20rem,88vw)] shrink-0 flex-col border-s border-line bg-card shadow-[var(--shadow-lift)] transition-transform duration-300 lg:static lg:z-0 lg:w-72 lg:border-e lg:border-s-0 lg:bg-card/70 lg:shadow-none ${
+        className={`absolute inset-y-0 right-0 z-30 flex w-[min(20rem,88vw)] shrink-0 flex-col border-l border-line bg-card/95 backdrop-blur-xl shadow-[var(--shadow-lift)] transition-transform duration-300 lg:static lg:z-0 lg:w-72 lg:border-l lg:border-r-0 lg:bg-card/60 lg:shadow-none ${
           sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden lg:opacity-0"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-line px-4 py-4">
-          <h2 className="text-sm font-extrabold text-ink">گفتگوهای قبلی</h2>
+        <div className="flex items-center justify-between px-5 py-5">
+          <h2 className="text-sm font-extrabold text-ink">تاریخچهٔ گفتگو</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={startNew}
-              className="grid size-8 place-items-center rounded-full bg-brand-deep text-onbrand"
+              className="grid size-8 place-items-center rounded-full bg-brand-deep text-onbrand shadow-[var(--shadow-brand)] hover:scale-105 transition-transform"
               aria-label="گفتگوی جدید"
             >
               <Plus className="size-4" />
@@ -279,32 +287,32 @@ export function ChatExperience() {
             <button
               type="button"
               onClick={() => setSidebarOpen(false)}
-              className="grid size-8 place-items-center rounded-full border border-line text-soft lg:hidden"
+              className="grid size-8 place-items-center rounded-full bg-tint text-brand-ink lg:hidden"
               aria-label="بستن"
             >
               <PanelLeftClose className="size-4" />
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-3 pb-4">
           {historyLoading && (
-            <div className="space-y-3 p-4">
+            <div className="space-y-3">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="calm-skeleton h-16 rounded-2xl" />
               ))}
             </div>
           )}
           {!historyLoading && history.length === 0 && (
-            <div className="p-6 text-center text-xs text-faint">
-              هنوز گفتگویی ثبت نشده
+            <div className="p-6 text-center text-xs font-medium text-faint">
+              هنوز گفتگویی ثبت نشده است.
             </div>
           )}
           {!historyLoading &&
             history.map((c) => (
               <div
                 key={c.id}
-                className={`group flex items-center gap-2 border-b border-line px-4 py-3 transition-colors ${
-                  conversationId === c.id ? "bg-tint-strong" : "hover:bg-tint"
+                className={`group mb-1 flex items-center gap-2 rounded-2xl px-3 py-3 transition-colors ${
+                  conversationId === c.id ? "bg-tint-strong border border-brand/10" : "hover:bg-tint/60 border border-transparent"
                 }`}
               >
                 <button
@@ -317,7 +325,7 @@ export function ChatExperience() {
                 >
                   <p className="truncate text-xs font-bold text-ink">{c.title}</p>
                   {c.lastMessage && (
-                    <p className="mt-1 truncate text-[10px] text-faint">{c.lastMessage}</p>
+                    <p className="mt-1 truncate text-[11px] font-medium text-soft">{c.lastMessage}</p>
                   )}
                 </button>
                 <button
@@ -325,10 +333,10 @@ export function ChatExperience() {
                   onClick={() => void deleteConversation(c.id)}
                   disabled={deletingId === c.id}
                   aria-label={`حذف ${c.title}`}
-                  className="grid size-7 shrink-0 place-items-center rounded-full text-faint opacity-100 transition-all hover:bg-danger/10 hover:text-danger disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-danger/5 text-danger opacity-100 transition-all hover:bg-danger hover:text-white disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   {deletingId === c.id ? (
-                    <span className="animate-breathe size-2 rounded-full bg-danger" />
+                    <span className="animate-breathe size-1.5 rounded-full bg-danger" />
                   ) : (
                     <Trash2 className="size-3.5" />
                   )}
@@ -339,93 +347,107 @@ export function ChatExperience() {
       </aside>
 
       {/* ── main chat area ── */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-3 border-b border-line bg-canvas/80 px-4 py-3 backdrop-blur-xl sm:px-8 sm:py-4">
-          <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col shadow-[-12px_0_40px_rgba(0,0,0,0.02)]">
+        <header className="flex items-center justify-between gap-3 border-b border-line/60 bg-canvas/40 px-4 py-3 backdrop-blur-2xl sm:px-8 sm:py-4">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setSidebarOpen((v) => !v)}
               aria-label={sidebarOpen ? "بستن تاریخچه" : "نمایش تاریخچه"}
-              className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-card text-soft transition-colors hover:text-brand-ink"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-card text-soft shadow-[var(--shadow-soft)] transition-colors hover:text-brand-ink hover:shadow-[var(--shadow-lift)]"
             >
-              {sidebarOpen ? <PanelLeftClose className="size-4.5" /> : <PanelLeftOpen className="size-4.5" />}
+              {sidebarOpen ? <PanelLeftClose className="size-5" /> : <PanelLeftOpen className="size-5" />}
             </button>
-            <div className="relative">
-              <AramaMark className="size-11" />
-              <span
-                className="absolute -bottom-0.5 -left-0.5 size-3 rounded-full border-2 border-canvas bg-brand"
-                aria-hidden
-              />
+            <div className="relative shrink-0">
+              <AramaMark className="size-10 sm:size-12 drop-shadow-sm" />
             </div>
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-black text-ink sm:text-base">
+              <h1 className="truncate text-base font-extrabold text-ink sm:text-lg">
                 گفتگو با آراما
               </h1>
-              <p className="truncate text-[11px] font-medium text-faint">
-                گفتگوی رمزنگاری‌شده و محرمانه
-              </p>
+              <div className="mt-0.5 flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="animate-breathe size-1.5 rounded-full bg-brand-glow shadow-[0_0_8px_var(--brand-glow)]"
+                    aria-hidden
+                  />
+                  <span className="text-[10px] font-bold text-brand-ink">همراه فعال</span>
+                </div>
+                <span className="text-[10px] font-bold text-soft/50">•</span>
+                <span className="text-[10px] font-medium text-soft">گفتگوی محرمانه</span>
+              </div>
             </div>
           </div>
-          <span className="hidden items-center gap-1.5 rounded-full bg-tint-strong px-3.5 py-1.5 text-[11px] font-bold text-brand-ink sm:inline-flex">
-            <span
-              className="size-1.5 animate-pulse rounded-full bg-brand-deep"
-              aria-hidden
-            />
-            همراه فعال
-          </span>
         </header>
 
         <div
           ref={scrollRef}
-          className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8"
+          className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 no-scrollbar"
           aria-live="polite"
         >
-          <div className="mx-auto flex max-w-2xl flex-col gap-4">
-            <p className="mx-auto rounded-full bg-card px-4 py-1.5 text-[10px] font-bold text-faint shadow-[var(--shadow-soft)]">
-              امروز
-            </p>
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex flex-col ${
-                  m.from === "user" ? "items-end" : "items-start"
-                }`}
-              >
+          <div className="mx-auto flex max-w-2xl flex-col pb-4">
+            <div className="mb-6 flex justify-center">
+              <span className="rounded-full border border-line/50 bg-card/40 px-4 py-1.5 text-[10px] font-bold text-faint backdrop-blur-md">
+                امروز
+              </span>
+            </div>
+            {messages.map((m, i) => {
+              const isUser = m.from === "user";
+              const prev = messages[i - 1];
+              const next = messages[i + 1];
+              const isFirstInGroup = !prev || prev.from !== m.from;
+              const isLastInGroup = !next || next.from !== m.from;
+              
+              // Dynamic spacing
+              const marginTop = isFirstInGroup && i > 0 ? "mt-5" : "mt-1";
+              
+              // Dynamic corners for grouping
+              const roundedClasses = isUser
+                ? `rounded-3xl ${!isFirstInGroup ? "rounded-tr-md" : ""} ${!isLastInGroup ? "rounded-br-md" : ""}`
+                : `rounded-3xl ${!isFirstInGroup ? "rounded-tl-md" : ""} ${!isLastInGroup ? "rounded-bl-md" : ""}`;
+
+              return (
                 <div
-                  className={`animate-rise w-fit max-w-[88%] px-4.5 py-3.5 text-sm leading-7 sm:max-w-[80%] ${
-                    m.from === "ai"
-                      ? "rounded-3xl rounded-tr-md border border-line bg-card text-ink shadow-[var(--shadow-soft)]"
-                      : "rounded-3xl rounded-tl-md bg-brand-deep text-onbrand shadow-[var(--shadow-brand)]"
-                  }`}
+                  key={m.id}
+                  className={`animate-rise flex w-full flex-col ${marginTop}`}
                 >
-                  {m.text || (
-                    <span
-                      className="inline-flex items-center gap-1.5"
-                      aria-label="آراما در حال نوشتن است"
+                  <div className={`flex flex-col w-fit max-w-[88%] sm:max-w-[82%] ${isUser ? "ml-auto items-end" : "mr-auto items-start"}`}>
+                    <div
+                      className={`px-4.5 py-3.5 text-sm leading-7 sm:text-[15px] sm:leading-8 ${roundedClasses} ${
+                        isUser
+                          ? "bg-brand-deep text-onbrand shadow-[var(--shadow-brand)]"
+                          : "bg-card border border-line/60 text-ink shadow-[var(--shadow-soft)]"
+                      }`}
                     >
-                      <span className="typing-dot size-1.5 rounded-full bg-brand-ink" />
-                      <span className="typing-dot size-1.5 rounded-full bg-brand-ink" />
-                      <span className="typing-dot size-1.5 rounded-full bg-brand-ink" />
-                    </span>
-                  )}
+                      {m.text || (
+                        <div className="flex h-4 items-center gap-0.5 px-1 py-1" aria-label="آراما در حال فکر کردن است">
+                          <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-80" />
+                          <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-60" style={{ animationDelay: "0.15s" }} />
+                          <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-40" style={{ animationDelay: "0.3s" }} />
+                        </div>
+                      )}
+                    </div>
+                    {isLastInGroup && (
+                      <span className={`mt-1.5 px-2 text-[10px] font-semibold text-faint ${isUser ? "text-right" : "text-left"}`}>
+                        {m.time}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <span className="mt-1.5 px-1.5 text-[10px] font-semibold text-faint">
-                  {m.time}
-                </span>
-              </div>
-            ))}
+              );
+            })}
 
             {error && (
               <div
                 role="alert"
-                className="rounded-3xl border border-danger/25 bg-danger/5 p-4 text-sm text-danger"
+                className="mt-6 rounded-3xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger shadow-sm backdrop-blur-md"
               >
                 <p className="font-bold">{error}</p>
                 <button
                   type="button"
                   onClick={() => void send(lastFailed)}
                   disabled={!lastFailed}
-                  className="mt-3 inline-flex items-center gap-2 rounded-full border border-danger/25 px-4 py-2 text-xs font-bold hover:bg-danger/10 disabled:opacity-50"
+                  className="mt-3 inline-flex items-center gap-2 rounded-xl bg-danger/10 px-4 py-2 text-xs font-bold hover:bg-danger/20 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw className="size-3.5" />
                   تلاش دوباره
@@ -434,7 +456,7 @@ export function ChatExperience() {
             )}
 
             {welcomeOnly && (
-              <div className="mt-1 flex flex-wrap gap-2 self-start">
+              <div className="mt-4 flex flex-wrap gap-2 self-start">
                 {[
                   "دست‌م هنوز می‌لرزد",
                   "باشه، بیا نفس بکشیم",
@@ -444,7 +466,7 @@ export function ChatExperience() {
                     key={choice}
                     type="button"
                     onClick={() => void send(choice)}
-                    className="rounded-full border border-brand/25 bg-card px-4 py-2 text-xs font-bold text-brand-ink transition-all duration-300 hover:bg-tint"
+                    className="rounded-full border border-brand/20 bg-card/80 px-4 py-2.5 text-xs font-bold text-brand-ink shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-tint hover:shadow-[var(--shadow-soft)]"
                   >
                     {choice}
                   </button>
@@ -452,23 +474,23 @@ export function ChatExperience() {
               </div>
             )}
 
-            <div className="mt-2 flex items-center gap-4 self-start rounded-3xl border border-brand/20 bg-tint/70 px-5 py-4">
-              <span className="animate-breathe grid size-11 shrink-0 place-items-center rounded-full bg-brand-deep text-onbrand">
+            <div className="mt-8 flex w-full max-w-xs cursor-pointer items-center gap-4 self-start rounded-[2rem] bg-gradient-to-l from-tint-strong to-card p-2 pr-3 shadow-[var(--shadow-lift)] transition-transform hover:scale-[1.02] border border-brand/10">
+              <span className="animate-breathe grid size-12 shrink-0 place-items-center rounded-full bg-brand-deep text-onbrand shadow-[var(--shadow-brand)]">
                 <Wind className="size-5" />
               </span>
-              <div>
+              <div className="flex-1">
                 <p className="text-xs font-extrabold text-brand-ink">
                   تمرین تنفس ۴-۷-۸
                 </p>
-                <p className="mt-1 text-[11px] font-medium leading-5 text-soft">
-                  دو دقیقه با هم؛ دم ۴، نگه ۷، بازدم ۸
+                <p className="mt-1 text-[10px] font-bold text-soft opacity-80">
+                  ۲ دقیقه
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-line bg-canvas/80 px-3 py-3 backdrop-blur-xl sm:px-8 sm:py-4">
+        <div className="bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-3 pb-4 pt-6 sm:px-8 sm:pb-6">
           <form
             className="mx-auto flex max-w-2xl items-center gap-2"
             onSubmit={(e) => {
@@ -479,39 +501,41 @@ export function ChatExperience() {
             <button
               type="button"
               aria-label="افزودن پیوست"
-              className="hidden size-11 shrink-0 place-items-center rounded-full bg-card text-soft shadow-[var(--shadow-soft)] hover:text-brand-ink sm:grid"
+              className="hidden size-12 shrink-0 place-items-center rounded-2xl bg-card text-faint shadow-[var(--shadow-soft)] transition-colors hover:bg-tint hover:text-brand-ink sm:grid"
             >
               <Plus className="size-5" />
             </button>
             <label htmlFor="chat-input" className="sr-only">
               پیام تو به آراما
             </label>
-            <input
-              id="chat-input"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder="هرچه در دلت است، اینجا بنویس…"
-              autoComplete="off"
-              className="min-w-0 flex-1 rounded-full border border-line bg-card px-4 py-3 text-sm text-ink shadow-[var(--shadow-soft)] outline-none transition-all placeholder:text-faint focus:border-brand focus:shadow-[0_0_0_4px_color-mix(in_srgb,var(--brand)_14%,transparent)] sm:px-5 sm:py-3.5"
-            />
-            <button
-              type="button"
-              aria-label="پیام صوتی"
-              className="hidden size-11 shrink-0 place-items-center rounded-full bg-card text-soft shadow-[var(--shadow-soft)] hover:text-brand-ink sm:grid"
-            >
-              <Mic className="size-5" />
-            </button>
+            <div className="group relative flex min-w-0 flex-1 items-center">
+              <input
+                id="chat-input"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="اینجا بنویس…"
+                autoComplete="off"
+                className="w-full rounded-2xl border border-line/80 bg-card/90 px-4 py-3.5 pr-12 text-sm font-medium text-ink shadow-[var(--shadow-soft)] outline-none backdrop-blur-md transition-all placeholder:text-faint focus-within:border-brand-glow focus-within:ring-4 focus-within:ring-brand-glow/10 sm:py-4 sm:pr-14"
+              />
+              <button
+                type="button"
+                aria-label="پیام صوتی"
+                className="absolute right-2 grid size-9 place-items-center rounded-xl text-faint transition-colors hover:bg-tint hover:text-brand-ink sm:right-2 sm:size-10"
+              >
+                <Mic className="size-4 sm:size-5" />
+              </button>
+            </div>
             <button
               type="submit"
               aria-label="ارسال پیام"
               disabled={!draft.trim() || !!streamingId}
-              className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-deep text-onbrand shadow-[var(--shadow-brand)] transition-all duration-300 hover:scale-105 disabled:scale-100 disabled:opacity-50"
+              className="grid size-12 shrink-0 place-items-center rounded-2xl bg-brand-deep text-onbrand shadow-[var(--shadow-brand)] transition-all duration-300 hover:scale-105 hover:bg-brand disabled:scale-100 disabled:opacity-40 sm:size-14"
             >
-              <SendHorizonal className="size-5" />
+              <SendHorizonal className="size-5 sm:size-6 translate-x-[-1px] rtl:translate-x-[1px]" />
             </button>
           </form>
-          <p className="mx-auto mt-2 max-w-2xl text-center text-[10px] leading-5 text-faint sm:mt-3">
-            آراما جایگزین درمانگر نیست؛ در بحران با ۱۲۳ تماس بگیر
+          <p className="mx-auto mt-3 max-w-2xl text-center text-[10px] font-semibold text-faint sm:mt-4">
+            آراما جایگزین درمانگر نیست • در بحران: ۱۲۳
           </p>
         </div>
       </div>

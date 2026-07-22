@@ -5,8 +5,8 @@ import { Camera, Check, RefreshCw, UserRound, WifiOff } from "lucide-react";
 
 type Profile = {
   userId: string;
-  name: string;
-  email: string;
+  name: string | null;
+  email: string | null;
   avatarUrl: string | null;
   timezone: string;
   remindersEnabled: boolean;
@@ -156,7 +156,7 @@ export function ProfileView() {
               <img src={profile.avatarUrl} alt="" className="size-20 rounded-full object-cover" />
             ) : (
               <span className="grid size-20 place-items-center rounded-full bg-gradient-to-br from-brand-glow to-brand-deep text-3xl font-black text-white">
-                {profile.name.trim().charAt(0) || "آ"}
+                {(profile.name ?? "").trim().charAt(0) || "آ"}
               </span>
             )}
             <button
@@ -170,20 +170,20 @@ export function ProfileView() {
             </button>
           </div>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-          <h2 className="mt-4 text-xl font-black text-ink">{profile.name}</h2>
-          <p className="mt-1 text-sm text-faint" dir="ltr">{profile.email}</p>
+          <h2 className="mt-4 text-xl font-black text-ink">{profile.name || "کاربر جدید"}</h2>
+          <p className="mt-1 text-sm text-faint" dir="ltr">{profile.email || ""}</p>
         </div>
 
         {/* Profile form */}
         <form onSubmit={(e) => void save(e)} className="mt-8 space-y-5">
           <div>
             <label htmlFor="profile-name" className="mb-2 block text-sm font-bold text-ink">نام</label>
-            <input id="profile-name" name="name" type="text" defaultValue={profile.name}
+            <input id="profile-name" name="name" type="text" defaultValue={profile.name ?? ""}
               className="w-full rounded-2xl border border-line bg-canvas/60 py-3.5 px-4 text-sm text-ink outline-none transition-all focus:border-brand focus:bg-card focus:shadow-[0_0_0_4px_color-mix(in_srgb,var(--brand)_14%,transparent)]" />
           </div>
           <div>
             <label htmlFor="profile-email" className="mb-2 block text-sm font-bold text-ink">ایمیل</label>
-            <input id="profile-email" type="email" dir="ltr" disabled value={profile.email}
+            <input id="profile-email" type="email" dir="ltr" disabled value={profile.email ?? ""}
               className="w-full rounded-2xl border border-line bg-tint py-3.5 px-4 text-sm text-faint" />
             <p className="mt-2 text-[11px] text-faint">ایمیل فعلاً قابل تغییر نیست.</p>
           </div>

@@ -131,9 +131,29 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const ambientTracks = pgTable("ambient_tracks", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  coverArt: text("cover_art").notNull(),
+  audioUrl: text("audio_url").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const voiceJournals = pgTable("voice_journals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  transcript: text("transcript").notNull(),
+  aiInsight: text("ai_insight").notNull(),
+  moodLabel: text("mood_label").notNull(),
+  durationSeconds: integer("duration_seconds").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type MeditationTrack = typeof meditationTracks.$inferSelect;
 export type MoodEntry = typeof moodEntries.$inferSelect;
 export type Exercise = typeof exercises.$inferSelect;
 export type Plan = typeof plans.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type Payment = typeof payments.$inferSelect;
+export type AmbientTrack = typeof ambientTracks.$inferSelect;
+export type VoiceJournal = typeof voiceJournals.$inferSelect;

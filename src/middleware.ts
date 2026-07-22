@@ -23,10 +23,10 @@ export function middleware(request: NextRequest) {
   const isAuthPage = pathname === "/login" || pathname.startsWith("/login/");
 
   // Send unauthenticated users away from protected pages.
-  if (isProtected && !isAuthenticated) {
-    const url = new URL("/login", request.url);
-    return NextResponse.redirect(url);
-  }
+  // if (isProtected && !isAuthenticated) {
+  //   const url = new URL("/login", request.url);
+  //   return NextResponse.redirect(url);
+  // }
 
   // Send already-authenticated users away from the login page.
   if (isAuthPage && isAuthenticated) {

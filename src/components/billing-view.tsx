@@ -133,7 +133,7 @@ function BillingViewInner() {
     setUpgradingPlanId(planId);
     setActionError("");
     try {
-      const response = await fetch("/api/subscription/checkout", {
+      const response = await fetch("/api/payment/request", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ planId }),
@@ -234,14 +234,15 @@ function BillingViewInner() {
         {/* Main section */}
         <div className="space-y-6">
           {!sub ? (
-            <div className="card-soft rounded-[1.75rem] p-8 sm:p-12 text-center">
-              <CreditCard className="mx-auto size-9 text-faint" />
-              <p className="mt-4 text-base font-extrabold text-ink">هنوز اشتراکی فعال نداری</p>
-              <p className="mt-2 text-sm leading-7 text-soft">
-                با اشتراک آراما، به همهٔ مدیتیشن‌ها، تمرین‌ها و گفتگوی نامحدود دسترسی پیدا کن.
+            <div className="card-soft rounded-[1.75rem] p-8 sm:p-12 text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-tr from-brand-deep/5 via-transparent to-brand/5"></div>
+              <CreditCard className="relative mx-auto size-10 text-brand opacity-80" />
+              <h2 className="relative mt-5 text-xl font-black text-ink">ارتقا به آراما پریمیوم</h2>
+              <p className="relative mt-3 text-sm leading-8 text-soft max-w-sm mx-auto">
+                با تهیه اشتراک، قفل تمام مدیتیشن‌ها، تمرین‌های تخصصی و گفتگوی نامحدود با دستیار هوشمند را باز کنید.
               </p>
               {plans.length > 0 && (
-                <div className="mx-auto mt-8 grid max-w-lg gap-4 sm:grid-cols-2">
+                <div className="relative mx-auto mt-10 grid max-w-2xl gap-5 sm:grid-cols-2">
                   {plans
                     .filter((p) => p.id !== "free")
                     .map((plan) => {
@@ -252,35 +253,49 @@ function BillingViewInner() {
                           type="button"
                           onClick={() => void startCheckout(plan.id)}
                           disabled={upgradingPlanId !== null}
-                          className="relative rounded-[1.75rem] border border-brand/20 bg-card p-6 text-start shadow-[var(--shadow-soft)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] disabled:opacity-60"
+                          className={`relative group rounded-[2rem] p-7 text-start transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl disabled:opacity-60 overflow-hidden ${
+                            plan.featured
+                              ? "bg-brand-deep text-onbrand shadow-xl shadow-brand-deep/30 ring-1 ring-brand/50"
+                              : "bg-card/80 backdrop-blur-md border border-line shadow-lg"
+                          }`}
                         >
                           {plan.featured && (
-                            <span className="absolute -top-3 start-4 rounded-full bg-brand-deep px-3 py-1 text-[10px] font-bold text-onbrand">
-                              <Sparkles className="inline size-3" /> محبوب
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
+                          )}
+                          {plan.featured && (
+                            <span className="absolute top-5 left-5 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 text-[10px] font-bold text-white shadow-sm border border-white/20 flex items-center gap-1">
+                              <Sparkles className="size-3" /> پیشنهاد ویژه
                             </span>
                           )}
-                          <h3 className="text-base font-extrabold text-ink">{plan.name}</h3>
-                          <p className="mt-2 text-sm leading-6 text-soft">{plan.description}</p>
-                          <p className="mt-4 text-2xl font-black text-ink">
-                            {plan.price.toLocaleString("fa-IR")}
-                            <span className="text-xs font-semibold text-faint"> {plan.unit}</span>
-                          </p>
-                          {isUpgrading ? (
-                            <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-tint px-4 py-2 text-xs font-bold text-brand-ink">
-                              <RefreshCw className="size-3 animate-spin" /> در حال اتصال…
+                          <h3 className={`text-lg font-black ${plan.featured ? "text-white" : "text-ink"}`}>{plan.name}</h3>
+                          <p className={`mt-2 text-xs leading-6 ${plan.featured ? "text-white/80" : "text-soft"}`}>{plan.description}</p>
+                          <div className="mt-6 flex items-end gap-1">
+                            <span className={`text-3xl font-black ${plan.featured ? "text-white" : "text-ink"}`}>
+                              {plan.price.toLocaleString("fa-IR")}
                             </span>
-                          ) : (
-                            <span className="mt-4 inline-block rounded-full bg-brand-deep px-4 py-2 text-xs font-bold text-onbrand">
-                              پرداخت و فعال‌سازی {plan.name}
+                            <span className={`pb-1 text-[11px] font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
+                              تومان / {plan.unit}
                             </span>
-                          )}
+                          </div>
+                          
+                          <div className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold transition-transform group-hover:scale-[1.02] ${
+                            plan.featured 
+                              ? "bg-white text-brand-deep shadow-md" 
+                              : "bg-brand-deep text-onbrand"
+                          }`}>
+                            {isUpgrading ? (
+                              <><RefreshCw className="size-4 animate-spin" /> انتقال به درگاه...</>
+                            ) : (
+                              "خرید اشتراک امن"
+                            )}
+                          </div>
                         </button>
                       );
                     })}
                 </div>
               )}
               {actionError && (
-                <p role="alert" className="mt-4 text-xs font-semibold text-danger">
+                <p role="alert" className="relative mt-6 rounded-xl bg-danger/10 px-4 py-3 text-xs font-bold text-danger max-w-sm mx-auto border border-danger/20">
                   {actionError}
                 </p>
               )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Angry, Frown, Laugh, Meh, Smile } from "lucide-react";
 
@@ -23,6 +24,7 @@ export function MoodCheckin() {
   const [picked, setPicked] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   const chooseMood = async (index: number) => {
     setPicked(index);
@@ -35,6 +37,9 @@ export function MoodCheckin() {
         body: JSON.stringify({ mood: [9, 7, 5, 3, 1][index] }),
       });
       if (!response.ok) throw new Error("ثبت حال انجام نشد؛ دوباره امتحان کن.");
+      
+      // Update the dashboard charts and UI
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "ثبت حال انجام نشد؛ دوباره امتحان کن.");
     } finally {

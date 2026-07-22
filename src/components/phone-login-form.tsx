@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Lock, MessageCircle, Phone, Shield, Undo2 } from "lucide-react";
 
-type Step = "phone" | "otp" | "password-setup";
+type Step = "phone" | "otp" | "name-setup" | "password-setup";
 type LoginMode = "otp" | "password";
 
 export function PhoneLoginForm() {
@@ -14,6 +14,7 @@ export function PhoneLoginForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
+  const [name, setName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -22,6 +23,7 @@ export function PhoneLoginForm() {
   // true when the OTP step was reached via "forgot password" recovery,
   // so we force a "set a new password" step after verification.
   const [isRecovery, setIsRecovery] = useState(false);
+  const [userStatus, setUserStatus] = useState({ isNewUser: false, hasPassword: false });
 
   // Countdown timer for OTP expiry
   useEffect(() => {
@@ -99,9 +101,15 @@ export function PhoneLoginForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ phone: phone.trim(), password }),
       });
-      const data = (await response.json()) as { error?: string };
+      const data = (await response.json()) as { error?: string; profile?: { name?: string | null } };
       if (!response.ok) throw new Error(data.error || "ورود انجام نشد.");
-      router.push("/dashboard");
+      
+      if (!data.profile?.name) {
+        setUserStatus({ isNewUser: false, hasPassword: true });
+        setStep("name-setup");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "ورود انجام نشد.");
     } finally {
@@ -132,15 +140,21 @@ export function PhoneLoginForm() {
         body: JSON.stringify({ phone: phone.trim(), code: otp.trim() }),
       });
       const data = (await response.json()) as {
-        profile?: { userId: string; hasPassword: boolean; isNewUser: boolean };
+        profile?: { userId: string; hasPassword: boolean; isNewUser: boolean; name?: string | null };
         error?: string;
       };
       if (!response.ok) throw new Error(data.error || "ورود انجام نشد.");
 
-      if (isRecovery) {
+      const isNew = data.profile?.isNewUser ?? false;
+      const hasPass = data.profile?.hasPassword ?? false;
+      
+      if (!data.profile?.name) {
+        setUserStatus({ isNewUser: isNew, hasPassword: hasPass });
+        setStep("name-setup");
+      } else if (isRecovery) {
         // Recovery path: always let the user set a fresh password after verifying.
         setStep("password-setup");
-      } else if (data.profile?.hasPassword || !data.profile?.isNewUser) {
+      } else if (hasPass || !isNew) {
         // Returning user with an existing session path — go straight to dashboard.
         router.push("/dashboard");
       } else {
@@ -149,6 +163,39 @@ export function PhoneLoginForm() {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "ورود انجام نشد.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitNameSetup = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    if (name.trim().length < 2) {
+      setError("نام باید دست‌کم دو حرف باشد.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!response.ok) {
+        const data = (await response.json()) as { error?: string };
+        throw new Error(data.error || "ذخیره نام انجام نشد.");
+      }
+
+      if (isRecovery || (!userStatus.hasPassword && userStatus.isNewUser)) {
+        setStep("password-setup");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ذخیره نام انجام نشد.");
     } finally {
       setSubmitting(false);
     }
@@ -422,6 +469,52 @@ export function PhoneLoginForm() {
               </>
             ) : (
               "ورود به آراما"
+            )}
+          </button>
+        </form>
+      )}
+
+      {step === "name-setup" && (
+        <form onSubmit={(e) => void submitNameSetup(e)} className="flex flex-col gap-5">
+          <div>
+            <h3 className="text-base font-extrabold text-ink">چطور صدات کنیم؟</h3>
+            <p className="mt-2 text-sm leading-7 text-soft">
+              برای اینکه تجربه صمیمی‌تری داشته باشیم، لطفاً نام خود را وارد کن.
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="name-setup" className="mb-2 block text-sm font-bold text-ink">
+              نام شما
+            </label>
+            <input
+              id="name-setup"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="مثلاً: علی"
+              autoComplete="name"
+              className="w-full rounded-2xl border border-line bg-canvas/60 py-3.5 px-4 text-sm text-ink outline-none transition-all duration-300 placeholder:text-faint focus:border-brand focus:bg-card focus:shadow-[0_0_0_4px_color-mix(in_srgb,var(--brand)_14%,transparent)]"
+            />
+            {error && (
+              <p role="alert" className="animate-rise mt-2 text-xs font-semibold text-danger">
+                {error}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting || name.trim().length < 2}
+            className="inline-flex items-center justify-center gap-2.5 rounded-full bg-brand-deep px-6 py-4 text-sm font-black text-onbrand shadow-[var(--shadow-brand)] transition-all duration-500 hover:-translate-y-0.5 hover:brightness-110 disabled:translate-y-0 disabled:opacity-85"
+          >
+            {submitting ? (
+              <>
+                <span className="animate-breathe size-3 rounded-full bg-onbrand" />
+                در حال ثبت…
+              </>
+            ) : (
+              "ادامه"
             )}
           </button>
         </form>
