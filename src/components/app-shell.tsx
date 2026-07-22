@@ -16,7 +16,7 @@ import {
   Wind,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -37,6 +37,40 @@ const mobilePrimary = nav.slice(0, 4);
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileName, setProfileName] = useState<string | null>(null);
+  const [planName, setPlanName] = useState<string | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    async function loadUserData() {
+      try {
+        const [profileRes, subRes] = await Promise.all([
+          fetch("/api/profile", { cache: "no-store" }),
+          fetch("/api/subscription", { cache: "no-store" }),
+        ]);
+
+        if (profileRes.ok) {
+          const pData = await profileRes.json();
+          setProfileName(pData.profile?.name || "کاربر آراما");
+        } else {
+          setProfileName("کاربر آراما");
+        }
+
+        if (subRes.ok) {
+          const sData = await subRes.json();
+          setPlanName(sData.subscription?.plan?.name || "پلن رایگان");
+        } else {
+          setPlanName("پلن رایگان");
+        }
+      } catch (error) {
+        setProfileName("کاربر آراما");
+        setPlanName("پلن رایگان");
+      } finally {
+        setLoadingUser(false);
+      }
+    }
+    void loadUserData();
+  }, []);
 
   return (
     <div className="flex min-h-dvh bg-canvas">
@@ -77,12 +111,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className="mt-2 flex items-center justify-between gap-2 rounded-3xl border border-line bg-card p-3">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-glow to-brand-deep text-sm font-black text-white">
-              س
-            </span>
+            {loadingUser ? (
+              <div className="grid size-10 shrink-0 place-items-center rounded-full bg-line/50 animate-pulse" />
+            ) : (
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-glow to-brand-deep text-sm font-black text-white">
+                {profileName?.[0] ?? "ک"}
+              </span>
+            )}
             <div className="min-w-0">
-              <p className="truncate text-xs font-bold text-ink">سارا محمدی</p>
-              <p className="text-[10px] font-medium text-faint">آرامش پلاس</p>
+              {loadingUser ? (
+                <>
+                  <div className="h-3 w-16 bg-line/50 rounded animate-pulse mb-1.5" />
+                  <div className="h-2 w-12 bg-line/50 rounded animate-pulse" />
+                </>
+              ) : (
+                <>
+                  <p className="truncate text-xs font-bold text-ink">{profileName}</p>
+                  <p className="text-[10px] font-medium text-faint">{planName}</p>
+                </>
+              )}
             </div>
           </div>
           <ThemeToggle />
@@ -175,12 +222,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="mt-5 flex items-center justify-between rounded-3xl border border-line bg-canvas/60 p-4">
               <div className="flex items-center gap-3">
-                <span className="grid size-11 place-items-center rounded-full bg-gradient-to-br from-brand-glow to-brand-deep text-sm font-black text-white">
-                  س
-                </span>
+                {loadingUser ? (
+                  <div className="grid size-11 place-items-center rounded-full bg-line/50 animate-pulse" />
+                ) : (
+                  <span className="grid size-11 place-items-center rounded-full bg-gradient-to-br from-brand-glow to-brand-deep text-sm font-black text-white">
+                    {profileName?.[0] ?? "ک"}
+                  </span>
+                )}
                 <div>
-                  <p className="text-sm font-bold text-ink">سارا محمدی</p>
-                  <p className="text-[11px] text-faint">آرامش پلاس</p>
+                  {loadingUser ? (
+                    <>
+                      <div className="h-3.5 w-20 bg-line/50 rounded animate-pulse mb-1.5" />
+                      <div className="h-2.5 w-14 bg-line/50 rounded animate-pulse" />
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-ink">{profileName}</p>
+                      <p className="text-[11px] text-faint">{planName}</p>
+                    </>
+                  )}
                 </div>
               </div>
               <ThemeToggle />

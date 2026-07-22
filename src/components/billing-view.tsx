@@ -40,6 +40,8 @@ type Plan = {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
+  dailyEquivalentNote?: string;
   unit: string;
   period: string;
   description: string;
@@ -269,13 +271,25 @@ function BillingViewInner() {
                           )}
                           <h3 className={`text-lg font-black ${plan.featured ? "text-white" : "text-ink"}`}>{plan.name}</h3>
                           <p className={`mt-2 text-xs leading-6 ${plan.featured ? "text-white/80" : "text-soft"}`}>{plan.description}</p>
-                          <div className="mt-6 flex items-end gap-1">
-                            <span className={`text-3xl font-black ${plan.featured ? "text-white" : "text-ink"}`}>
-                              {plan.price.toLocaleString("fa-IR")}
-                            </span>
-                            <span className={`pb-1 text-[11px] font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
-                              تومان / {plan.unit}
-                            </span>
+                          <div className="mt-6 flex flex-col gap-1">
+                            {plan.originalPrice && plan.originalPrice > plan.price && (
+                              <span className={`text-sm font-bold line-through ${plan.featured ? "text-white/60" : "text-faint"}`}>
+                                {plan.originalPrice.toLocaleString("fa-IR")}
+                              </span>
+                            )}
+                            <div className="flex items-end gap-1">
+                              <span className={`text-3xl font-black ${plan.featured ? "text-white" : "text-ink"}`}>
+                                {plan.price.toLocaleString("fa-IR")}
+                              </span>
+                              <span className={`pb-1 text-[11px] font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
+                                تومان
+                              </span>
+                            </div>
+                            {plan.dailyEquivalentNote && (
+                              <span className={`mt-1.5 text-xs font-bold ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1 rounded-md w-fit" : "text-brand-deep bg-brand/10 px-2.5 py-1 rounded-md w-fit"}`}>
+                                {plan.dailyEquivalentNote}
+                              </span>
+                            )}
                           </div>
                           
                           <div className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold transition-transform group-hover:scale-[1.02] ${

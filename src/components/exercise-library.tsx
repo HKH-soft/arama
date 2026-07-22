@@ -230,10 +230,10 @@ export function ExerciseLibrary() {
             key={item}
             type="button"
             onClick={() => setCategory(item)}
-            className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-bold transition-colors ${
+            className={`shrink-0 rounded-full px-4 py-2.5 text-[13px] font-bold transition-all duration-300 ${
               category === item
-                ? "bg-brand-deep text-onbrand"
-                : "border border-line bg-card text-soft hover:bg-tint"
+                ? "bg-brand-deep text-onbrand shadow-sm"
+                : "bg-sand-soft/50 text-clay hover:bg-sand-soft hover:text-ink"
             }`}
           >
             {item}
@@ -281,41 +281,62 @@ export function ExerciseLibrary() {
 
         {!loading && !error && filtered.length > 0 && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((item) => (
-              <article
-                key={item.id}
-                className="card-soft group flex min-h-56 flex-col rounded-[1.75rem] p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
-              >
-                <span className="grid size-13 place-items-center rounded-2xl bg-tint-strong text-brand-ink transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
-                  <ExerciseIcon name={item.iconName} />
-                </span>
-                <div className="mt-5 flex items-start justify-between gap-3">
-                  <h3 className="text-base font-extrabold text-ink">
+            {filtered.map((item) => {
+              const isShort = item.durationMinutes < 5;
+              return (
+                <article
+                  key={item.id}
+                  className={`group relative flex min-h-56 flex-col overflow-hidden p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] ${
+                    isShort
+                      ? "card-soft rounded-[2.5rem]"
+                      : "bg-card/90 backdrop-blur-sm border border-sand/30 shadow-md rounded-[1.75rem]"
+                  }`}
+                >
+                  {!isShort && (
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-sand/20 blur-[2rem] rounded-full -mr-20 -mt-20 pointer-events-none transition-transform duration-1000 group-hover:scale-125" />
+                  )}
+                  
+                  <div className="relative flex items-start justify-between gap-3">
+                    <span className={`grid size-13 place-items-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 ${
+                      isShort
+                        ? "rounded-full bg-sand-soft text-clay"
+                        : "rounded-2xl bg-tint-strong text-brand-ink"
+                    }`}>
+                      <ExerciseIcon name={item.iconName} />
+                    </span>
+                    <span className="shrink-0 rounded-full bg-sand-soft/70 px-2.5 py-1 text-[10px] font-bold text-clay">
+                      {item.category}
+                    </span>
+                  </div>
+                  
+                  <h3 className="relative mt-5 text-base font-extrabold text-ink">
                     {item.title}
                   </h3>
-                  <span className="shrink-0 rounded-full bg-sand-soft px-2.5 py-1 text-[10px] font-bold text-clay">
-                    {item.category}
-                  </span>
-                </div>
-                <p className="mt-2 flex-1 text-xs leading-6 text-soft">
-                  {item.description}
-                </p>
-                <div className="mt-5 flex items-center justify-between border-t border-line pt-4 text-[11px] font-bold text-faint">
-                  <span>
-                    {item.durationMinutes.toLocaleString("fa-IR")} دقیقه ·{" "}
-                    {item.difficulty}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveExercise(item)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-brand-deep px-3.5 py-1.5 text-[11px] font-bold text-onbrand shadow-[var(--shadow-brand)] transition-all duration-300 hover:scale-105"
-                  >
-                    <Play className="size-3 fill-current" />
-                    شروع تمرین
-                  </button>
-                </div>
-              </article>
-            ))}
+                  <p className="relative mt-2 flex-1 text-[13px] leading-7 text-soft">
+                    {item.description}
+                  </p>
+                  
+                  <div className="relative mt-8 flex items-center justify-between border-t border-line/60 pt-5 text-[11px] font-bold">
+                    <div className="flex items-center gap-2">
+                      <span className="text-soft">
+                        {item.durationMinutes.toLocaleString("fa-IR")} دقیقه
+                      </span>
+                      <span className="rounded-md bg-sand-soft/80 px-1.5 py-0.5 text-clay">
+                        {item.difficulty}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveExercise(item)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-brand-deep px-3.5 py-1.5 text-[11px] font-bold text-onbrand shadow-[var(--shadow-brand)] transition-all duration-300 hover:scale-105"
+                    >
+                      <Play className="size-3 fill-current" />
+                      شروع تمرین
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </div>

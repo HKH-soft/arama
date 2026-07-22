@@ -10,6 +10,8 @@ type Plan = {
   id: string;
   name: string;
   price: number;
+  originalPrice?: number;
+  dailyEquivalentNote?: string;
   unit: string;
   period: string;
   description: string;
@@ -77,13 +79,25 @@ export function Pricing() {
                     <p className={`mt-3 min-h-[3rem] text-sm leading-6 ${plan.featured ? "text-white/80" : "text-soft"}`}>
                       {plan.description}
                     </p>
-                    <div className="mt-8 flex items-end gap-1.5">
-                      <span className={`text-5xl font-black tracking-tight ${plan.featured ? "text-white" : "text-ink"}`}>
-                        {formatPrice(plan.price)}
-                      </span>
-                      {plan.price > 0 && (
-                        <span className={`pb-2 text-xs font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
-                          تومان / {plan.unit}
+                    <div className="mt-8 flex flex-col gap-1">
+                      {plan.originalPrice && plan.originalPrice > plan.price && (
+                        <span className={`text-sm font-bold line-through ${plan.featured ? "text-white/60" : "text-faint"}`}>
+                          {formatPrice(plan.originalPrice)}
+                        </span>
+                      )}
+                      <div className="flex items-end gap-1.5">
+                        <span className={`text-5xl font-black tracking-tight ${plan.featured ? "text-white" : "text-ink"}`}>
+                          {formatPrice(plan.price)}
+                        </span>
+                        {plan.price > 0 && (
+                          <span className={`pb-2 text-xs font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
+                            تومان
+                          </span>
+                        )}
+                      </div>
+                      {plan.dailyEquivalentNote && (
+                        <span className={`mt-1.5 text-xs font-bold ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1 rounded-md w-fit" : "text-brand-deep bg-brand/10 px-2.5 py-1 rounded-md w-fit"}`}>
+                          {plan.dailyEquivalentNote}
                         </span>
                       )}
                     </div>
