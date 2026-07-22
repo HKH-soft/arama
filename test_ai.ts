@@ -30,7 +30,7 @@ async function test() {
       }
     }
     console.log("\nSuccess");
-  } catch (error) {
+  } catch (error: any) {
     console.error("\nError calling API:", error.message);
     if (error.response) {
       console.error(error.response.data);
