@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Anchor, Check, Heart, Pause, PenLine, Play, Sparkles, Wind, WifiOff, X } from "lucide-react";
+import { Anchor, Check, Heart, Pause, PenLine, Play, Sparkles, Wind, WifiOff, X, Plus, Minus } from "lucide-react";
 import type { Exercise } from "@/db/schema";
 
 const iconMap = {
@@ -179,6 +179,306 @@ function ExerciseSession({
   );
 }
 
+/* ── Breathing Exercise Session (Advanced UI) ── */
+const BREATHING_LABELS = ["دم", "حبس", "بازدم", "حبس"];
+
+function getBreathingPattern(title: string) {
+  if (title.includes("۴-۷-۸")) return [4, 7, 8, 0];
+  if (title.includes("جعبه‌ای")) return [4, 4, 4, 4];
+  return [6, 3, 6, 3];
+}
+
+function BreathingSession({
+  exercise,
+  onClose,
+}: {
+  exercise: Exercise;
+  onClose: () => void;
+}) {
+  const [step, setStep] = useState<"setup" | "active" | "done">("setup");
+  const pattern = getBreathingPattern(exercise.title);
+  const cycleSeconds = pattern.reduce((a, b) => a + b, 0);
+
+  const [cycles, setCycles] = useState(10);
+
+  const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+  const [phaseSecondsLeft, setPhaseSecondsLeft] = useState(0);
+  const [completedCycles, setCompletedCycles] = useState(0);
+  const [running, setRunning] = useState(false);
+
+  // When starting or resuming
+  const handleStart = () => {
+    setStep("active");
+    if (!running && phaseSecondsLeft === 0) {
+      setCurrentPhaseIndex(0);
+      setPhaseSecondsLeft(pattern[0]);
+      setCompletedCycles(0);
+    }
+    setRunning(true);
+  };
+
+  useEffect(() => {
+    if (step !== "active" || !running) return;
+    const interval = setInterval(() => {
+      setPhaseSecondsLeft((prev) => {
+        if (prev > 1) return prev - 1;
+        
+        let nextIndex = currentPhaseIndex + 1;
+        let nextCycles = completedCycles;
+
+        while (nextIndex < 4 && pattern[nextIndex] === 0) {
+          nextIndex++;
+        }
+
+        if (nextIndex >= 4) {
+          nextCycles++;
+          if (nextCycles >= cycles) {
+            setStep("done");
+            setRunning(false);
+            return 0;
+          }
+          nextIndex = 0;
+          while (nextIndex < 4 && pattern[nextIndex] === 0) nextIndex++;
+        }
+
+        setCurrentPhaseIndex(nextIndex);
+        setCompletedCycles(nextCycles);
+        return pattern[nextIndex];
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step, running, currentPhaseIndex, completedCycles, cycles, pattern]);
+
+  // Post completion
+  const submittedRef = useRef(false);
+  useEffect(() => {
+    if (step === "done" && !submittedRef.current) {
+      submittedRef.current = true;
+      fetch("/api/exercises/completions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ exerciseId: exercise.id, durationSeconds: cycles * cycleSeconds }),
+      }).catch(() => {});
+    }
+  }, [step, exercise.id, cycles, cycleSeconds]);
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/30 backdrop-blur-sm sm:p-4">
+      <div className="relative flex w-full max-w-md h-[100svh] sm:h-[85vh] sm:max-h-[850px] flex-col overflow-hidden bg-brand/5 sm:rounded-[2.5rem] shadow-2xl border border-brand/10">
+        {/* BG Layer */}
+        <div className="absolute inset-0 bg-canvas z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-brand/10 to-transparent z-0" />
+
+        <div className="relative z-10 flex h-full flex-col overflow-y-auto no-scrollbar">
+          
+          {step === "setup" && (
+            <div className="flex-1 flex flex-col p-4 sm:p-6 pb-24">
+              {/* Header */}
+              <div className="relative h-48 sm:h-56 w-full rounded-[2rem] overflow-hidden mb-6 shrink-0 shadow-md">
+                <img
+                  src={exercise.iconName === "wind" ? "/images/meditation/breath-guide.jpg" : "/images/meditation/forest-ambience.jpg"}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  alt="Background"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 left-4 grid size-10 place-items-center rounded-full bg-black/20 text-white backdrop-blur-md hover:bg-black/40 transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+                <div className="absolute bottom-5 right-5 text-white">
+                  <span className="inline-block bg-white/20 px-2.5 py-1 rounded-full text-[10px] font-bold backdrop-blur-md mb-2">
+                    پیش‌فرض
+                  </span>
+                  <h2 className="text-2xl font-black text-white">{exercise.title}</h2>
+                  <p className="text-xs font-medium text-white/80 mt-1">
+                    هر چرخه {cycleSeconds} ثانیه
+                  </p>
+                </div>
+              </div>
+
+              {/* Pattern */}
+              <div className="bg-card/80 backdrop-blur-xl rounded-[2rem] p-6 mb-4 border border-line shadow-sm shrink-0">
+                <p className="text-[11px] font-extrabold text-brand-ink mb-6 text-right">
+                  الگوی تنفس
+                </p>
+                <div className="relative flex justify-between items-center px-2 sm:px-6">
+                  <div className="absolute left-6 right-6 top-5 h-0.5 bg-brand/10" />
+                  {pattern.map((time, idx) => {
+                    if (time === 0) return null;
+                    return (
+                      <div key={idx} className="relative flex flex-col items-center gap-3 z-10">
+                        <div className="w-10 h-10 rounded-full bg-white text-brand-ink text-sm font-black flex items-center justify-center shadow-md border border-brand/5">
+                          {time}
+                        </div>
+                        <span className="text-[10px] font-bold text-soft">
+                          {BREATHING_LABELS[idx]}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cycles */}
+              <div className="bg-card/80 backdrop-blur-xl rounded-[2rem] p-6 pb-8 flex flex-col items-center border border-line shadow-sm relative shrink-0">
+                <div className="absolute top-5 right-6 text-right">
+                  <p className="text-sm font-extrabold text-ink">تعداد تکرار</p>
+                  <p className="text-[10px] font-bold text-soft mt-1">چند چرخه کامل انجام بدی؟</p>
+                </div>
+                <div className="absolute top-5 left-6">
+                  <div className="bg-brand-deep/10 text-brand-ink px-3 py-1.5 rounded-full text-[11px] font-extrabold">
+                    ≈ {Math.ceil((cycles * cycleSeconds) / 60)} دقیقه
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-8 mt-24">
+                  <button
+                    onClick={() => setCycles(Math.max(1, cycles - 1))}
+                    className="w-12 h-12 rounded-full bg-sand hover:bg-sand-soft text-brand-ink flex items-center justify-center shadow-sm transition-transform active:scale-95"
+                  >
+                    <Minus className="size-5" />
+                  </button>
+
+                  <div className="relative size-32 flex items-center justify-center">
+                    <svg className="absolute inset-0 size-full -rotate-90">
+                      <circle cx="64" cy="64" r="56" fill="none" stroke="currentColor" strokeWidth="8" className="text-brand/10" />
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        strokeDasharray={351.8}
+                        strokeDashoffset={351.8 * (1 - cycles / 30)}
+                        className="text-brand-deep transition-all duration-500"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="text-center mt-1">
+                      <span className="text-4xl font-black text-brand-ink tabular-nums">{cycles}</span>
+                      <p className="text-[11px] font-bold text-brand mt-1">چرخه</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setCycles(Math.min(30, cycles + 1))}
+                    className="w-12 h-12 rounded-full bg-sand hover:bg-sand-soft text-brand-ink flex items-center justify-center shadow-sm transition-transform active:scale-95"
+                  >
+                    <Plus className="size-5" />
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2 mt-8">
+                  {[5, 10, 15, 20, 30].map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setCycles(c)}
+                      className={`px-4 py-2 rounded-full text-[11px] font-extrabold transition-all duration-300 ${
+                        cycles === c
+                          ? "bg-brand-deep text-onbrand shadow-md scale-105"
+                          : "bg-sand-soft/50 text-clay hover:bg-sand-soft hover:text-ink"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === "active" && (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-brand-deep/5">
+              <div className="absolute top-6 left-6 right-6 flex justify-between items-center z-20">
+                <span className="text-[11px] font-extrabold text-brand-ink bg-card px-4 py-2 rounded-full border border-brand/10 shadow-sm backdrop-blur-md">
+                  چرخه {completedCycles + 1} از {cycles}
+                </span>
+                <button
+                  onClick={() => { setRunning(false); setStep("setup"); }}
+                  className="w-10 h-10 bg-card/80 backdrop-blur-md rounded-full flex items-center justify-center text-soft hover:text-ink shadow-sm border border-line transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              <div className="relative size-72 sm:size-80 flex items-center justify-center mb-16">
+                {/* Expanding background glow */}
+                <div
+                  className="absolute bg-brand/20 rounded-full blur-2xl transition-all"
+                  style={{
+                    width: BREATHING_LABELS[currentPhaseIndex] === "دم" ? "120%" : (BREATHING_LABELS[currentPhaseIndex] === "حبس" && currentPhaseIndex === 1 ? "120%" : "60%"),
+                    height: BREATHING_LABELS[currentPhaseIndex] === "دم" ? "120%" : (BREATHING_LABELS[currentPhaseIndex] === "حبس" && currentPhaseIndex === 1 ? "120%" : "60%"),
+                    transitionDuration: `${pattern[currentPhaseIndex]}s`,
+                    transitionTimingFunction: "ease-in-out"
+                  }}
+                />
+                
+                {/* Main breathing circle */}
+                <div
+                  className="absolute bg-brand-deep rounded-full shadow-[0_0_60px_var(--brand)] transition-all flex items-center justify-center overflow-hidden z-10"
+                  style={{
+                    width: BREATHING_LABELS[currentPhaseIndex] === "دم" ? "90%" : (BREATHING_LABELS[currentPhaseIndex] === "حبس" && currentPhaseIndex === 1 ? "90%" : "45%"),
+                    height: BREATHING_LABELS[currentPhaseIndex] === "دم" ? "90%" : (BREATHING_LABELS[currentPhaseIndex] === "حبس" && currentPhaseIndex === 1 ? "90%" : "45%"),
+                    transitionDuration: `${pattern[currentPhaseIndex]}s`,
+                    transitionTimingFunction: "ease-in-out"
+                  }}
+                >
+                   <div className="absolute inset-0 bg-[url('/images/meditation/breath-guide.jpg')] bg-cover opacity-30 mix-blend-overlay" />
+                   <div className="relative text-white text-center z-20">
+                     <p className="text-6xl sm:text-7xl font-black tabular-nums tracking-tight">{phaseSecondsLeft}</p>
+                     <p className="text-sm font-extrabold opacity-90 mt-2">{BREATHING_LABELS[currentPhaseIndex]}</p>
+                   </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setRunning(!running)}
+                className="w-16 h-16 bg-card border border-brand/10 shadow-[var(--shadow-lift)] rounded-full flex items-center justify-center text-brand-ink hover:scale-105 transition-transform z-20"
+              >
+                {running ? <Pause className="size-6 fill-current" /> : <Play className="size-6 fill-current ml-1" />}
+              </button>
+            </div>
+          )}
+
+          {step === "done" && (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-brand-deep/5 text-center">
+              <div className="size-24 rounded-full bg-brand-deep text-onbrand flex items-center justify-center shadow-[0_0_40px_var(--brand)] mb-8 animate-rise">
+                <Check className="size-10 stroke-[3]" />
+              </div>
+              <h2 className="text-2xl font-black text-ink">تمرین کامل شد!</h2>
+              <p className="text-sm font-medium text-soft mt-3 mb-10 max-w-[250px] leading-relaxed">
+                آفرین! {cycles} چرخه تنفس عمیق را با موفقیت پشت سر گذاشتی.
+              </p>
+              <button
+                onClick={onClose}
+                className="w-full max-w-[200px] bg-brand-deep text-onbrand py-4 rounded-2xl font-bold shadow-lg hover:scale-105 transition-transform"
+              >
+                بازگشت به تمرین‌ها
+              </button>
+            </div>
+          )}
+
+          {/* Fixed Start Button for Setup */}
+          {step === "setup" && (
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-canvas via-canvas/90 to-transparent">
+              <button
+                onClick={handleStart}
+                className="w-full bg-brand-deep py-4 rounded-2xl flex items-center justify-center gap-2 text-onbrand font-black text-base shadow-[var(--shadow-brand)] hover:scale-[1.02] hover:bg-brand transition-all duration-300"
+              >
+                شروع تمرین تنفسی
+                <Play className="size-5 fill-current" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Exercise Library ── */
 export function ExerciseLibrary() {
   const [items, setItems] = useState<Exercise[]>([]);
@@ -218,10 +518,17 @@ export function ExerciseLibrary() {
   return (
     <div>
       {activeExercise && (
-        <ExerciseSession
-          exercise={activeExercise}
-          onClose={() => setActiveExercise(null)}
-        />
+        activeExercise.category === "تنفس" ? (
+          <BreathingSession
+            exercise={activeExercise}
+            onClose={() => setActiveExercise(null)}
+          />
+        ) : (
+          <ExerciseSession
+            exercise={activeExercise}
+            onClose={() => setActiveExercise(null)}
+          />
+        )
       )}
 
       <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">

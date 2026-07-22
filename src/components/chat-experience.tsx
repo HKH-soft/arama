@@ -474,19 +474,7 @@ export function ChatExperience() {
               </div>
             )}
 
-            <div className="mt-8 flex w-full max-w-xs cursor-pointer items-center gap-4 self-start rounded-[2rem] bg-gradient-to-l from-tint-strong to-card p-2 pr-3 shadow-[var(--shadow-lift)] transition-transform hover:scale-[1.02] border border-brand/10">
-              <span className="animate-breathe grid size-12 shrink-0 place-items-center rounded-full bg-brand-deep text-onbrand shadow-[var(--shadow-brand)]">
-                <Wind className="size-5" />
-              </span>
-              <div className="flex-1">
-                <p className="text-xs font-extrabold text-brand-ink">
-                  تمرین تنفس ۴-۷-۸
-                </p>
-                <p className="mt-1 text-[10px] font-bold text-soft opacity-80">
-                  ۲ دقیقه
-                </p>
-              </div>
-            </div>
+
           </div>
         </div>
 
