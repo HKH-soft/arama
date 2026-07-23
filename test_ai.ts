@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-const apiKey = process.env.GEMINI_API_KEY || "AQ.Ab8RN6I4Zh4pqrSrmAMcDFkgLCHJxVVjGRfGoqAQEzmZBxUaRQ";
+const apiKey = process.env.AI_API_KEY || process.env.GEMINI_API_KEY;
 
 const openai = new OpenAI({
   baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",

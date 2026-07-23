@@ -10,14 +10,14 @@ const fallbackAnswer =
 
 const openai = new OpenAI({
   baseURL: process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai/",
-  apiKey: process.env.AI_API_KEY || "AQ.Ab8RN6I4Zh4pqrSrmAMcDFkgLCHJxVVjGRfGoqAQEzmZBxUaRQ",
+  apiKey: process.env.AI_API_KEY,
 });
 
 async function openaiAnswer(
   text: string,
   history: Array<{ role: string; content: string }>,
 ) {
-  const key = process.env.AI_API_KEY || "AQ.Ab8RN6I4Zh4pqrSrmAMcDFkgLCHJxVVjGRfGoqAQEzmZBxUaRQ";
+  const key = process.env.AI_API_KEY;
   if (!key) return null;
   const stream = await openai.chat.completions.create({
     model: process.env.AI_MODEL || "gemini-2.5-flash",
