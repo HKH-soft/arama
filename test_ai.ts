@@ -1,25 +1,25 @@
 import OpenAI from "openai";
 
+const apiKey = process.env.GEMINI_API_KEY || "AQ.Ab8RN6I4Zh4pqrSrmAMcDFkgLCHJxVVjGRfGoqAQEzmZBxUaRQ";
+
 const openai = new OpenAI({
-  baseURL: "https://integrate.api.nvidia.com/v1",
-  apiKey: "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",
+  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+  apiKey: apiKey,
 });
 
 async function test() {
   try {
     const stream = await openai.chat.completions.create({
-      model: "z-ai/glm-5.2",
+      model: "gemini-2.5-flash",
       messages: [
         {
           role: "system",
           content: "تو آراما هستی؛ یک همراه همدل فارسی‌زبان.",
         },
-        { role: "user", content: "سلام" },
+        { role: "user", content: "سلام، حالتون چطوره؟" },
       ],
-      temperature: 1,
-      top_p: 1,
-      max_tokens: 16384,
-      seed: 42,
+      temperature: 0.7,
+      max_tokens: 200,
       stream: true,
     });
     
@@ -31,10 +31,7 @@ async function test() {
     }
     console.log("\nSuccess");
   } catch (error: any) {
-    console.error("\nError calling API:", error.message);
-    if (error.response) {
-      console.error(error.response.data);
-    }
+    console.error("\nError calling Gemini API:", error.message);
   }
 }
 
