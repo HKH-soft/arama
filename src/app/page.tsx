@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "آراما — همراه هوشمند سلامت روان و تراپی آنلاین",
   description: "آراما با هوش مصنوعی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های تنفس به شما کمک می‌کند اضطراب را مدیریت کنید و به آرامش برسید.",
   alternates: {
-    canonical: "https://arama.app",
+    canonical: "https://arama.life",
   },
 };
 import { Cta } from "@/components/cta";

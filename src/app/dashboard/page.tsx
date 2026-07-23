@@ -22,7 +22,10 @@ import { VoiceJournalCard } from "@/components/voice-journal-card";
 import { NameSetupInline } from "@/components/name-setup-inline";
 import { PersonalizedGreeting } from "@/components/personalized-greeting";
 
-export const metadata: Metadata = { title: "داشبورد" };
+export const metadata: Metadata = {
+  title: "داشبورد شخصی",
+  description: "پیش‌خوان شخصی آراما؛ ردیابی خلق‌وخو، دسترسی به مدیتیشن‌ها و گفتگوی هوشمند سلامت روان.",
+};
 
 function WeeklyRing({ daysDone }: { daysDone: number }) {
   const r = 46;
@@ -171,7 +174,7 @@ export default async function DashboardPage() {
       href: "/chat",
       icon: MessageCircleHeart,
       title: "شروع گفتگو",
-      desc: "دلت گرفته؟ بنویس",
+      desc: "ذهنت درگیر است؟ بنویس",
       tint: "bg-tint-strong text-brand-ink",
     },
     {

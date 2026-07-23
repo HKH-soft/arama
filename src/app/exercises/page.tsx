@@ -3,7 +3,10 @@ import { Wind } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ExerciseLibrary } from "@/components/exercise-library";
 
-export const metadata: Metadata = { title: "تمرین‌ها" };
+export const metadata: Metadata = {
+  title: "تمرین‌های درمانی CBT و ACT",
+  description: "تکنیک‌ها و تمرین‌های کاربردی رفتاردرمانی شناختی (CBT) و پذیرش و تعهد (ACT) برای مدیریت استرس و افکار منفی.",
+};
 
 export default function ExercisesPage() {
   return (

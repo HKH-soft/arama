@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "آراما — همراه هوشمند سلامت روان",
     description: "گفتگوی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های درمانی در فضایی امن و گرم.",
-    url: "https://arama.app",
+    url: "https://arama.life",
     siteName: "Arama",
     images: [
       {
@@ -41,6 +41,15 @@ export const metadata: Metadata = {
     description: "گفتگوی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های درمانی در فضایی امن و گرم.",
     images: ["/images/og-image.jpg"],
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.json",
 };
 
 const themeInit = `

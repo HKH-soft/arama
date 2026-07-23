@@ -3,7 +3,10 @@ import { CreditCard } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { BillingView } from "@/components/billing-view";
 
-export const metadata: Metadata = { title: "اشتراک" };
+export const metadata: Metadata = {
+  title: "اشتراک و صورتحساب",
+  description: "مدیریت طرح‌های اشتراک آراما پریمیوم، صورتحساب و پرداخت امن از طریق درگاه زرین‌پال.",
+};
 
 export default function BillingPage() {
   return (

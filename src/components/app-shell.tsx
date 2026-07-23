@@ -73,9 +73,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="flex min-h-dvh bg-canvas">
+    <div className="relative flex min-h-dvh bg-canvas overflow-x-clip">
+      {/* subtle ambient background glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 right-1/4 z-0 h-96 w-96 rounded-full bg-brand/5 blur-3xl animate-pulse"
+        style={{ animationDuration: "8s" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-10 left-1/3 z-0 h-96 w-96 rounded-full bg-sand/15 blur-3xl animate-pulse"
+        style={{ animationDuration: "10s" }}
+      />
+
       {/* desktop sidebar */}
-      <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col gap-1.5 border-e border-line bg-card/70 p-5 backdrop-blur lg:flex">
+      <aside className="sticky top-0 z-10 hidden h-dvh w-72 shrink-0 flex-col gap-1.5 border-e border-line bg-card/70 p-5 backdrop-blur lg:flex">
         <div className="px-2 pb-5">
           <Logo size="sm" />
         </div>
@@ -88,11 +100,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={n.label}
                 href={n.href}
                 aria-current={active ? "page" : undefined}
-                className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                  active ? "bg-tint-strong text-brand-ink" : "text-soft hover:bg-tint hover:text-ink"
+                className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 ${
+                  active ? "bg-tint-strong text-brand-ink shadow-sm" : "text-soft hover:bg-tint hover:text-ink"
                 }`}
               >
-                <n.icon className="size-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={2} />
+                <n.icon className="size-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.8} />
                 {n.label}
               </Link>
             );
@@ -137,7 +149,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* content */}
-      <div className="flex min-w-0 flex-1 flex-col pb-28 lg:pb-0">{children}</div>
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col pb-28 lg:pb-0">{children}</div>
 
       {/* mobile bottom nav */}
       <nav

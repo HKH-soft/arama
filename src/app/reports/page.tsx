@@ -3,7 +3,10 @@ import { BarChart3 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ReportsView } from "@/components/reports-view";
 
-export const metadata: Metadata = { title: "گزارش‌ها" };
+export const metadata: Metadata = {
+  title: "گزارش روند خلق‌وخو و رشد شخصی",
+  description: "تحلیل نموداری و روایت انسانی از روند تغییرات احساسی و قدم‌های کوچک شما در مسیر سلامت روان.",
+};
 
 export default function ReportsPage() {
   return (

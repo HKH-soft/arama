@@ -34,7 +34,7 @@ export function Hero() {
 
           <Reveal delay={120}>
             <h1 className="mt-6 text-[1.9rem] leading-[1.45] font-black tracking-tight text-ink sm:mt-7 sm:text-5xl sm:leading-[1.3] lg:text-[3.4rem] lg:leading-[1.3]">
-              جایی برای سبک شدن دلت؛
+              جایی برای رهایی از فشار روزمره؛
               <br />
               گفتگویی امن،{" "}
               <RotatingWord

@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { ChatExperience } from "@/components/chat-experience";
 
-export const metadata: Metadata = { title: "گفتگو" };
+export const metadata: Metadata = {
+  title: "گفتگوی همدلانه",
+  description: "گفتگوی ۲۴ ساعته با همراه هوشمند سلامت روان آراما؛ شنوندهٔ بی‌قضاوت و امن شما.",
+};
 
 function ChatLoading() {
   return (

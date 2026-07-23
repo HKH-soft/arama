@@ -255,47 +255,61 @@ function BillingViewInner() {
                           type="button"
                           onClick={() => void startCheckout(plan.id)}
                           disabled={upgradingPlanId !== null}
-                          className={`relative group rounded-[1.5rem] sm:rounded-[2rem] p-5 sm:p-7 text-start transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl disabled:opacity-60 overflow-hidden ${
+                          className={`relative group flex flex-col justify-between rounded-[2rem] p-6 sm:p-7 text-start transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl disabled:opacity-60 overflow-hidden ${
                             plan.featured
                               ? "bg-brand-deep text-onbrand shadow-xl shadow-brand-deep/30 ring-1 ring-brand/50"
-                              : "bg-card/80 backdrop-blur-md border border-line shadow-lg"
+                              : "bg-card/90 backdrop-blur-md border border-line shadow-lg"
                           }`}
                         >
                           {plan.featured && (
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-16 -mt-16 pointer-events-none"></div>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-16 -mt-16 pointer-events-none" />
                           )}
-                          {plan.featured && (
-                            <span className="absolute top-5 left-5 rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 text-[10px] font-bold text-white shadow-sm border border-white/20 flex items-center gap-1">
-                              <Sparkles className="size-3" /> پیشنهاد ویژه
-                            </span>
-                          )}
-                          <h3 className={`text-lg font-black ${plan.featured ? "text-white" : "text-ink"}`}>{plan.name}</h3>
-                          <p className={`mt-2 text-xs leading-6 ${plan.featured ? "text-white/80" : "text-soft"}`}>{plan.description}</p>
-                          <div className="mt-6 flex flex-col gap-1">
-                            {plan.originalPrice && plan.originalPrice > plan.price && (
-                              <span className={`text-sm font-bold line-through ${plan.featured ? "text-white/60" : "text-faint"}`}>
-                                {plan.originalPrice.toLocaleString("fa-IR")}
+                          <div>
+                            {plan.featured && (
+                              <span className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm px-3.5 py-1 text-[10px] font-bold text-white shadow-sm border border-white/20">
+                                <Sparkles className="size-3" /> پیشنهاد ویژه
                               </span>
                             )}
-                            <div className="flex items-end gap-1">
-                              <span className={`text-3xl font-black ${plan.featured ? "text-white" : "text-ink"}`}>
-                                {plan.price.toLocaleString("fa-IR")}
-                              </span>
-                              <span className={`pb-1 text-[11px] font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
-                                تومان
-                              </span>
+                            <h3 className={`text-lg font-black ${plan.featured ? "text-white" : "text-ink"}`}>{plan.name}</h3>
+                            <p className={`mt-2 text-xs leading-6 ${plan.featured ? "text-white/80" : "text-soft"}`}>{plan.description}</p>
+                            <div className="mt-6 flex flex-col gap-1">
+                              {plan.originalPrice && plan.originalPrice > plan.price && (
+                                <span className={`text-xs font-bold line-through ${plan.featured ? "text-white/60" : "text-faint"}`}>
+                                  {plan.originalPrice.toLocaleString("fa-IR")} تومان
+                                </span>
+                              )}
+                              <div className="flex items-end gap-1.5">
+                                <span className={`text-3xl font-black tracking-tight ${plan.featured ? "text-white" : "text-ink"}`}>
+                                  {plan.price.toLocaleString("fa-IR")}
+                                </span>
+                                <span className={`pb-1 text-xs font-bold ${plan.featured ? "text-white/70" : "text-faint"}`}>
+                                  تومان / {plan.period || "ماهانه"}
+                                </span>
+                              </div>
+                              {plan.dailyEquivalentNote && (
+                                <span className={`mt-2 text-[11px] font-bold leading-relaxed inline-block rounded-lg px-2.5 py-1.5 ${
+                                  plan.featured ? "text-white bg-white/15 border border-white/20" : "text-brand-ink bg-tint-strong border border-brand/20"
+                                }`}>
+                                  {plan.dailyEquivalentNote}
+                                </span>
+                              )}
                             </div>
-                            {plan.dailyEquivalentNote && (
-                              <span className={`mt-2 text-xs font-bold leading-relaxed inline-block ${plan.featured ? "text-white/90 bg-white/10 px-2.5 py-1.5 rounded-md" : "text-brand-deep bg-brand/10 px-2.5 py-1.5 rounded-md"}`}>
-                                {plan.dailyEquivalentNote}
-                              </span>
-                            )}
+                            <ul className={`mt-5 flex flex-col gap-2.5 border-t pt-5 ${plan.featured ? "border-white/15" : "border-line"}`}>
+                              {plan.features.map((feature) => (
+                                <li key={feature} className={`flex items-start gap-2.5 text-xs leading-5 ${plan.featured ? "text-white/90" : "text-soft"}`}>
+                                  <span className={`mt-0.5 grid size-4.5 shrink-0 place-items-center rounded-full ${plan.featured ? "bg-white/20 text-white" : "bg-brand/10 text-brand-deep"}`}>
+                                    <Check className="size-3" strokeWidth={3} />
+                                  </span>
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                          
-                          <div className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold transition-transform group-hover:scale-[1.02] ${
+
+                          <div className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-xs font-black transition-transform group-hover:scale-[1.02] ${
                             plan.featured 
                               ? "bg-white text-brand-deep shadow-md" 
-                              : "bg-brand-deep text-onbrand"
+                              : "bg-brand-deep text-onbrand shadow-sm"
                           }`}>
                             {isUpgrading ? (
                               <><RefreshCw className="size-4 animate-spin" /> انتقال به درگاه...</>

@@ -3,7 +3,10 @@ import { AudioLines, Heart } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { MeditationLibrary } from "@/components/meditation-library";
 
-export const metadata: Metadata = { title: "مدیتیشن" };
+export const metadata: Metadata = {
+  title: "کتابخانهٔ مدیتیشن و تمرین‌های صوتی",
+  description: "مجموعه تمرین‌های صوتی هدایت‌شده برای خواب، کاهش اضطراب، تمرکز و تنفس عمیق با صدای آرام فارسی.",
+};
 
 export default function MeditationPage() {
   return (
