@@ -32,7 +32,7 @@ function WeeklyRing({ daysDone }: { daysDone: number }) {
   const c = 2 * Math.PI * r;
   const done = Math.min(daysDone / 7, 1);
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-4 sm:gap-6 min-w-0">
       <div className="relative grid size-28 shrink-0 place-items-center">
         <svg viewBox="0 0 112 112" className="size-28 -rotate-90">
           <circle cx="56" cy="56" r={r} fill="none" stroke="var(--tint-strong)" strokeWidth="11" />
@@ -52,7 +52,7 @@ function WeeklyRing({ daysDone }: { daysDone: number }) {
           <p className="text-[9px] font-bold text-faint">روز هفته</p>
         </div>
       </div>
-      <div>
+      <div className="min-w-0 flex-1 flex flex-col items-center sm:items-start">
         <h3 className="flex items-center gap-2 text-base font-extrabold text-ink">
           <CalendarHeart className="size-4.5 text-clay" />
           گزارش هفتگی
@@ -249,7 +249,7 @@ export default async function DashboardPage() {
             <Link
               key={a.title}
               href={a.href}
-              className="card-soft relative group flex flex-col gap-3 rounded-3xl p-4 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] sm:p-5"
+              className="card-soft relative group flex flex-col gap-3 rounded-3xl p-3 sm:p-5 transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
             >
               {a.showBadge && (
                 <span className="absolute top-3 end-3 size-2.5 rounded-full bg-brand-deep shadow-sm" />

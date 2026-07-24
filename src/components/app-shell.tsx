@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="relative flex min-h-dvh bg-canvas overflow-x-clip">
+    <div className="relative flex min-h-dvh w-full max-w-[100vw] flex-col overflow-x-hidden bg-canvas lg:flex-row">
       {/* subtle ambient background glow */}
       <div
         aria-hidden

@@ -60,7 +60,7 @@ export function MoodCheckin() {
               aria-label={`حس امروز: ${m.label}`}
               onClick={() => void chooseMood(i)}
               disabled={saving}
-              className={`grid size-11 place-items-center rounded-2xl border bg-card transition-all duration-400 sm:size-13 ${
+              className={`grid size-9 sm:size-11 lg:size-13 shrink-0 place-items-center rounded-2xl border bg-card transition-all duration-400 ${
                 picked === i ? m.active : `border-line ${m.ring}`
               }`}
             >
