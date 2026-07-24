@@ -9,8 +9,12 @@ const fallbackAnswer =
   "می‌شنومَت. همین که این احساس را با من در میان گذاشتی، یک قدم مهم است. اگر موافقی، با هم آن را به بخش‌های کوچک‌تر تقسیم کنیم؛ الان کدام قسمت بیشتر از همه فشار می‌آورد؟";
 
 const openai = new OpenAI({
-  baseURL: process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai/",
+  baseURL: process.env.AI_BASE_URL || "https://openrouter.ai/api/v1",
   apiKey: process.env.AI_API_KEY,
+  defaultHeaders: {
+    "HTTP-Referer": "https://arama.life",
+    "X-Title": "Arama - Mental Health Companion",
+  },
 });
 
 async function openaiAnswer(
@@ -20,7 +24,7 @@ async function openaiAnswer(
   const key = process.env.AI_API_KEY;
   if (!key) return null;
   const stream = await openai.chat.completions.create({
-    model: process.env.AI_MODEL || "gemini-2.5-flash",
+    model: process.env.AI_MODEL || "inclusionai/ling-3.0-flash:free",
     messages: [
       {
         role: "system",
@@ -161,7 +165,9 @@ export async function POST(request: NextRequest) {
             content: complete,
           });
         emit({ type: "done", conversationId: conversationId! });
-      } catch {
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.error("[Arama Chat Error]", errorMsg, err);
         emit({
           type: "error",
           message:
