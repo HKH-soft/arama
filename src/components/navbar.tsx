@@ -71,6 +71,7 @@ export function Navbar() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "بستن منو" : "باز کردن منو"}
+            aria-controls="mobile-menu"
             className="inline-flex size-10 items-center justify-center rounded-full border border-line bg-card text-ink lg:hidden"
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -80,6 +81,8 @@ export function Navbar() {
 
       {/* mobile sheet */}
       <div
+        id="mobile-menu"
+        aria-hidden={!open}
         className={`mx-auto mt-2 max-w-6xl overflow-hidden rounded-3xl border border-line bg-card/95 shadow-[var(--shadow-lift)] backdrop-blur-xl transition-all duration-500 ease-out lg:hidden ${
           open ? "max-h-96 opacity-100" : "max-h-0 border-transparent opacity-0"
         }`}

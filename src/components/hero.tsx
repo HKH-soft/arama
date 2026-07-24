@@ -7,7 +7,7 @@ import { RotatingWord } from "./rotating-word";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-44 sm:pb-20 lg:pb-28">
+    <section className="relative overflow-hidden pt-24 pb-12 sm:pt-36 sm:pb-20 lg:pb-28">
       <Ambient />
 
       {/* breathing ring — a calm focal echo behind the chat */}
@@ -33,7 +33,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={120}>
-            <h1 className="mt-6 text-[1.9rem] leading-[1.45] font-black tracking-tight text-ink sm:mt-7 sm:text-5xl sm:leading-[1.3] lg:text-[3.4rem] lg:leading-[1.3]">
+            <h1 className="mt-5 text-[1.75rem] leading-[1.4] font-black tracking-tight text-ink sm:mt-6 sm:text-4xl sm:leading-[1.3] lg:text-[3.2rem] lg:leading-[1.25]">
               جایی برای رهایی از فشار روزمره؛
               <br />
               گفتگویی امن،{" "}
@@ -45,7 +45,7 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={240}>
-            <p className="mt-5 max-w-lg text-sm leading-8 text-soft sm:mt-6 sm:text-lg sm:leading-9">
+            <p className="mt-4 max-w-lg text-sm leading-[1.8] text-soft sm:mt-5 sm:text-base sm:leading-8">
               آراما، همراه هوشمند سلامت روان توست؛ وقتی غم سنگینی می‌کند، وقتی خواب از سرت پریده، وقتی فقط به
               یک شنوندهٔ بی‌قضاوت نیاز داری — فارسی، همیشه در دسترس و آمادهٔ شنیدن.
             </p>

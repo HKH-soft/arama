@@ -15,21 +15,25 @@ import { Hero } from "@/components/hero";
 import { HowItWorks } from "@/components/how-it-works";
 import { Navbar } from "@/components/navbar";
 import { Pricing } from "@/components/pricing";
+import { FAQ } from "@/components/faq";
 import { Testimonials } from "@/components/testimonials";
+import { StickyMobileCta } from "@/components/sticky-mobile-cta";
 
 export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main>
+      <main id="main-content">
         <Hero />
         <HowItWorks />
         <Features />
         <Testimonials />
         <Pricing />
+        <FAQ />
         <BlogPreview />
         <Cta />
       </main>
+      <StickyMobileCta />
       <Footer />
     </>
   );

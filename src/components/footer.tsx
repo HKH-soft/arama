@@ -29,7 +29,7 @@ export function Footer() {
             <p className="mt-5 max-w-xs text-sm leading-7 text-soft">
               آراما، همراه هوشمند سلامت روان؛ ساخته‌شده با عشق در ایران، برای همهٔ فارسی‌زبانانی که به یک هم‌صحبت امن نیاز دارند.
             </p>
-            <div className="mt-6 flex items-center gap-2.5">
+            <address className="mt-6 flex items-center gap-2.5 not-italic">
               {[
                 { icon: Camera, label: "اینستاگرام آراما" },
                 { icon: Send, label: "تلگرام آراما" },
@@ -45,7 +45,7 @@ export function Footer() {
                   <s.icon className="size-4.5" />
                 </a>
               ))}
-            </div>
+            </address>
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">

@@ -63,13 +63,49 @@ const themeInit = `
 })();
 `;
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://arama.life/#organization",
+      "name": "آراما",
+      "url": "https://arama.life",
+      "logo": "https://arama.life/icon-192.png",
+      "sameAs": ["https://instagram.com/arama.life", "https://t.me/arama_life"],
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://arama.life/#software",
+      "name": "آراما — همراه هوشمند سلامت روان",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "IRR",
+      },
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className={`${vazirmatn.variable} font-sans antialiased`}>
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:px-4 focus:py-2 focus:bg-brand-deep focus:text-onbrand focus:font-bold focus:rounded-b-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand"
+        >
+          رد شدن به محتوای اصلی
+        </a>
         <AmbientProvider>
           <MeditationProvider>{children}</MeditationProvider>
         </AmbientProvider>

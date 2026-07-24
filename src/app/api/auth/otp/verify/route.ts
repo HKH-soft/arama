@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     
     response.cookies.set("arama-user", profile.userId, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: 30 * 24 * 60 * 60, // 30 days
