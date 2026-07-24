@@ -306,8 +306,8 @@ export default async function DashboardPage() {
                         <MessageCircleHeart className="size-5" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2">
-                          <span className="truncate text-sm font-bold text-ink">{c.title}</span>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className="min-w-0 truncate text-sm font-bold text-ink">{c.title}</span>
                           <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${c.tone.cls}`}>
                             {c.tone.label}
                           </span>

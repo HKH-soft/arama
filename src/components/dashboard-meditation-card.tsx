@@ -30,8 +30,11 @@ export function DashboardMeditationCard() {
   return (
     <section className="card-soft flex flex-col justify-between overflow-hidden rounded-[1.75rem] bg-gradient-to-b from-tint/70 to-card p-6 sm:p-7">
       <div className="flex items-start gap-3">
-        <Image src={track.coverArt} alt="" width={48} height={48} className="size-12 rounded-2xl object-cover" />
-        <div><p className="text-[11px] font-bold text-clay">پیشنهاد امروز آراما</p><h3 className="mt-1 text-base font-extrabold text-ink">{track.title}</h3></div>
+        <Image src={track.coverArt} alt="" width={48} height={48} className="size-12 shrink-0 rounded-2xl object-cover" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-bold text-clay">پیشنهاد امروز آراما</p>
+          <h3 className="mt-1 truncate text-base font-extrabold text-ink">{track.title}</h3>
+        </div>
       </div>
       <p className="mt-4 text-xs leading-6 text-soft">{track.description}</p>
       <div className="my-5 flex h-12 items-center justify-center gap-1" aria-hidden>
