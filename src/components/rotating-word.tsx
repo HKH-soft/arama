@@ -11,23 +11,22 @@ export function RotatingWord({ words, className = "" }: { words: string[]; class
     return () => clearInterval(id);
   }, [words.length]);
 
-  const longest = words.reduce((a, b) => (b.length > a.length ? b : a), words[0]);
-
   return (
-    <span className={`word-swap relative inline-block align-baseline ${className}`} aria-live="polite">
-      {/* invisible sizer keeps layout stable */}
-      <span className="invisible whitespace-nowrap" aria-hidden>
-        {longest}
-      </span>
+    <span className={`inline-grid align-baseline ${className}`} aria-live="polite">
       {words.map((w, i) => (
         <span
           key={w}
-          className={`swap-word ${className} ${i === index ? "is-active" : ""}`}
+          className={`col-start-1 row-start-1 transition-all duration-700 ease-out ${
+            i === index
+              ? "opacity-100 translate-y-0 blur-none"
+              : "opacity-0 translate-y-[0.4em] blur-[6px] pointer-events-none"
+          }`}
           aria-hidden={i !== index}
         >
           {w}
         </span>
       ))}
+      {/* For screen readers, only announce the active word */}
       <span className="sr-only">{words[index]}</span>
     </span>
   );

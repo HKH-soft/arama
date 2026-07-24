@@ -233,22 +233,7 @@ canvas {
   transform: translateY(0);
 }
 
-/* rotating hero words */
-.word-swap .swap-word {
-  position: absolute;
-  inset-inline-start: 0;
-  inset-block-start: 50%;
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateY(calc(-50% + 0.45em));
-  filter: blur(6px);
-  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), filter 0.7s ease;
-}
-.word-swap .swap-word.is-active {
-  opacity: 1;
-  transform: translateY(-50%);
-  filter: blur(0);
-}
+/* removed legacy word-swap classes */
 
 /* calm skeleton */
 .calm-skeleton {
