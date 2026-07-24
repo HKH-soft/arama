@@ -9,12 +9,8 @@ const fallbackAnswer =
   "می‌شنومَت. همین که این احساس را با من در میان گذاشتی، یک قدم مهم است. اگر موافقی، با هم آن را به بخش‌های کوچک‌تر تقسیم کنیم؛ الان کدام قسمت بیشتر از همه فشار می‌آورد؟";
 
 const openai = new OpenAI({
-  baseURL: process.env.AI_BASE_URL || "https://openrouter.ai/api/v1",
+  baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
   apiKey: process.env.AI_API_KEY,
-  defaultHeaders: {
-    "HTTP-Referer": "https://arama.life",
-    "X-Title": "Arama - Mental Health Companion",
-  },
 });
 
 async function openaiAnswer(
@@ -24,7 +20,7 @@ async function openaiAnswer(
   const key = process.env.AI_API_KEY;
   if (!key) return null;
   const stream = await openai.chat.completions.create({
-    model: process.env.AI_MODEL || "inclusionai/ling-3.0-flash:free",
+    model: process.env.AI_MODEL || "z-ai/glm-5.2",
     messages: [
       {
         role: "system",

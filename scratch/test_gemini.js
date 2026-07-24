@@ -1,42 +1,40 @@
-const apiKey = "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";
+const OpenAI = require("openai");
 
-async function test(modelName) {
-  console.log(`\n--- ${modelName} ---`);
-  const start = Date.now();
+const client = new OpenAI({
+  baseURL: "https://integrate.api.nvidia.com/v1",
+  apiKey: "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",
+});
+
+async function test() {
+  console.log("Testing NVIDIA API with GLM-5.2...");
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: "تو یک همراه فارسی‌زبان سلامت روان هستی. کوتاه و همدلانه پاسخ بده." },
-          { role: "user", content: "امروز خیلی استرس دارم و نمی‌دونم چیکار کنم" }
-        ],
-        max_tokens: 300
-      })
+    const stream = await client.chat.completions.create({
+      model: "z-ai/glm-5.2",
+      messages: [
+        {
+          role: "system",
+          content: "تو «آراما» هستی؛ یک همراه گفتگومحور فارسی‌زبان برای لحظه‌های سخت روزمره."
+        },
+        { role: "user", content: "سلام، امروز حالم خوب نیست" }
+      ],
+      temperature: 0.9,
+      max_tokens: 600,
+      stream: true,
     });
 
-    const data = await res.json();
-    const elapsed = Date.now() - start;
-    console.log(`Status: ${res.status} | Time: ${elapsed}ms`);
-    if (data.choices && data.choices[0]) {
-      console.log(`✅ پاسخ: ${data.choices[0].message.content}`);
-    } else {
-      console.log(`❌ Error:`, data.error?.message || JSON.stringify(data));
+    console.log("✅ Stream started!");
+    let complete = "";
+    for await (const chunk of stream) {
+      const delta = chunk.choices?.[0]?.delta?.content;
+      if (delta) {
+        complete += delta;
+        process.stdout.write(delta);
+      }
     }
+    console.log("\n\n✅ Complete response length:", complete.length);
   } catch (err) {
-    console.error("❌ Fetch Error:", err.message);
+    console.error("❌ Error:", err.message);
   }
 }
 
-async function run() {
-  await test("poolside/laguna-s-2.1:free");
-  await test("poolside/laguna-m.1:free");
-  await test("nvidia/nemotron-3-ultra-550b-a55b:free");
-}
-
-run();
+test();
