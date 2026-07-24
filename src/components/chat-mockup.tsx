@@ -28,14 +28,11 @@ const LOOP = 20500;
 function useScriptClock() {
   const [t, setT] = useState(0);
   useEffect(() => {
-    let raf = 0;
     const start = performance.now();
-    const tick = (now: number) => {
-      setT((now - start) % LOOP);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    const timer = setInterval(() => {
+      setT((performance.now() - start) % LOOP);
+    }, 50);
+    return () => clearInterval(timer);
   }, []);
   return t;
 }

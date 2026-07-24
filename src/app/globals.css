@@ -277,7 +277,6 @@ canvas {
 .blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(72px);
   pointer-events: none;
   will-change: transform;
 }
