@@ -21,10 +21,10 @@ export function Cta() {
               همین امشب، یک قدم کوچک
             </span>
             <h2 className="mx-auto mt-6 max-w-2xl text-3xl leading-snug font-black text-white sm:text-4xl sm:leading-[1.5]">
-              امشب بار ذهنت را زمین بگذار
+              آماده‌ای کمی سبک‌تر نفس بکشی؟
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-white/85">
-              اولین گفتگو رایگان است؛ بدون ثبت کارت و بدون تعهد. کافیست چند جمله بنویسی تا شروع کنیم.
+              امروز اولین قدم را برای مراقبت از سلامت روانت بردار. اولین گفتگو رایگان است و نیازی به ثبت کارت ندارد.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
               <Link
@@ -32,7 +32,7 @@ export function Cta() {
                 className="group inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 text-base font-black text-brand-ink shadow-[0_16px_40px_-12px_rgb(0_0_0/0.35)] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_-12px_rgb(0_0_0/0.45)]"
               >
                 <MessageCircleHeart className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                شروع گفتگوی رایگان
+                اولین گفتگوی رایگان
               </Link>
               <Link
                 href="/signup"
