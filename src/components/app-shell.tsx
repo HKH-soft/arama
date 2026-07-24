@@ -151,10 +151,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* content */}
       <div className="relative z-10 flex min-w-0 flex-1 flex-col pb-28 lg:pb-0">{children}</div>
 
-      {/* mobile bottom nav */}
       <nav
         aria-label="ناوبری موبایل"
-        className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-between gap-1 rounded-[1.75rem] border border-line bg-card/95 px-2 py-2 shadow-[var(--shadow-lift)] backdrop-blur-xl sm:inset-x-4 lg:hidden"
+        className="fixed inset-x-2 bottom-3 z-40 flex items-center justify-between gap-0.5 rounded-[1.75rem] border border-line bg-card/95 px-1.5 py-2 shadow-[var(--shadow-lift)] backdrop-blur-xl sm:inset-x-4 lg:hidden"
       >
         {mobilePrimary.map((n) => {
           const active = pathname === n.href;
@@ -164,7 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href={n.href}
               aria-current={active ? "page" : undefined}
               aria-label={n.label}
-              className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-bold transition-colors ${
+              className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[9.5px] font-bold transition-colors sm:px-2 sm:text-[10px] ${
                 active ? "bg-tint-strong text-brand-ink" : "text-faint hover:text-ink"
               }`}
             >
@@ -177,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           type="button"
           onClick={() => setMenuOpen(true)}
           aria-label="منوی بیشتر"
-          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[10px] font-bold transition-colors ${
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-[9.5px] font-bold transition-colors sm:px-2 sm:text-[10px] ${
             menuOpen ? "bg-tint-strong text-brand-ink" : "text-faint hover:text-ink"
           }`}
         >

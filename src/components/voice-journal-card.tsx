@@ -143,7 +143,7 @@ export function VoiceJournalCard() {
           )}
 
           {isRecording && (
-            <div className="flex items-center gap-3 rounded-2xl border border-danger/20 bg-danger/5 px-4 py-2">
+            <div className="flex items-center gap-2 sm:gap-3 rounded-2xl border border-danger/20 bg-danger/5 px-3 sm:px-4 py-2">
               <span className="relative flex size-3">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-danger opacity-75"></span>
                 <span className="relative inline-flex size-3 rounded-full bg-danger"></span>
