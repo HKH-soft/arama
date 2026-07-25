@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Vazirmatn } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { MeditationProvider } from "@/components/meditation-provider";
 import { AmbientProvider } from "@/components/ambient-provider";
 
-const vazirmatn = Vazirmatn({
-  variable: "--font-vazirmatn",
+const iransans = localFont({
+  src: [
+    { path: "../../public/fonts/IRANSans-UltraLight [@ClubEdits].ttf", weight: "200", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Light [@ClubEdits].ttf", weight: "300", style: "normal" },
+    { path: "../../public/fonts/IRANSans [@ClubEdits].ttf", weight: "400", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Medium [@ClubEdits].ttf", weight: "500", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Bold [@ClubEdits].ttf", weight: "700", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Black [@ClubEdits].ttf", weight: "900", style: "normal" },
+  ],
+  variable: "--font-iransans",
   display: "swap",
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -99,7 +106,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${vazirmatn.variable} font-sans antialiased`}>
+      <body className={`${iransans.variable} font-sans antialiased`}>
         <a 
           href="#main-content" 
           className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:px-4 focus:py-2 focus:bg-brand-deep focus:text-onbrand focus:font-bold focus:rounded-b-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand"

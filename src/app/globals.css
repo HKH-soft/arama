@@ -107,7 +107,7 @@
   --radius-4xl: 2rem;
   --radius-5xl: 2.75rem;
 
-  --font-sans: var(--font-vazirmatn), "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-iransans), "IRANSans", ui-sans-serif, system-ui, sans-serif;
 
   --animate-blob-a: blob-a 26s ease-in-out infinite alternate;
   --animate-blob-b: blob-b 32s ease-in-out infinite alternate;
