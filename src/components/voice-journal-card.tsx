@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Mic, Square, Loader2, Sparkles, MessageCircleHeart } from "lucide-react";
 import Link from "next/link";
 
-const MAX_RECORDING_TIME = 180; // 3 minutes in seconds
+const MAX_RECORDING_TIME = 300; // 5 minutes in seconds
 
 export function VoiceJournalCard() {
   const [isRecording, setIsRecording] = useState(false);
@@ -127,7 +127,7 @@ export function VoiceJournalCard() {
             صدای روزت
           </h2>
           <p className="mt-1 max-w-sm text-xs leading-5 text-soft">
-            احساست رو با صدای خودت ضبط کن. من گوش می‌دم و برات یه یادداشت کوچیک می‌نویسم. (حداکثر ۳ دقیقه)
+            خاطرات و اتفاقات امروزت رو با صدای خودت ضبط کن. من گوش می‌دم و برات یه تحلیل و مشاوره اختصاصی می‌نویسم. (حداکثر ۵ دقیقه)
           </p>
         </div>
 
