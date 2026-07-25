@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { MeditationProvider } from "@/components/meditation-provider";
 import { AmbientProvider } from "@/components/ambient-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const iransans = localFont({
   src: [
@@ -116,6 +117,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <AmbientProvider>
           <MeditationProvider>{children}</MeditationProvider>
         </AmbientProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
