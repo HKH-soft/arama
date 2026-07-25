@@ -10,12 +10,12 @@ const columns = [
   {
     title: "آراما",
     links: ["دربارهٔ ما", "مجله آراما", "روایت کاربران", "فرصت‌های همکاری"],
-    hrefs: ["#stories", "#blog", "#stories", "#"],
+    hrefs: ["/about", "/magazine", "/#stories", "#"],
   },
   {
     title: "پشتیبانی",
     links: ["حریم خصوصی", "قوانین استفاده", "راهنمای بحران", "تماس با ما"],
-    hrefs: ["#", "#", "#", "#"],
+    hrefs: ["/privacy", "/terms", "#", "#"],
   },
 ];
 
@@ -89,7 +89,7 @@ export function Footer() {
           <p className="inline-flex items-center gap-1.5">
             ساخته‌شده با
             <Heart className="size-3.5 fill-clay text-clay" />
-            برای آرامشِ شما
+            برای آرامشِ تو
           </p>
         </div>
       </div>

@@ -97,6 +97,68 @@ export default async function ArticlePage(props: { params: Promise<{ slug: strin
             dangerouslySetInnerHTML={{ __html: article.content }} 
           />
         </article>
+
+        {/* Related Articles */}
+        <div className="mt-16 border-t border-line pt-10">
+          <h3 className="mb-6 text-xl font-black text-ink">شاید این مطالب هم برایتان جالب باشد</h3>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {magazines
+              .filter((m) => m.slug !== article.slug)
+              .sort(() => 0.5 - Math.random())
+              .slice(0, 2)
+              .map((related) => (
+                <Link
+                  key={related.slug}
+                  href={`/magazine/${related.slug}`}
+                  className="group flex gap-4 rounded-2xl border border-line bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-md"
+                >
+                  <div className="relative size-20 shrink-0 overflow-hidden rounded-xl">
+                    <Image
+                      src={related.coverImage}
+                      alt={related.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-ink line-clamp-2">{related.title}</h4>
+                    <span className="mt-2 block text-xs font-medium text-faint">{related.readTimeMinutes} دقیقه مطالعه</span>
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </div>
+
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "خانه",
+                  "item": "https://arama.life"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "مجله آراما",
+                  "item": "https://arama.life/magazine"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": article.title,
+                  "item": `https://arama.life/magazine/${article.slug}`
+                }
+              ]
+            })
+          }}
+        />
       </main>
     </AppShell>
   );

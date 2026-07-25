@@ -197,7 +197,7 @@ function BillingViewInner() {
           <div>
             <h3 className="text-sm font-extrabold text-brand-ink">پرداخت با موفقیت انجام شد</h3>
             <p className="mt-1 text-xs leading-6 text-soft">
-              اشتراک شما فعال گردید و اکنون به تمام امکانات دسترسی کامل دارید.
+              اشتراکت فعال شد و الان به تمام امکانات دسترسی کامل داری.
             </p>
             {trackingCode && (
               <p className="mt-2 text-xs font-black text-ink">
@@ -215,7 +215,7 @@ function BillingViewInner() {
           <div>
             <h3 className="text-sm font-extrabold text-danger">عملیات پرداخت ناموفق بود</h3>
             <p className="mt-1 text-xs leading-6 text-soft">
-              پرداخت شما توسط درگاه تایید نشد یا فرآیند توسط کاربر لغو گردید. لطفاً مجدداً تلاش کنید.
+              پرداختت توسط درگاه تایید نشد یا لغوش کردی. لطفاً دوباره تلاش کن.
             </p>
           </div>
         </div>
@@ -314,7 +314,7 @@ function BillingViewInner() {
                             {isUpgrading ? (
                               <><RefreshCw className="size-4 animate-spin" /> انتقال به درگاه...</>
                             ) : (
-                              "خرید اشتراک امن"
+                              "خرید اشتراک"
                             )}
                           </div>
                         </button>

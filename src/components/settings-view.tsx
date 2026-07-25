@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Check, RefreshCw, WifiOff } from "lucide-react";
+import { Bell, BellOff, Check, RefreshCw, WifiOff, AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Profile = {
   userId: string;
@@ -18,6 +19,9 @@ export function SettingsView() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
 
   const load = async () => {
     setLoading(true);
@@ -63,6 +67,23 @@ export function SettingsView() {
       setSaveError(err instanceof Error ? err.message : "ذخیرهٔ تنظیمات انجام نشد.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const response = await fetch("/api/profile/delete", { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "خطایی در حذف حساب رخ داد.");
+      }
+      // Redirect to home and refresh to clear local state
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "حذف حساب انجام نشد.");
+      setDeleting(false);
     }
   };
 
@@ -162,6 +183,45 @@ export function SettingsView() {
           تمام داده‌هایت — از گفتگوها تا ثبت خلق‌وخو — رمزنگاری و محرمانه ذخیره می‌شود.
           هر زمان بخواهی می‌توانی از صفحهٔ «تاریخچهٔ گفتگوها» آن‌ها را پاک کنی.
         </p>
+
+        <div className="mt-8 border-t border-line pt-6">
+          <h3 className="text-sm font-bold text-danger">حذف حساب کاربری</h3>
+          <p className="mt-2 text-xs leading-6 text-faint">
+            این عملیات غیرقابل بازگشت است و تمام پروفایل، گفتگوها، سوابق خلق‌وخو و اشتراک شما برای همیشه حذف خواهد شد.
+          </p>
+          
+          {showDeleteConfirm ? (
+            <div className="mt-4 rounded-2xl bg-danger/10 p-4 border border-danger/20">
+              <p className="text-xs font-bold text-danger mb-4 flex items-center gap-2">
+                <AlertTriangle className="size-4" />
+                آیا کاملاً مطمئن هستید؟
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={deleteAccount}
+                  disabled={deleting}
+                  className="flex-1 rounded-xl bg-danger py-2.5 text-xs font-black text-white hover:bg-danger/90 disabled:opacity-50"
+                >
+                  {deleting ? "در حال حذف..." : "بله، حسابم را حذف کن"}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1 rounded-xl bg-white py-2.5 text-xs font-bold text-ink hover:bg-canvas disabled:opacity-50"
+                >
+                  انصراف
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="mt-4 rounded-xl bg-danger/10 px-4 py-2 text-xs font-bold text-danger hover:bg-danger hover:text-white transition-colors"
+            >
+              حذف برای همیشه
+            </button>
+          )}
+        </div>
       </div>
 
       {/* app info */}

@@ -49,7 +49,7 @@ export function NameSetupInline() {
 
           <div>
             <label htmlFor="inline-name-setup" className="mb-2 block text-sm font-bold text-ink">
-              نام شما
+              نام تو
             </label>
             <input
               id="inline-name-setup"

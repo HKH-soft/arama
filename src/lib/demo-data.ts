@@ -399,7 +399,7 @@ export const demoExercises = [
 export const demoPlans = [
   {
     id: "1-month",
-    name: "اشتراک ۱ ماهه",
+    name: "آغاز آرامش (۱ ماهه)",
     price: 335000,
     originalPrice: 390000,
     unit: "تومان",
@@ -419,7 +419,7 @@ export const demoPlans = [
   },
   {
     id: "3-month",
-    name: "اشتراک ۳ ماهه",
+    name: "مسیر آگاهی (۳ ماهه)",
     price: 819000,
     originalPrice: 1275000,
     unit: "تومان",
@@ -439,7 +439,7 @@ export const demoPlans = [
   },
   {
     id: "1-year",
-    name: "اشتراک ۱ ساله",
+    name: "تحول درونی (۱ ساله)",
     price: 990000,
     originalPrice: 2185000,
     unit: "تومان",

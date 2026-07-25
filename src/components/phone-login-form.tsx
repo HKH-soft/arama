@@ -303,7 +303,7 @@ export function PhoneLoginForm() {
 
           <p className="flex items-center gap-2 text-xs font-medium text-soft">
             <Shield className="size-3.5 text-brand" />
-            ورود امن بدون نیاز به رمز عبور
+            ورود ساده بدون نیاز به رمز عبور
           </p>
         </form>
       )}
@@ -485,7 +485,7 @@ export function PhoneLoginForm() {
 
           <div>
             <label htmlFor="name-setup" className="mb-2 block text-sm font-bold text-ink">
-              نام شما
+              نام تو
             </label>
             <input
               id="name-setup"

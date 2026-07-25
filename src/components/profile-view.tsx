@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent, useRef } from "react";
 import { Camera, Check, RefreshCw, UserRound, WifiOff } from "lucide-react";
+import Image from "next/image";
 
 type Profile = {
   userId: string;
@@ -152,8 +153,7 @@ export function ProfileView() {
         <div className="flex flex-col items-center">
           <div className="relative">
             {profile.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.avatarUrl} alt="" className="size-20 rounded-full object-cover" />
+              <Image src={profile.avatarUrl} alt="آواتار" width={80} height={80} className="size-20 rounded-full object-cover" />
             ) : (
               <span className="grid size-20 place-items-center rounded-full bg-gradient-to-br from-brand-glow to-brand-deep text-3xl font-black text-white">
                 {(profile.name ?? "").trim().charAt(0) || "آ"}

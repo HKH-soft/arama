@@ -2,6 +2,8 @@ import { Quote } from "lucide-react";
 import { Reveal } from "./reveal";
 import { SectionHeading } from "./section-heading";
 
+// TODO: These testimonials are currently placeholders for demonstration purposes.
+// Remember to replace them with real user feedback and permission before the wide launch.
 const stories = [
   {
     name: "سارا م.",

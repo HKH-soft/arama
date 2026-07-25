@@ -49,7 +49,7 @@ export function Pricing() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           eyebrow="تعرفه‌ها"
-          title="طرح‌های متناسب با نیاز شما"
+          title="طرح‌های متناسب با نیاز تو"
           description="با نسخهٔ رایگان شروع کن؛ هر وقت آماده بودی، بدون هیچ فشاری ارتقا بده. همیشه می‌توانی لغو کنی."
         />
         <div className="mt-20" aria-live="polite">

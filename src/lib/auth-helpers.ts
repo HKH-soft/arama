@@ -64,6 +64,9 @@ export function generateOtpCode(): string {
 export type SessionUser = { userId: string; phone: string; name?: string | null };
 
 // ── Rate-limit buckets (in-memory; use Redis in production) ──
+// TODO: Before scaling past a single server instance (e.g., adding more Next.js
+// instances or serverless edge functions), move these Map-based rate limits
+// to a persistent store like Redis or Vercel KV to ensure limits are shared.
 
 type Bucket = { count: number; expiresAt: number; lockedUntil?: number };
 

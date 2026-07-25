@@ -32,7 +32,7 @@ export function Cta() {
                 className="group inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 text-base font-black text-brand-ink shadow-[0_16px_40px_-12px_rgb(0_0_0/0.35)] transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_-12px_rgb(0_0_0/0.45)]"
               >
                 <MessageCircleHeart className="size-5 transition-transform duration-500 group-hover:scale-110" />
-                اولین گفتگوی رایگان
+                همین الان شروع کن
               </Link>
               <Link
                 href="/signup"

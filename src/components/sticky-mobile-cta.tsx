@@ -36,7 +36,7 @@ export function StickyMobileCta() {
           className="group flex w-full items-center justify-center gap-3 rounded-full bg-brand-deep px-6 py-4 text-sm font-black text-onbrand shadow-[var(--shadow-brand)] transition-transform active:scale-95"
         >
           <MessageCircleHeart className="size-5 transition-transform duration-500 group-hover:scale-110" />
-          شروع گفتگوی امن
+          شروع یک گفتگوی تازه
         </Link>
       </div>
       {/* subtle gradient mask for the bottom edge */}

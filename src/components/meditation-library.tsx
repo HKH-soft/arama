@@ -30,7 +30,7 @@ function TrackCard({ track }: { track: Track }) {
   return (
     <article className={`card-soft group overflow-hidden rounded-[1.75rem] transition-all duration-500 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] ${active ? "border-brand/40" : ""}`}>
       <div className="relative aspect-[1.7] overflow-hidden">
-        <Image src={track.coverArt} alt="" fill sizes="(min-width: 1280px) 30vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
+        <Image src={track.coverArt} alt={track.title} fill sizes="(min-width: 1280px) 30vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
         <span className="absolute start-4 top-4 rounded-full bg-card/90 px-3 py-1.5 text-[10px] font-black text-brand-ink backdrop-blur">{track.category}</span>
         {active && <span className="absolute end-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-brand-deep/90 px-3 py-1.5 text-[10px] font-black text-onbrand"><span className="size-1.5 animate-pulse rounded-full bg-onbrand" />{player.isPlaying ? "در حال پخش" : "متوقف"}</span>}
       </div>
