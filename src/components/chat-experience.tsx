@@ -112,7 +112,7 @@ export function ChatExperience() {
         {
           id: "welcome",
           from: "ai",
-          text: "سلام، خوش برگشتی. امروز چطور می‌توانم کنارت باشم؟",
+          text: "سلام! من اینجام که بشنوم. امروز دلت می‌خواد دربارهٔ چی حرف بزنیم؟",
           time: nowFa(),
         },
       ]);
@@ -133,7 +133,7 @@ export function ChatExperience() {
       {
         id: "welcome",
         from: "ai",
-        text: "سلام، خوش برگشتی. امروز چطور می‌توانم کنارت باشم؟",
+        text: "سلام! من اینجام که بشنوم. امروز دلت می‌خواد دربارهٔ چی حرف بزنیم؟",
         time: nowFa(),
       },
     ]);
@@ -458,9 +458,9 @@ export function ChatExperience() {
             {welcomeOnly && (
               <div className="mt-4 flex flex-wrap gap-2 self-start">
                 {[
-                  "دست‌م هنوز می‌لرزد",
-                  "باشه، بیا نفس بکشیم",
-                  "نمی‌دانم از کجا شروع کنم",
+                  "روز پر استرسی رو گذروندم",
+                  "ذهنم خیلی شلوغه",
+                  "نمی‌دونم از کجا شروع کنم...",
                 ].map((choice) => (
                   <button
                     key={choice}
