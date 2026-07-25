@@ -6,9 +6,14 @@ import { requireUser } from "@/lib/auth-helpers";
 
 export const maxDuration = 60; // Set Vercel execution limit if deployed
 
-const openai = new OpenAI({
+const audioClient = new OpenAI({
   baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
-  apiKey: process.env.OPENAI_API_KEY || "dummy-key-to-prevent-crash",
+  apiKey: process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "dummy-key-to-prevent-crash",
+});
+
+const aiClient = new OpenAI({
+  baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
+  apiKey: process.env.AI_API_KEY,
 });
 
 export async function POST(request: NextRequest) {
@@ -28,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Transcribe with Whisper
-    const transcription = await openai.audio.transcriptions.create({
+    const transcription = await audioClient.audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
       language: "fa",
@@ -40,19 +45,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Get AI Insight and Mood Label
-    const completion = await openai.chat.completions.create({
-      model: process.env.AI_MODEL || "gpt-4o-mini",
+    const completion = await aiClient.chat.completions.create({
+      model: process.env.AI_MODEL || "z-ai/glm-5.2",
       messages: [
         {
           role: "system",
           content: `تو آراما هستی؛ یک مشاور و همراه هوشمند سلامت روان فارسی‌زبان.
 کاربر یک فایل صوتی از خاطرات و وقایع امروزش ضبط کرده و این متن پیاده‌سازی شده‌ی آن است.
-لطفاً صحبت‌های کاربر را عمیقاً تحلیل کن. اگر کاربر به اتفاقات بد، استرس‌زا یا ناراحت‌کننده‌ای در طول روز اشاره کرده است، یک مشاوره و راهنمایی کوتاه، همدلانه و راهگشا (در حد ۳ الی ۴ جمله) برای مدیریت آن احساسات و عبور از آن بحران به او ارائه بده. اگر روز خوبی داشته، او را تشویق کن.
+لطفاً صحبت‌های کاربر را عمیقاً تحلیل کن. اگر کاربر به اتفاقات بد، استرس‌زا یا ناراحت‌کننده‌ای در طول روز اشاره کرده است، یک مشاوره و راهنمایی کوتاه، همدلانه و راهگشا (در حد ۳ الی ۴ جمله) برای مدیریت آن احساسات و عبور از آن بحران به او ارائه بده. لحنت صمیمی، دوستانه و با ضمیر «تو» باشد. اگر روز خوبی داشته، او را تشویق کن.
 همچنین احساس غالب کاربر را در قالب یک کلمه (مثل مضطرب، خسته، غمگین، شاد، کلافه) و یک نمره از ۱ تا ۵ (۱=خیلی بد، ۵=خیلی خوب) در قالب JSON برگردان.
 
 فرمت پاسخ حتماً باید JSON معتبر باشد:
 {
-  "insight": "تحلیل و مشاوره همدلانه و راهگشای شما",
+  "insight": "تحلیل و مشاوره همدلانه و دوستانه تو",
   "moodLabel": "کلمه احساس",
   "moodScore": 3
 }`
@@ -103,6 +108,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error("[VoiceJournal]", error);
-    return NextResponse.json({ error: "خطایی در پردازش صدای شما رخ داد." }, { status: 500 });
+    return NextResponse.json({ error: "خطایی در پردازش صدای تو رخ داد." }, { status: 500 });
   }
 }
