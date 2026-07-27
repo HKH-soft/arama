@@ -49,42 +49,36 @@ export async function GET(request: NextRequest) {
     let isSuccess = false;
     let refId = "";
 
-    // If it's a mock authority generated during local fallback, skip live verify
-    if (authority.startsWith("auth_")) {
-      isSuccess = true;
-      refId = `ref_${Math.floor(100000 + Math.random() * 900000)}`;
-    } else {
-      try {
-        const response = await fetch(verifyUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          body: JSON.stringify({
-            merchant_id: merchantId,
-            amount: amountInRial, // Amount in Rial
-            authority: authority,
-          }),
-        });
+    try {
+      const response = await fetch(verifyUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          merchant_id: merchantId,
+          amount: amountInRial, // Amount in Rial
+          authority: authority,
+        }),
+      });
 
-        const resData = (await response.json()) as {
-          data?: {
-            code: number;
-            ref_id: string;
-          };
-          errors?: Array<{ code: number; message: string }>;
+      const resData = (await response.json()) as {
+        data?: {
+          code: number;
+          ref_id: string;
         };
+        errors?: Array<{ code: number; message: string }>;
+      };
 
-        if (response.ok && resData.data && (resData.data.code === 100 || resData.data.code === 101)) {
-          isSuccess = true;
-          refId = String(resData.data.ref_id);
-        } else {
-          console.error("ZarinPal Verify failed:", resData);
-        }
-      } catch (err) {
-        console.error("Error making verify request to ZarinPal:", err);
+      if (response.ok && resData.data && (resData.data.code === 100 || resData.data.code === 101)) {
+        isSuccess = true;
+        refId = String(resData.data.ref_id);
+      } else {
+        console.error("ZarinPal Verify failed:", resData);
       }
+    } catch (err) {
+      console.error("Error making verify request to ZarinPal:", err);
     }
 
     if (isSuccess) {

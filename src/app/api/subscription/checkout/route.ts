@@ -111,10 +111,11 @@ export async function POST(request: NextRequest) {
         );
       }
     } catch (apiErr) {
-      console.error("ZarinPal payment request failed. Falling back to sandbox authority mock.", apiErr);
-      // Fallback for offline testing or unconfigured merchant token
-      authority = `auth_${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
-      redirectUrl = `${baseUrl}/api/subscription/callback?Authority=${authority}&Status=OK`;
+      console.error("ZarinPal payment request failed.", apiErr);
+      return NextResponse.json(
+        { error: "خطا در برقراری ارتباط با درگاه پرداخت." },
+        { status: 502 },
+      );
     }
 
     // Insert pending payment into DB

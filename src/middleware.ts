@@ -13,14 +13,48 @@ const PROTECTED = [
   "/settings",
 ];
 
-export function middleware(request: NextRequest) {
+const AUTH_SECRET = process.env.AUTH_SECRET || "default_dev_secret_only_for_local_dev_123456";
+
+async function verifySessionEdge(token: string): Promise<boolean> {
+  const parts = token.split(".");
+  if (parts.length !== 2) return false;
+  const [userId, signature] = parts;
+  
+  const encoder = new TextEncoder();
+  try {
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(AUTH_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const expectedBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(userId));
+    const expectedArray = Array.from(new Uint8Array(expectedBuffer));
+    const expectedHex = expectedArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return signature === expectedHex;
+  } catch {
+    return false;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isAuthenticated = request.cookies.has("arama-user");
+  const cookieValue = request.cookies.get("arama-user")?.value;
+  
+  let isAuthenticated = false;
+  if (cookieValue) {
+    isAuthenticated = await verifySessionEdge(cookieValue);
+  }
 
   const isProtected = PROTECTED.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
   const isAuthPage = pathname === "/login" || pathname.startsWith("/login/");
+
+  // If they have an invalid cookie (it's present but failed verification), clear it.
+  const needsCookieClear = cookieValue && !isAuthenticated;
 
   // Send already-authenticated users away from the login page.
   if (isAuthPage && isAuthenticated) {
@@ -31,7 +65,11 @@ export function middleware(request: NextRequest) {
   // Send unauthenticated users away from protected pages.
   if (isProtected && !isAuthenticated) {
     const url = new URL("/login", request.url);
-    return NextResponse.redirect(url);
+    const res = NextResponse.redirect(url);
+    if (needsCookieClear) {
+      res.cookies.delete("arama-user");
+    }
+    return res;
   }
 
   // Next.js App Router CSP
@@ -50,6 +88,10 @@ export function middleware(request: NextRequest) {
   `.replace(/\s{2,}/g, ' ').trim();
 
   const response = NextResponse.next();
+  if (needsCookieClear) {
+    response.cookies.delete("arama-user");
+  }
+  
   response.headers.set('Content-Security-Policy', cspHeader);
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
