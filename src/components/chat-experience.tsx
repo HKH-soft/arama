@@ -503,7 +503,7 @@ export function ChatExperience() {
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="اینجا بنویس…"
                 autoComplete="off"
-                className="w-full rounded-2xl border border-line/80 bg-card/90 px-4 py-3.5 pr-12 text-sm font-medium text-ink shadow-[var(--shadow-soft)] outline-none backdrop-blur-md transition-all placeholder:text-faint focus-within:border-brand-glow focus-within:ring-4 focus-within:ring-brand-glow/10 sm:py-4 sm:pr-14"
+                className="w-full rounded-2xl border border-line/80 bg-card/90 px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-ink shadow-[var(--shadow-soft)] outline-none backdrop-blur-md transition-all placeholder:text-faint focus-within:border-brand-glow focus-within:ring-4 focus-within:ring-brand-glow/10 sm:py-4 sm:pr-14"
               />
               <button
                 type="button"
