@@ -32,9 +32,16 @@ export function getUserId(request: NextRequest): string | null {
 
 /** Require a logged-in user or return a 401. */
 export function requireUser(request: NextRequest): { userId: string } | NextResponse {
-  const userId = getUserId(request);
+  const token = request.cookies.get("arama-user")?.value;
+  const userId = token ? verifySession(token) : null;
+  
   if (!userId) {
-    return NextResponse.json({ error: "لطفاً ابتدا وارد حساب خود شوید." }, { status: 401 }) as NextResponse;
+    const res = NextResponse.json({ error: "لطفاً ابتدا وارد حساب خود شوید." }, { status: 401 });
+    if (token) {
+      // If a token was provided but it's invalid (e.g. old format), clear it.
+      res.cookies.delete("arama-user");
+    }
+    return res as NextResponse;
   }
   return { userId };
 }
