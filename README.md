@@ -56,3 +56,18 @@ ZARINPAL_SANDBOX=true
    npm run dev
    ```
    Open `http://localhost:3000` in your browser.
+
+## Deployment (Production)
+
+> **CRITICAL**: Generating a migration file locally (`npm run db:generate`) is NOT the same as applying it to production.
+
+When deploying to a live server (e.g. Vercel, Railway, Ubuntu VPS):
+1. **Apply Migrations to Production DB:**
+   You **MUST** run the pending Drizzle migrations against your live `DATABASE_URL` so that new tables (like `rate_limits`) are actually created.
+   If deploying on a platform like Vercel, you should set this up as part of the build step in `package.json`, or run it manually:
+   ```bash
+   # Make sure your .env has the PRODUCTION database URL before running this locally
+   npm run db:migrate
+   ```
+2. Set all necessary environment variables on your hosting provider.
+3. Build the project using `npm run build` and start it with `npm start`.

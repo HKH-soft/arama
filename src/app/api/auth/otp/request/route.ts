@@ -74,8 +74,9 @@ export async function POST(request: NextRequest) {
       message: "کد تأیید ارسال شد.",
       expiresAt: expiresAt.toISOString(),
     });
-  } catch (err) {
-    console.error(`[OTP REQUEST ERROR]`, err);
+  } catch (err: unknown) {
+    const errorDetails = err instanceof Error ? `${err.name} [${(err as any).code || 'NO_CODE'}]: ${err.message}` : String(err);
+    console.error(`[OTP REQUEST CRITICAL ERROR] Details: ${errorDetails}`, err);
     return NextResponse.json(
       { error: "ارتباط با سرور برقرار نشد. دوباره امتحان کن." },
       { status: 503 },

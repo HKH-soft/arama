@@ -83,7 +83,9 @@ export async function POST(request: NextRequest) {
     });
     
     return response;
-  } catch {
+  } catch (err: unknown) {
+    const errorDetails = err instanceof Error ? `${err.name} [${(err as any).code || 'NO_CODE'}]: ${err.message}` : String(err);
+    console.error(`[LOGIN CRITICAL ERROR] Details: ${errorDetails}`, err);
     return NextResponse.json(
       { error: "ارتباط با سرور برقرار نشد. دوباره امتحان کن." },
       { status: 503 },
