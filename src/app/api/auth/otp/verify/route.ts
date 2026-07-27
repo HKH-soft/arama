@@ -8,6 +8,7 @@ import {
   clearOtpVerifyRateLimit,
   isValidIranianPhone,
   verifyOtpCode,
+  signSession,
 } from "@/lib/auth-helpers";
 
 export async function POST(request: NextRequest) {
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Rate limit check
-    const rateLimit = checkOtpVerifyRateLimit(phone);
+    const rateLimit = await checkOtpVerifyRateLimit(phone);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: rateLimit.error },
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       .where(eq(otpCodes.id, otpRecord.id));
     
     // Verify code
-    if (!verifyOtpCode(code, otpRecord.codeHash)) {
+    if (!(await verifyOtpCode(code, otpRecord.codeHash))) {
       if (otpRecord.attempts + 1 >= 5) {
         // Invalidate this code after max attempts
         await db
@@ -88,8 +89,8 @@ export async function POST(request: NextRequest) {
       .where(eq(otpCodes.id, otpRecord.id));
     
     // Clear rate limits
-    clearOtpRequestRateLimit(phone);
-    clearOtpVerifyRateLimit(phone);
+    await clearOtpRequestRateLimit(phone);
+    await clearOtpVerifyRateLimit(phone);
     
     // Find or create user profile
     let [profile] = await db
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
       },
     });
     
-    response.cookies.set("arama-user", profile.userId, {
+    response.cookies.set("arama-user", signSession(profile.userId), {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",

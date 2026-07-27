@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const passwordHash = hashPassword(password);
+    const passwordHash = await hashPassword(password);
     
     const [profile] = await db
       .update(profiles)

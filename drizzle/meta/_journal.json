@@ -15,6 +15,13 @@
       "when": 1784633188564,
       "tag": "0001_bizarre_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785141480271,
+      "tag": "0002_massive_loa",
+      "breakpoints": true
     }
   ]
 }

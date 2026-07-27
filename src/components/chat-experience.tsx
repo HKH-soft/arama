@@ -303,8 +303,12 @@ export function ChatExperience() {
             </div>
           )}
           {!historyLoading && history.length === 0 && (
-            <div className="p-6 text-center text-xs font-medium text-faint">
-              هنوز گفتگویی ثبت نشده است.
+            <div className="flex h-40 flex-col items-center justify-center p-6 text-center">
+              <div className="grid size-12 place-items-center rounded-2xl bg-tint text-brand-ink mb-3 shadow-[var(--shadow-soft)]">
+                <MessageCircleHeart className="size-5" />
+              </div>
+              <p className="text-xs font-bold text-ink mb-1">هنوز گفتگویی نیست</p>
+              <p className="text-[11px] font-medium text-soft leading-5">اولین گفتگوی خودت را با آراما شروع کن.</p>
             </div>
           )}
           {!historyLoading &&

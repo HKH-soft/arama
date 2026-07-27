@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -33,8 +34,10 @@ export const conversations = pgTable("conversations", {
   userId: text("user_id").notNull(),
   title: text("title").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-});
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
+}, (t) => ({
+  userIdIdx: index("conv_user_id_idx").on(t.userId),
+}));
 
 export const messages = pgTable("messages", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -44,7 +47,9 @@ export const messages = pgTable("messages", {
   role: text("role").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => ({
+  convIdIdx: index("msg_conv_id_idx").on(t.conversationId),
+}));
 
 export const exercises = pgTable("exercises", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -81,7 +86,7 @@ export const plans = pgTable("plans", {
   isActive: boolean("is_active").default(true).notNull(),
   features: jsonb("features").$type<string[]>().notNull(),
   sortOrder: integer("sort_order").notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
 });
 
 export const subscriptions = pgTable("subscriptions", {
@@ -108,7 +113,7 @@ export const profiles = pgTable("profiles", {
   timezone: text("timezone").default("Asia/Tehran").notNull(),
   remindersEnabled: boolean("reminders_enabled").default(true).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().$onUpdate(() => new Date()).notNull(),
 });
 
 export const otpCodes = pgTable("otp_codes", {
@@ -150,6 +155,13 @@ export const voiceJournals = pgTable("voice_journals", {
   moodLabel: text("mood_label").notNull(),
   durationSeconds: integer("duration_seconds").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
 });
 
 export type MeditationTrack = typeof meditationTracks.$inferSelect;

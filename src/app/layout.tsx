@@ -8,12 +8,12 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const iransans = localFont({
   src: [
-    { path: "../../public/fonts/IRANSans-UltraLight [@ClubEdits].ttf", weight: "200", style: "normal" },
-    { path: "../../public/fonts/IRANSans-Light [@ClubEdits].ttf", weight: "300", style: "normal" },
-    { path: "../../public/fonts/IRANSans [@ClubEdits].ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/IRANSans-Medium [@ClubEdits].ttf", weight: "500", style: "normal" },
-    { path: "../../public/fonts/IRANSans-Bold [@ClubEdits].ttf", weight: "700", style: "normal" },
-    { path: "../../public/fonts/IRANSans-Black [@ClubEdits].ttf", weight: "900", style: "normal" },
+    { path: "../../public/fonts/IRANSans-UltraLight [@ClubEdits].woff2", weight: "200", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Light [@ClubEdits].woff2", weight: "300", style: "normal" },
+    { path: "../../public/fonts/IRANSans [@ClubEdits].woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Medium [@ClubEdits].woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Bold [@ClubEdits].woff2", weight: "700", style: "normal" },
+    { path: "../../public/fonts/IRANSans-Black [@ClubEdits].woff2", weight: "900", style: "normal" },
   ],
   variable: "--font-iransans",
   display: "swap",
@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: {
     default: "آراما — همراه هوشمند سلامت روان",
     template: "%s | آراما",
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://arama.life"),
+  alternates: {
+    canonical: "/",
   },
   description:
     "آراما یک همراه هوشمند سلامت روان است؛ گفتگوی همدلانه با هوش مصنوعی، ردیابی خلق‌وخو، مدیتیشن هدایت‌شده و تمرین‌های درمانی — در فضایی امن، گرم و بدون قضاوت.",

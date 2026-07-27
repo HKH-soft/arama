@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   if (user instanceof NextResponse) return user;
 
   // Rate limit
-  const rateLimit = checkChatRateLimit(user.userId);
+  const rateLimit = await checkChatRateLimit(user.userId);
   if (!rateLimit.allowed) {
     return NextResponse.json({ error: rateLimit.error }, { status: 429 });
   }
@@ -164,12 +164,18 @@ export async function POST(request: NextRequest) {
             await new Promise((resolve) => setTimeout(resolve, 55));
           }
         }
-        if (complete)
-          await db.insert(messages).values({
-            conversationId: conversationId!,
-            role: "assistant",
-            content: complete,
-          });
+        if (complete) {
+          try {
+            await db.insert(messages).values({
+              conversationId: conversationId!,
+              role: "assistant",
+              content: complete,
+            });
+          } catch (dbErr) {
+            console.error("[Arama Chat DB Error] Failed to save assistant message", dbErr);
+            // Non-fatal: the message was already streamed to the user.
+          }
+        }
         emit({ type: "done", conversationId: conversationId! });
       } catch (err: unknown) {
         const errorMsg = err instanceof Error ? err.message : String(err);

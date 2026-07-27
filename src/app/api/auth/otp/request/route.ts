@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Rate limit check
-    const rateLimit = checkOtpRequestRateLimit(phone);
+    const rateLimit = await checkOtpRequestRateLimit(phone);
     if (!rateLimit.allowed) {
       const response = NextResponse.json(
         { error: rateLimit.error },
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     
     // Generate and store new OTP
     const code = generateOtpCode();
-    const codeHash = hashOtpCode(code);
+    const codeHash = await hashOtpCode(code);
     const expiresAt = new Date(now.getTime() + 2 * 60 * 1000); // 2 minutes
     
     await db.insert(otpCodes).values({

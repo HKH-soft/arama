@@ -7,6 +7,7 @@ import {
   clearLoginRateLimit,
   isValidIranianPhone,
   verifyPassword,
+  signSession,
 } from "@/lib/auth-helpers";
 
 export async function POST(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Rate limit check
-    const rateLimit = checkLoginRateLimit(phone);
+    const rateLimit = await checkLoginRateLimit(phone);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: rateLimit.error },
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Verify password
-    if (!verifyPassword(password, profile.passwordHash)) {
+    if (!(await verifyPassword(password, profile.passwordHash))) {
       return NextResponse.json(
         { error: "شماره تلفن یا رمز عبور درست نیست." },
         { status: 401 },
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Clear rate limit on success
-    clearLoginRateLimit(phone);
+    await clearLoginRateLimit(phone);
     
     // Create session cookie
     const response = NextResponse.json({
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       },
     });
     
-    response.cookies.set("arama-user", profile.userId, {
+    response.cookies.set("arama-user", signSession(profile.userId), {
       httpOnly: true,
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",

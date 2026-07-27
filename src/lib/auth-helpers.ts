@@ -1,10 +1,33 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { randomBytes, scrypt, createHmac, timingSafeEqual } from "node:crypto";
+import { promisify } from "node:util";
+import { db } from "@/db";
+import { rateLimits } from "@/db/schema";
+import { sql } from "drizzle-orm";
+
+const scryptAsync = promisify(scrypt);
+
+const AUTH_SECRET = process.env.AUTH_SECRET || "default_dev_secret_only_for_local_dev_123456";
+
+export function signSession(userId: string): string {
+  const signature = createHmac("sha256", AUTH_SECRET).update(userId).digest("hex");
+  return `${userId}.${signature}`;
+}
+
+export function verifySession(token: string): string | null {
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [userId, signature] = parts;
+  const expected = createHmac("sha256", AUTH_SECRET).update(userId).digest("hex");
+  if (signature !== expected) return null;
+  return userId;
+}
 
 /** Extract the logged-in user ID from the arama-user cookie. */
 export function getUserId(request: NextRequest): string | null {
-  const userId = request.cookies.get("arama-user")?.value ?? null;
-  return userId;
+  const token = request.cookies.get("arama-user")?.value;
+  if (!token) return null;
+  return verifySession(token);
 }
 
 /** Require a logged-in user or return a 401. */
@@ -17,37 +40,37 @@ export function requireUser(request: NextRequest): { userId: string } | NextResp
 }
 
 /** Hash a plaintext password with a per-user random salt. Returns "salt:hash". */
-export function hashPassword(password: string): string {
+export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(24).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
 }
 
 /** Verify a password against a stored "salt:hash" string. */
-export function verifyPassword(password: string, stored: string): boolean {
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const salt = stored.slice(0, 48);
   const storedHash = stored.slice(49);
   if (!salt || !storedHash) return false;
-  const incoming = Buffer.from(scryptSync(password, salt, 64).toString("hex"), "hex");
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
   const saved = Buffer.from(storedHash, "hex");
-  return incoming.length === saved.length && timingSafeEqual(incoming, saved);
+  return derived.length === saved.length && timingSafeEqual(derived, saved);
 }
 
 /** Hash an OTP code with a random salt. Returns "salt:hash". */
-export function hashOtpCode(code: string): string {
+export async function hashOtpCode(code: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(code, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+  const derived = (await scryptAsync(code, salt, 64)) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
 }
 
 /** Verify an OTP code against a stored "salt:hash" string. */
-export function verifyOtpCode(code: string, stored: string): boolean {
+export async function verifyOtpCode(code: string, stored: string): Promise<boolean> {
   const salt = stored.slice(0, 32);
   const storedHash = stored.slice(33);
   if (!salt || !storedHash) return false;
-  const incoming = Buffer.from(scryptSync(code, salt, 64).toString("hex"), "hex");
+  const derived = (await scryptAsync(code, salt, 64)) as Buffer;
   const saved = Buffer.from(storedHash, "hex");
-  return incoming.length === saved.length && timingSafeEqual(incoming, saved);
+  return derived.length === saved.length && timingSafeEqual(derived, saved);
 }
 
 /** Validate Iranian phone number format: 09xxxxxxxxx (11 digits, starts with 09) */
@@ -63,132 +86,94 @@ export function generateOtpCode(): string {
 
 export type SessionUser = { userId: string; phone: string; name?: string | null };
 
-// ── Rate-limit buckets (in-memory; use Redis in production) ──
-// TODO: Before scaling past a single server instance (e.g., adding more Next.js
-// instances or serverless edge functions), move these Map-based rate limits
-// to a persistent store like Redis or Vercel KV to ensure limits are shared.
-
-type Bucket = { count: number; expiresAt: number; lockedUntil?: number };
-
-const otpRequestBuckets = new Map<string, Bucket>();
-const otpVerifyBuckets = new Map<string, Bucket>();
-const loginBuckets = new Map<string, Bucket>();
-const chatBuckets = new Map<string, Bucket>();
-
+// ── Rate-limit buckets (PostgreSQL based) ──
 const TEN_MIN = 10 * 60 * 1000;
 const FIFTEEN_MIN = 15 * 60 * 1000;
 const FIVE_MIN = 5 * 60 * 1000;
 const TWO_MIN = 2 * 60 * 1000;
-const ONE_HOUR = 60 * 60 * 1000;
 
-function sweep() {
-  const now = Date.now();
-  for (const [key, bucket] of otpRequestBuckets) {
-    if (bucket.expiresAt < now) otpRequestBuckets.delete(key);
-  }
-  for (const [key, bucket] of otpVerifyBuckets) {
-    if (bucket.expiresAt < now) otpVerifyBuckets.delete(key);
-  }
-  for (const [key, bucket] of loginBuckets) {
-    if (bucket.expiresAt < now) loginBuckets.delete(key);
-  }
-  for (const [key, bucket] of chatBuckets) {
-    if (bucket.expiresAt < now) chatBuckets.delete(key);
-  }
+async function incrementRateLimit(key: string, limit: number, expireMs: number, lockMs?: number) {
+  const now = new Date();
+  const result = await db.insert(rateLimits)
+    .values({
+      key,
+      count: 1,
+      expiresAt: new Date(now.getTime() + expireMs)
+    })
+    .onConflictDoUpdate({
+      target: rateLimits.key,
+      set: {
+        count: sql`CASE WHEN ${rateLimits.expiresAt} < ${now} THEN 1 ELSE ${rateLimits.count} + 1 END`,
+        expiresAt: sql`CASE WHEN ${rateLimits.expiresAt} < ${now} THEN ${new Date(now.getTime() + expireMs)} ELSE ${rateLimits.expiresAt} END`,
+        lockedUntil: sql`CASE WHEN (${rateLimits.count} + 1 > ${limit}) AND ${lockMs ? lockMs : 0} > 0 THEN ${new Date(now.getTime() + (lockMs || 0))} ELSE ${rateLimits.lockedUntil} END`
+      }
+    })
+    .returning();
+  return result[0];
 }
-setInterval(sweep, 60_000);
 
 /** Check OTP request rate limit: max 3 requests per phone per 10 minutes */
-export function checkOtpRequestRateLimit(phone: string): { allowed: boolean; remaining: number; error?: string; retryAfter?: number } {
-  sweep();
+export async function checkOtpRequestRateLimit(phone: string): Promise<{ allowed: boolean; remaining: number; error?: string; retryAfter?: number }> {
   const key = `otp-req:${phone}`;
-  const now = Date.now();
-  const bucket = otpRequestBuckets.get(key);
+  const now = new Date();
+  const bucket = await incrementRateLimit(key, 3, TEN_MIN, FIVE_MIN);
   
-  if (bucket && bucket.lockedUntil && bucket.lockedUntil > now) {
-    const retryAfter = Math.ceil((bucket.lockedUntil - now) / 1000);
+  if (bucket.lockedUntil && bucket.lockedUntil > now) {
+    const retryAfter = Math.ceil((bucket.lockedUntil.getTime() - now.getTime()) / 1000);
     return { allowed: false, remaining: 0, error: "تعداد درخواست کد زیاد بود. لطفاً چند دقیقه صبر کن.", retryAfter };
   }
   
-  if (!bucket || bucket.expiresAt < now) {
-    otpRequestBuckets.set(key, { count: 1, expiresAt: now + TEN_MIN });
-    return { allowed: true, remaining: 2 };
-  }
-  
-  bucket.count += 1;
   if (bucket.count > 3) {
-    bucket.lockedUntil = now + FIVE_MIN;
     return { allowed: false, remaining: 0, error: "تعداد درخواست کد زیاد بود. لطفاً ۵ دقیقه صبر کن.", retryAfter: 300 };
   }
-  return { allowed: true, remaining: 3 - bucket.count };
+  return { allowed: true, remaining: Math.max(0, 3 - bucket.count) };
 }
 
 /** Clear OTP request rate limit on successful verification */
-export function clearOtpRequestRateLimit(phone: string) {
-  otpRequestBuckets.delete(`otp-req:${phone}`);
+export async function clearOtpRequestRateLimit(phone: string) {
+  const { eq } = await import("drizzle-orm");
+  await db.delete(rateLimits).where(eq(rateLimits.key, `otp-req:${phone}`));
 }
 
 /** Check OTP verification rate limit: max 5 attempts per code */
-export function checkOtpVerifyRateLimit(phone: string): { allowed: boolean; remaining: number; error?: string } {
-  sweep();
+export async function checkOtpVerifyRateLimit(phone: string): Promise<{ allowed: boolean; remaining: number; error?: string }> {
   const key = `otp-ver:${phone}`;
-  const now = Date.now();
-  const bucket = otpVerifyBuckets.get(key);
+  const bucket = await incrementRateLimit(key, 5, TWO_MIN);
   
-  if (!bucket || bucket.expiresAt < now) {
-    otpVerifyBuckets.set(key, { count: 1, expiresAt: now + TWO_MIN });
-    return { allowed: true, remaining: 4 };
-  }
-  
-  bucket.count += 1;
   if (bucket.count > 5) {
     return { allowed: false, remaining: 0, error: "تعداد تلاش برای وارد کردن کد زیاد بود. لطفاً کد جدید درخواست کن." };
   }
-  return { allowed: true, remaining: 5 - bucket.count };
+  return { allowed: true, remaining: Math.max(0, 5 - bucket.count) };
 }
 
 /** Clear OTP verify rate limit on success */
-export function clearOtpVerifyRateLimit(phone: string) {
-  otpVerifyBuckets.delete(`otp-ver:${phone}`);
+export async function clearOtpVerifyRateLimit(phone: string) {
+  const { eq } = await import("drizzle-orm");
+  await db.delete(rateLimits).where(eq(rateLimits.key, `otp-ver:${phone}`));
 }
 
 /** Check login rate limit for password-based login: 5 attempts per 15 min */
-export function checkLoginRateLimit(phone: string): { allowed: boolean; remaining: number; error?: string } {
-  sweep();
+export async function checkLoginRateLimit(phone: string): Promise<{ allowed: boolean; remaining: number; error?: string }> {
   const key = `login:${phone}`;
-  const now = Date.now();
-  const bucket = loginBuckets.get(key);
+  const bucket = await incrementRateLimit(key, 5, FIFTEEN_MIN);
   
-  if (!bucket || bucket.expiresAt < now) {
-    loginBuckets.set(key, { count: 1, expiresAt: now + FIFTEEN_MIN });
-    return { allowed: true, remaining: 4 };
-  }
-  
-  bucket.count += 1;
   if (bucket.count > 5) {
     return { allowed: false, remaining: 0, error: "پس از ۵ تلاش ناموفق، حساب موقتاً قفل شد. ۱۵ دقیقهٔ دیگر دوباره امتحان کن." };
   }
-  return { allowed: true, remaining: 5 - bucket.count };
+  return { allowed: true, remaining: Math.max(0, 5 - bucket.count) };
 }
 
 /** Clear login rate limit on successful password login */
-export function clearLoginRateLimit(phone: string) {
-  loginBuckets.delete(`login:${phone}`);
+export async function clearLoginRateLimit(phone: string) {
+  const { eq } = await import("drizzle-orm");
+  await db.delete(rateLimits).where(eq(rateLimits.key, `login:${phone}`));
 }
 
 /** Check chat message rate limit: 30 messages per 5 min */
-export function checkChatRateLimit(userId: string): { allowed: boolean; error?: string } {
-  sweep();
+export async function checkChatRateLimit(userId: string): Promise<{ allowed: boolean; error?: string }> {
   const key = `chat:${userId}`;
-  const now = Date.now();
-  const bucket = chatBuckets.get(key);
+  const bucket = await incrementRateLimit(key, 30, FIVE_MIN);
   
-  if (!bucket || bucket.expiresAt < now) {
-    chatBuckets.set(key, { count: 1, expiresAt: now + FIVE_MIN });
-    return { allowed: true };
-  }
-  
-  bucket.count += 1;
   if (bucket.count > 30) {
     return { allowed: false, error: "تعداد پیام‌های شما در این بازهٔ زمانی زیاد است. چند دقیقه صبر کن و دوباره تلاش کن." };
   }

@@ -99,13 +99,13 @@ export async function PUT(request: NextRequest) {
         );
       }
       const { verifyPassword } = await import("@/lib/auth-helpers");
-      if (!verifyPassword(body.currentPassword, existing.passwordHash)) {
+      if (!(await verifyPassword(body.currentPassword, existing.passwordHash))) {
         return NextResponse.json(
           { error: "رمز فعلی درست نیست." },
           { status: 403 },
         );
       }
-      update.passwordHash = hashPassword(body.newPassword);
+      update.passwordHash = await hashPassword(body.newPassword);
     }
 
     update.updatedAt = new Date();
