@@ -244,7 +244,7 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
   const apiKey = process.env.MELIPAYAMAK_APIKEY; // ApiKey from پنل → توسعه‌دهندگان, NOT your login password
   const from = process.env.MELIPAYAMAK_FROM; // your dedicated sender line number
 
-  if (!username || !apiKey || !from) {
+  if (!username || !apiKey || !from || username === "your_username") {
     // In development or missing config, log the code for testing
     console.log(`[MeliPayamak DEV MODE] OTP for ${phone}: ${code}`);
     return { success: true };
