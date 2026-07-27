@@ -28,6 +28,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Send unauthenticated users away from protected pages.
+  if (isProtected && !isAuthenticated) {
+    const url = new URL("/login", request.url);
+    return NextResponse.redirect(url);
+  }
+
   // Next.js App Router CSP
   const cspHeader = `
     default-src 'self';
