@@ -129,7 +129,7 @@ export default async function DashboardPage() {
           id: conv.id,
           title: conv.title,
           preview: latestMessage?.content || "شروع گفتگو...",
-          time: new Intl.DateTimeFormat("fa-IR", { dateStyle: "short" }).format(
+          time: new Intl.DateTimeFormat("en.fa", { dateStyle: "short" }).format(
             conv.updatedAt
           ),
           count: Number(count),
