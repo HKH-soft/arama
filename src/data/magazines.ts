@@ -276,7 +276,7 @@ export const magazines: Article[] = [
     slug: "cbt-for-beginners",
     title: "درمان شناختی-رفتاری (CBT) چیست؟ راهنمای جامع",
     summary: "با شناخت عمیق‌تر CBT و یادگیری تکنیک‌های مرتبط با درمان شناختی رفتاری، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر اضطراب بردارید.",
-    coverImage: "https://images.unsplash.com/photo-j5aUvLg8Y4w?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_mindfulness_in_daily_life.jpg",
     publishedAt: "2026-07-26",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به CBT</h2>
@@ -298,7 +298,7 @@ export const magazines: Article[] = [
     slug: "how-to-meditate-at-work",
     title: "چگونه در محیط کار مدیتیشن کنیم؟ ۵ روش ساده",
     summary: "با شناخت عمیق‌تر مدیتیشن و یادگیری تکنیک‌های مرتبط با محیط کار، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر استرس شغلی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-F_-0BxGuVvo?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_how_to_meditate_at_work.jpg",
     publishedAt: "2026-05-19",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به مدیتیشن</h2>
@@ -320,7 +320,7 @@ export const magazines: Article[] = [
     slug: "signs-of-burnout",
     title: "۷ نشانه خاموش فرسودگی شغلی (Burnout) که نباید نادیده بگیرید",
     summary: "با شناخت عمیق‌تر فرسودگی شغلی و یادگیری تکنیک‌های مرتبط با خستگی مزمن، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر استرس بردارید.",
-    coverImage: "https://images.unsplash.com/photo-R3pUGn5YaQg?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_signs_of_burnout.jpg",
     publishedAt: "2026-05-27",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به فرسودگی شغلی</h2>
@@ -342,7 +342,7 @@ export const magazines: Article[] = [
     slug: "improving-sleep-hygiene",
     title: "بهداشت خواب: رازهایی برای داشتن خواب عمیق و راحت",
     summary: "با شناخت عمیق‌تر بهداشت خواب و یادگیری تکنیک‌های مرتبط با بی‌خوابی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر آرامش شبانه بردارید.",
-    coverImage: "https://images.unsplash.com/photo-eOpewngf68w?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_improving_sleep_hygiene.jpg",
     publishedAt: "2026-06-21",
     readTimeMinutes: 7,
     content: `<h2>اهمیت پرداختن به بهداشت خواب</h2>
@@ -364,7 +364,7 @@ export const magazines: Article[] = [
     slug: "power-of-journaling",
     title: "معجزه ژورنال‌نویسی: چگونه نوشتن به سلامت روان کمک می‌کند؟",
     summary: "با شناخت عمیق‌تر ژورنال‌نویسی و یادگیری تکنیک‌های مرتبط با نوشتن درمانی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر تخلیه ذهن بردارید.",
-    coverImage: "https://images.unsplash.com/photo-rEM3cKIc4EQ?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_power_of_journaling.jpg",
     publishedAt: "2026-06-16",
     readTimeMinutes: 5,
     content: `<h2>اهمیت پرداختن به ژورنال‌نویسی</h2>
@@ -386,7 +386,7 @@ export const magazines: Article[] = [
     slug: "building-self-esteem",
     title: "چگونه عزت نفس خود را از نو بسازیم؟ تمرین‌های عملی",
     summary: "با شناخت عمیق‌تر عزت نفس و یادگیری تکنیک‌های مرتبط با اعتماد به نفس، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر ارزش فردی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-E8Ufcyxz514?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_building_self_esteem.jpg",
     publishedAt: "2026-07-27",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به عزت نفس</h2>
@@ -408,7 +408,7 @@ export const magazines: Article[] = [
     slug: "managing-panic-attacks",
     title: "هنگام حمله پانیک (Panic Attack) چه کنیم؟ راهکارهای اورژانسی",
     summary: "با شناخت عمیق‌تر حمله پانیک و یادگیری تکنیک‌های مرتبط با حمله عصبی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر اضطراب شدید بردارید.",
-    coverImage: "https://images.unsplash.com/photo-WVuC_O_Gg1w?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_managing_panic_attacks.jpg",
     publishedAt: "2026-07-31",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به حمله پانیک</h2>
@@ -430,7 +430,7 @@ export const magazines: Article[] = [
     slug: "social-media-anxiety",
     title: "اضطراب شبکه‌های اجتماعی: چگونه مقایسه کردن را متوقف کنیم؟",
     summary: "با شناخت عمیق‌تر شبکه‌های اجتماعی و یادگیری تکنیک‌های مرتبط با اضطراب مقایسه، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر دیتاکس دیجیتال بردارید.",
-    coverImage: "https://images.unsplash.com/photo-JgOeRuGD_Y4?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_social_media_anxiety.jpg",
     publishedAt: "2026-05-21",
     readTimeMinutes: 5,
     content: `<h2>اهمیت پرداختن به شبکه‌های اجتماعی</h2>
@@ -452,7 +452,7 @@ export const magazines: Article[] = [
     slug: "ai-therapy-future",
     title: "آینده روان‌درمانی: آیا هوش مصنوعی جایگزین تراپیست می‌شود؟",
     summary: "با شناخت عمیق‌تر هوش مصنوعی و یادگیری تکنیک‌های مرتبط با روان‌درمانی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر چت‌بات درمانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-vXm12l4QWns?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_ai_therapy_future.jpg",
     publishedAt: "2026-08-14",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به هوش مصنوعی</h2>
@@ -474,7 +474,7 @@ export const magazines: Article[] = [
     slug: "healthy-relationships",
     title: "رازهای داشتن یک رابطه عاطفی سالم و پایدار",
     summary: "با شناخت عمیق‌تر رابطه عاطفی و یادگیری تکنیک‌های مرتبط با عشق سالم، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر ارتباط موثر بردارید.",
-    coverImage: "https://images.unsplash.com/photo-Yui5vfKHuzs?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_healthy_relationships.jpg",
     publishedAt: "2026-07-31",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به رابطه عاطفی</h2>
@@ -496,7 +496,7 @@ export const magazines: Article[] = [
     slug: "toxic-positivity",
     title: "مثبت‌اندیشی سمی چیست و چرا خطرناک است؟",
     summary: "با شناخت عمیق‌تر مثبت‌اندیشی سمی و یادگیری تکنیک‌های مرتبط با سرکوب احساسات، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر روانشناسی زرد بردارید.",
-    coverImage: "https://images.unsplash.com/photo-OqtafYT5kTw?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_toxic_positivity.jpg",
     publishedAt: "2026-04-28",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به مثبت‌اندیشی سمی</h2>
@@ -518,7 +518,7 @@ export const magazines: Article[] = [
     slug: "healing-from-grief",
     title: "مراحل سوگ: چگونه با فقدان عزیزان کنار بیاییم؟",
     summary: "با شناخت عمیق‌تر سوگ و یادگیری تکنیک‌های مرتبط با فقدان، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر مرگ عزیزان بردارید.",
-    coverImage: "https://images.unsplash.com/photo-LNRyGwIJr5c?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_healing_from_grief.jpg",
     publishedAt: "2026-04-26",
     readTimeMinutes: 7,
     content: `<h2>اهمیت پرداختن به سوگ</h2>
@@ -540,7 +540,7 @@ export const magazines: Article[] = [
     slug: "imposter-syndrome",
     title: "سندرم ایمپاستر (خودویرانگری): چرا فکر می‌کنیم به اندازه کافی خوب نیستیم؟",
     summary: "با شناخت عمیق‌تر سندرم ایمپاستر و یادگیری تکنیک‌های مرتبط با سندرم شیاد، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر موفقیت بردارید.",
-    coverImage: "https://images.unsplash.com/photo-XGvwt544g8k?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_imposter_syndrome.jpg",
     publishedAt: "2026-04-26",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به سندرم ایمپاستر</h2>
@@ -562,7 +562,7 @@ export const magazines: Article[] = [
     slug: "breathing-exercises-anxiety",
     title: "۵ تمرین تنفسی معجزه‌آسا برای کاهش فوری اضطراب",
     summary: "با شناخت عمیق‌تر تمرین تنفسی و یادگیری تکنیک‌های مرتبط با کاهش اضطراب، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر ریلکسیشن بردارید.",
-    coverImage: "https://images.unsplash.com/photo-2x19-mRQgX8?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_breathing_exercises_anxiety.jpg",
     publishedAt: "2026-05-10",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به تمرین تنفسی</h2>
@@ -584,7 +584,7 @@ export const magazines: Article[] = [
     slug: "setting-healthy-boundaries",
     title: "چگونه بدون احساس گناه، مرزهای سالم تعیین کنیم؟",
     summary: "با شناخت عمیق‌تر مرزگذاری و یادگیری تکنیک‌های مرتبط با نه گفتن، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر حریم شخصی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-Yh2Y8afBw_8?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_setting_healthy_boundaries.jpg",
     publishedAt: "2026-07-01",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به مرزگذاری</h2>
@@ -606,7 +606,7 @@ export const magazines: Article[] = [
     slug: "mindful-eating",
     title: "غذا خوردن آگاهانه (Mindful Eating) چیست؟",
     summary: "با شناخت عمیق‌تر تغذیه آگاهانه و یادگیری تکنیک‌های مرتبط با ذهن‌آگاهی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر رژیم روانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-8LtrLg_oBqI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_mindful_eating.jpg",
     publishedAt: "2026-05-12",
     readTimeMinutes: 5,
     content: `<h2>اهمیت پرداختن به تغذیه آگاهانه</h2>
@@ -628,7 +628,7 @@ export const magazines: Article[] = [
     slug: "emotional-intelligence-eq",
     title: "هوش هیجانی (EQ) چیست و چگونه آن را افزایش دهیم؟",
     summary: "با شناخت عمیق‌تر هوش هیجانی و یادگیری تکنیک‌های مرتبط با EQ، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر مدیریت احساسات بردارید.",
-    coverImage: "https://images.unsplash.com/photo-VowIFDzvkA4?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_emotional_intelligence_eq.jpg",
     publishedAt: "2026-08-02",
     readTimeMinutes: 5,
     content: `<h2>اهمیت پرداختن به هوش هیجانی</h2>
@@ -650,7 +650,7 @@ export const magazines: Article[] = [
     slug: "adhd-in-adults",
     title: "نشانه‌های ADHD در بزرگسالان؛ آیا من نقص توجه دارم؟",
     summary: "با شناخت عمیق‌تر ADHD و یادگیری تکنیک‌های مرتبط با بیش‌فعالی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر نقص توجه بردارید.",
-    coverImage: "https://images.unsplash.com/photo-u_8xJ3aRhcg?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_adhd_in_adults.jpg",
     publishedAt: "2026-07-25",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به ADHD</h2>
@@ -672,7 +672,7 @@ export const magazines: Article[] = [
     slug: "finding-life-purpose",
     title: "معنا درمانی: چگونه هدف زندگی خود را پیدا کنیم؟",
     summary: "با شناخت عمیق‌تر هدف زندگی و یادگیری تکنیک‌های مرتبط با معنا درمانی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر ویکتور فرانکل بردارید.",
-    coverImage: "https://images.unsplash.com/photo-l_YF-Bik6H4?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_finding_life_purpose.jpg",
     publishedAt: "2026-05-29",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به هدف زندگی</h2>
@@ -694,7 +694,7 @@ export const magazines: Article[] = [
     slug: "coping-with-loneliness",
     title: "تفاوت تنهایی و احساس تنهایی؛ چگونه با آن کنار بیاییم؟",
     summary: "با شناخت عمیق‌تر احساس تنهایی و یادگیری تکنیک‌های مرتبط با انزوا، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر ارتباط اجتماعی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-HlI03bZsXbc?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_coping_with_loneliness.jpg",
     publishedAt: "2026-07-03",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به احساس تنهایی</h2>
@@ -716,7 +716,7 @@ export const magazines: Article[] = [
     slug: "morning-routine-mental-health",
     title: "روتین صبحگاهی طلایی برای شروع یک روز پرانرژی و آرام",
     summary: "با شناخت عمیق‌تر روتین صبحگاهی و یادگیری تکنیک‌های مرتبط با انرژی مثبت، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر بهره‌وری بردارید.",
-    coverImage: "https://images.unsplash.com/photo-P17XW_XUuYk?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_morning_routine_mental_health.jpg",
     publishedAt: "2026-05-22",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به روتین صبحگاهی</h2>
@@ -738,7 +738,7 @@ export const magazines: Article[] = [
     slug: "forgiving-yourself",
     title: "هنر بخشیدن خود: چگونه از اشتباهات گذشته عبور کنیم؟",
     summary: "با شناخت عمیق‌تر بخشایش و یادگیری تکنیک‌های مرتبط با گذشته، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر احساس گناه بردارید.",
-    coverImage: "https://images.unsplash.com/photo-x8ZStukS2PM?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_forgiving_yourself.jpg",
     publishedAt: "2026-05-06",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به بخشایش</h2>
@@ -760,7 +760,7 @@ export const magazines: Article[] = [
     slug: "financial-anxiety",
     title: "اضطراب مالی چیست و چگونه استرس پول را مدیریت کنیم؟",
     summary: "با شناخت عمیق‌تر اضطراب مالی و یادگیری تکنیک‌های مرتبط با استرس اقتصادی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر مدیریت پول بردارید.",
-    coverImage: "https://images.unsplash.com/photo-N7ZAvHlY0wQ?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_financial_anxiety.jpg",
     publishedAt: "2026-07-30",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به اضطراب مالی</h2>
@@ -782,7 +782,7 @@ export const magazines: Article[] = [
     slug: "gaslighting-signs",
     title: "گسلایتینگ (Gaslighting) چیست؟ نشانه‌های دستکاری روانی",
     summary: "با شناخت عمیق‌تر گسلایتینگ و یادگیری تکنیک‌های مرتبط با دستکاری روانی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر رابطه سمی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-CjI_h3sHpoQ?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_gaslighting_signs.jpg",
     publishedAt: "2026-05-12",
     readTimeMinutes: 7,
     content: `<h2>اهمیت پرداختن به گسلایتینگ</h2>
@@ -804,7 +804,7 @@ export const magazines: Article[] = [
     slug: "benefits-of-nature-therapy",
     title: "طبیعت‌درمانی: چرا قدم زدن در طبیعت مغز را بازسازی می‌کند؟",
     summary: "با شناخت عمیق‌تر طبیعت‌درمانی و یادگیری تکنیک‌های مرتبط با کاهش استرس، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر فضای سبز بردارید.",
-    coverImage: "https://images.unsplash.com/photo-lG0d-BkiSnc?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_benefits_of_nature_therapy.jpg",
     publishedAt: "2026-06-18",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به طبیعت‌درمانی</h2>
@@ -826,7 +826,7 @@ export const magazines: Article[] = [
     slug: "how-to-stop-procrastinating",
     title: "اهمال‌کاری چیست؟ روش‌های علمی برای غلبه بر تنبلی",
     summary: "با شناخت عمیق‌تر اهمال‌کاری و یادگیری تکنیک‌های مرتبط با تنبلی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر مدیریت زمان بردارید.",
-    coverImage: "https://images.unsplash.com/photo-OVO8nK-7Rfs?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_how_to_stop_procrastinating.jpg",
     publishedAt: "2026-07-20",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به اهمال‌کاری</h2>
@@ -848,7 +848,7 @@ export const magazines: Article[] = [
     slug: "music-therapy-benefits",
     title: "موسیقی درمانی: چگونه صداها استرس ما را کاهش می‌دهند؟",
     summary: "با شناخت عمیق‌تر موسیقی درمانی و یادگیری تکنیک‌های مرتبط با فرکانس آرامش، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر صدا درمانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-sQZ_N1BwL5A?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_music_therapy_benefits.jpg",
     publishedAt: "2026-07-21",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به موسیقی درمانی</h2>
@@ -870,7 +870,7 @@ export const magazines: Article[] = [
     slug: "coping-with-change",
     title: "چگونه با تغییرات بزرگ زندگی سازگار شویم؟",
     summary: "با شناخت عمیق‌تر تغییرات زندگی و یادگیری تکنیک‌های مرتبط با سازگاری، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر انعطاف‌پذیری روانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-Xq1ntWruZQI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_coping_with_change.jpg",
     publishedAt: "2026-07-22",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به تغییرات زندگی</h2>
@@ -892,7 +892,7 @@ export const magazines: Article[] = [
     slug: "self-care-vs-selfishness",
     title: "تفاوت مراقبت از خود (Self-care) و خودخواهی چیست؟",
     summary: "با شناخت عمیق‌تر مراقبت از خود و یادگیری تکنیک‌های مرتبط با سلف‌کر، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر سلامت روان بردارید.",
-    coverImage: "https://images.unsplash.com/photo--uHVRvKmVOU?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_self_care_vs_selfishness.jpg",
     publishedAt: "2026-05-11",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به مراقبت از خود</h2>
@@ -914,7 +914,7 @@ export const magazines: Article[] = [
     slug: "highly-sensitive-person-hsp",
     title: "آیا شما یک فرد بسیار حساس (HSP) هستید؟",
     summary: "با شناخت عمیق‌تر آدم بسیار حساس و یادگیری تکنیک‌های مرتبط با HSP، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر همدلی بالا بردارید.",
-    coverImage: "https://images.unsplash.com/photo-pGcqw1ARGmI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_highly_sensitive_person_hsp.jpg",
     publishedAt: "2026-05-11",
     readTimeMinutes: 5,
     content: `<h2>اهمیت پرداختن به آدم بسیار حساس</h2>
@@ -936,7 +936,7 @@ export const magazines: Article[] = [
     slug: "inner-child-healing",
     title: "شفای کودک درون: چگونه زخم‌های گذشته را درمان کنیم؟",
     summary: "با شناخت عمیق‌تر کودک درون و یادگیری تکنیک‌های مرتبط با شفای روانی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر تروما بردارید.",
-    coverImage: "https://images.unsplash.com/photo-B14-zOa6nGU?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_inner_child_healing.jpg",
     publishedAt: "2026-05-21",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به کودک درون</h2>
@@ -958,7 +958,7 @@ export const magazines: Article[] = [
     slug: "managing-anger",
     title: "مدیریت خشم: چگونه آتش درونمان را مهار کنیم؟",
     summary: "با شناخت عمیق‌تر کنترل خشم و یادگیری تکنیک‌های مرتبط با عصبانیت، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر هوش هیجانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-S0Xp2wFjV20?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_managing_anger.jpg",
     publishedAt: "2026-06-07",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به کنترل خشم</h2>
@@ -980,7 +980,7 @@ export const magazines: Article[] = [
     slug: "introvert-mental-health",
     title: "راهنمای بقای درون‌گراها در یک دنیای برون‌گرا",
     summary: "با شناخت عمیق‌تر درون‌گرایی و یادگیری تکنیک‌های مرتبط با شخصیت، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر انرژی روانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-v9FQR4tbIq8?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_introvert_mental_health.jpg",
     publishedAt: "2026-05-30",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به درون‌گرایی</h2>
@@ -1002,7 +1002,7 @@ export const magazines: Article[] = [
     slug: "attachment-styles",
     title: "سبک‌های دلبستگی: چرا در روابط همیشه یک الگوی تکراری داریم؟",
     summary: "با شناخت عمیق‌تر سبک دلبستگی و یادگیری تکنیک‌های مرتبط با دلبستگی ایمن، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر روابط عاطفی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-EUsVwEOsblE?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_attachment_styles.jpg",
     publishedAt: "2026-07-19",
     readTimeMinutes: 7,
     content: `<h2>اهمیت پرداختن به سبک دلبستگی</h2>
@@ -1024,7 +1024,7 @@ export const magazines: Article[] = [
     slug: "midlife-crisis",
     title: "بحران میانسالی چیست و چگونه از آن عبور کنیم؟",
     summary: "با شناخت عمیق‌تر بحران میانسالی و یادگیری تکنیک‌های مرتبط با افسردگی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر معنای زندگی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-q2n2qZ1G0qI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_midlife_crisis.jpg",
     publishedAt: "2026-08-10",
     readTimeMinutes: 9,
     content: `<h2>اهمیت پرداختن به بحران میانسالی</h2>
@@ -1046,7 +1046,7 @@ export const magazines: Article[] = [
     slug: "yoga-for-mental-health",
     title: "یوگا و سلامت روان: حرکاتی برای کاهش اضطراب",
     summary: "با شناخت عمیق‌تر یوگا و یادگیری تکنیک‌های مرتبط با ذهن و بدن، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر آرامش بردارید.",
-    coverImage: "https://images.unsplash.com/photo-ZzOa5G8hSPI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_yoga_for_mental_health.jpg",
     publishedAt: "2026-06-08",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به یوگا</h2>
@@ -1068,7 +1068,7 @@ export const magazines: Article[] = [
     slug: "seasonal-affective-disorder",
     title: "افسردگی فصلی (SAD) چیست و چگونه درمان می‌شود؟",
     summary: "با شناخت عمیق‌تر افسردگی فصلی و یادگیری تکنیک‌های مرتبط با پاییز و زمستان، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر نور درمانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-Ixp4YhCKZkI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_seasonal_affective_disorder.jpg",
     publishedAt: "2026-06-04",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به افسردگی فصلی</h2>
@@ -1090,7 +1090,7 @@ export const magazines: Article[] = [
     slug: "cognitive-distortions",
     title: "خطاهای شناختی: تله‌هایی که مغز برایمان می‌گذارد",
     summary: "با شناخت عمیق‌تر خطاهای شناختی و یادگیری تکنیک‌های مرتبط با افکار منفی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر تحریف شناختی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-N_XpU_fT-7A?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_cognitive_distortions.jpg",
     publishedAt: "2026-05-28",
     readTimeMinutes: 6,
     content: `<h2>اهمیت پرداختن به خطاهای شناختی</h2>
@@ -1112,7 +1112,7 @@ export const magazines: Article[] = [
     slug: "art-therapy",
     title: "هنر درمانی: چگونه نقاشی و هنر به بیان احساسات کمک می‌کند؟",
     summary: "با شناخت عمیق‌تر هنر درمانی و یادگیری تکنیک‌های مرتبط با خلاقیت، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر تخلیه هیجانی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-9A_pZp1D2rI?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_art_therapy.jpg",
     publishedAt: "2026-05-20",
     readTimeMinutes: 5,
     content: `<h2>اهمیت پرداختن به هنر درمانی</h2>
@@ -1134,7 +1134,7 @@ export const magazines: Article[] = [
     slug: "minimalism-and-mind",
     title: "مینیمالیسم ذهنی: چگونه با خلوت کردن محیط، ذهنمان را آرام کنیم؟",
     summary: "با شناخت عمیق‌تر مینیمالیسم و یادگیری تکنیک‌های مرتبط با ساده‌زیستی، قدمی بزرگ در مسیر آرامش ذهنی و غلبه بر خلوت ذهنی بردارید.",
-    coverImage: "https://images.unsplash.com/photo-jXm9vT5fC5E?auto=format&fit=crop&w=1200&h=630&q=80",
+    coverImage: "/images/magazines/mag_minimalism_and_mind.jpg",
     publishedAt: "2026-06-18",
     readTimeMinutes: 8,
     content: `<h2>اهمیت پرداختن به مینیمالیسم</h2>
