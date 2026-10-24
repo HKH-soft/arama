@@ -13,7 +13,10 @@ const PROTECTED = [
   "/settings",
 ];
 
-const AUTH_SECRET = process.env.AUTH_SECRET || "default_dev_secret_only_for_local_dev_123456";
+const AUTH_SECRET =
+  process.env.AUTH_SECRET ||
+  process.env.ADMIN_SESSION_SECRET ||
+  "default_dev_secret_only_for_local_dev_123456";
 
 async function verifySessionEdge(token: string): Promise<boolean> {
   const parts = token.split(".");
@@ -51,7 +54,11 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
-  const isAuthPage = pathname === "/login" || pathname.startsWith("/login/");
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/signup" ||
+    pathname.startsWith("/signup/");
 
   // If they have an invalid cookie (it's present but failed verification), clear it.
   const needsCookieClear = cookieValue && !isAuthenticated;
@@ -77,7 +84,7 @@ export async function middleware(request: NextRequest) {
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://integrate.api.nvidia.com;
+    img-src 'self' blob: data: https://integrate.api.nvidia.com https://images.unsplash.com;
     font-src 'self' data:;
     object-src 'none';
     base-uri 'self';

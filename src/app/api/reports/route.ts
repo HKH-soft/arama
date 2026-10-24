@@ -5,10 +5,15 @@ import { exerciseCompletions, moodEntries, profiles } from "@/db/schema";
 import { requireUser } from "@/lib/auth-helpers";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
-  apiKey: process.env.OPENAI_API_KEY || "dummy-key-to-prevent-crash",
-});
+const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
+const baseURL = process.env.AI_BASE_URL || process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1";
+
+const openai = apiKey
+  ? new OpenAI({
+      baseURL,
+      apiKey,
+    })
+  : null;
 
 /** Count consecutive days (ending today or yesterday) that have >=1 completion. */
 function computeStreak(dates: Date[]): number {
@@ -91,16 +96,20 @@ export async function GET(request: NextRequest) {
   "insight": "یادداشت همدلانه شما"
 }`;
 
-        const completion = await openai.chat.completions.create({
-          model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-          messages: [{ role: "system", content: prompt }],
-          response_format: { type: "json_object" },
-          temperature: 0.7,
-        });
+        if (openai) {
+          const completion = await openai.chat.completions.create({
+            model: process.env.AI_MODEL || process.env.OPENAI_MODEL || "gpt-4o-mini",
+            messages: [{ role: "system", content: prompt }],
+            response_format: { type: "json_object" },
+            temperature: 0.7,
+          });
 
-        const aiContent = completion.choices[0]?.message.content;
-        if (aiContent) {
-          aiInsight = JSON.parse(aiContent).insight;
+          const aiContent = completion.choices[0]?.message.content;
+          if (aiContent) {
+            aiInsight = JSON.parse(aiContent).insight;
+          }
+        } else {
+          throw new Error("AI not configured");
         }
       } catch (err) {
         console.error("[Reports API AI Error]", err);

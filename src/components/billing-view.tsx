@@ -144,8 +144,8 @@ function BillingViewInner() {
       if (!response.ok) throw new Error(data.error || "شروع فرآیند پرداخت ناموفق بود.");
 
       if (data.url) {
-        // Full page redirect to ZarinPal checkout page
-        window.location.href = data.url;
+        // Full page redirect to secure payment gateway (CartBeCart / Shaparak IPG)
+        window.location.assign(data.url);
       } else {
         throw new Error("آدرس درگاه پرداخت یافت نشد.");
       }

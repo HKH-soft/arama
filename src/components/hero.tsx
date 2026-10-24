@@ -65,15 +65,15 @@ export function Hero() {
           </Reveal>
 
           <Reveal delay={480}>
-            <ul className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-faint">
+            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-faint">
               <li className="inline-flex items-center gap-1.5">
-                <Lock className="size-3.5 text-brand" /> گفتگوهای محرمانه
+                <Lock className="size-3.5 text-brand" /> گفتگوهای کاملاً محرمانه و رمزنگاری‌شده
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="size-3.5 text-brand" /> کاملاً فارسی
+                <ShieldCheck className="size-3.5 text-brand" /> پروتکل‌های علمی CBT و ذهن‌آگاهی
               </li>
               <li className="inline-flex items-center gap-1.5">
-                <Sparkles className="size-3.5 text-brand" /> تمرین‌های علمی برای مدیریت استرس
+                <Sparkles className="size-3.5 text-brand" /> بیش از ۱۲,۰۰۰ گفتگوی آرامش‌بخش
               </li>
             </ul>
           </Reveal>

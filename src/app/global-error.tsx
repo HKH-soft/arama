@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 /**
  * Last-resort fallback — only renders if the root layout itself throws.
@@ -95,7 +96,7 @@ export default function GlobalError({
             >
               تلاش دوباره
             </button>
-            <a
+            <Link
               href="/"
               style={{
                 borderRadius: "9999px",
@@ -105,10 +106,11 @@ export default function GlobalError({
                 color: "#0c2018",
                 border: "1px solid #d9e9df",
                 textDecoration: "none",
+                display: "inline-block",
               }}
             >
               بازگشت به خانه
-            </a>
+            </Link>
           </div>
         </div>
       </body>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { profiles, conversations, messages, moodEntries, subscriptions, voiceJournals } from "@/db/schema";
+import { profiles, conversations, messages, moodEntries, subscriptions, voiceJournals, exerciseCompletions, payments } from "@/db/schema";
 import { requireUser } from "@/lib/auth-helpers";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -14,6 +14,8 @@ export async function DELETE(request: NextRequest) {
   try {
     await db.delete(moodEntries).where(eq(moodEntries.userId, userId));
     await db.delete(subscriptions).where(eq(subscriptions.userId, userId));
+    await db.delete(exerciseCompletions).where(eq(exerciseCompletions.userId, userId));
+    await db.delete(payments).where(eq(payments.userId, userId));
     
     // voiceJournals might not exist if it was added recently, let's wrap in try/catch just in case
     try { await db.delete(voiceJournals).where(eq(voiceJournals.userId, userId)); } catch (e) {}

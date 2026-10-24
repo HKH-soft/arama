@@ -7,7 +7,10 @@ import { sql } from "drizzle-orm";
 
 const scryptAsync = promisify(scrypt);
 
-const AUTH_SECRET = process.env.AUTH_SECRET || "default_dev_secret_only_for_local_dev_123456";
+const AUTH_SECRET =
+  process.env.AUTH_SECRET ||
+  process.env.ADMIN_SESSION_SECRET ||
+  "default_dev_secret_only_for_local_dev_123456";
 
 export function signSession(userId: string): string {
   const signature = createHmac("sha256", AUTH_SECRET).update(userId).digest("hex");
@@ -15,15 +18,31 @@ export function signSession(userId: string): string {
 }
 
 export function verifySession(token: string): string | null {
+  if (!token) return null;
   const parts = token.split(".");
   if (parts.length !== 2) return null;
   const [userId, signature] = parts;
+  if (!userId || !signature || signature.length !== 64) return null;
   const expected = createHmac("sha256", AUTH_SECRET).update(userId).digest("hex");
-  if (signature !== expected) return null;
+  try {
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expected, "hex");
+    if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
   return userId;
 }
 
-/** Extract the logged-in user ID from the arama-user cookie. */
+/** Extract the verified user ID from a raw cookie value (useful in Server Components). */
+export function getSessionUserId(token?: string | null): string | null {
+  if (!token) return null;
+  return verifySession(token);
+}
+
+/** Extract the logged-in user ID from the arama-user cookie in NextRequest. */
 export function getUserId(request: NextRequest): string | null {
   const token = request.cookies.get("arama-user")?.value;
   if (!token) return null;
@@ -240,92 +259,81 @@ export async function sendOtpSms(phone: string, code: string): Promise<{ success
     }
   }
 
-  const username = process.env.MELIPAYAMAK_USERNAME;
-  const apiKey = process.env.MELIPAYAMAK_APIKEY; // ApiKey from پنل → توسعه‌دهندگان, NOT your login password
-  const from = process.env.MELIPAYAMAK_FROM; // your dedicated sender line number
+  const username =
+    process.env.MELLIPAYAMAK_USERNAME?.trim() ||
+    process.env.MELIPAYAMAK_USERNAME?.trim() ||
+    "09934625945";
+  const password =
+    process.env.MELLIPAYAMAK_API_KEY?.trim() ||
+    process.env.MELIPAYAMAK_APIKEY?.trim() ||
+    "c7bf6eb9-e3c0-4914-9b4f-06b9b5b52a85";
+  const bodyId =
+    process.env.MELLIPAYAMAK_BODY_ID?.trim() ||
+    process.env.MELIPAYAMAK_PATTERN?.trim() ||
+    "543305";
+  const from =
+    process.env.MELLIPAYAMAK_FROM?.trim() ||
+    process.env.MELIPAYAMAK_FROM?.trim() ||
+    "50004001462594";
 
-  if (!username || !apiKey || !from || username === "your_username") {
-    // In development or missing config, log the code for testing
-    console.log(`[MeliPayamak DEV MODE] OTP for ${phone}: ${code}`);
+  // 1. Primary: MeliPayamak BaseServiceNumber Pattern (bypasses telecom blacklists)
+  if (bodyId) {
+    try {
+      const patternParams = new URLSearchParams();
+      patternParams.append("username", username);
+      patternParams.append("password", password);
+      patternParams.append("to", phone);
+      patternParams.append("bodyId", bodyId);
+      patternParams.append("text", code);
+
+      const pRes = await fetch("https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: patternParams,
+        signal: AbortSignal.timeout(10_000),
+      });
+      const pData = (await pRes.json().catch(() => ({}))) as { RetStatus?: number; Value?: unknown };
+      if (pData.RetStatus === 1 || (pData.Value && String(pData.Value).length > 2)) {
+        console.log(`[MeliPayamak Pattern] OTP sent to ${phone.slice(0, 4)}***${phone.slice(-4)} | RecID: ${pData.Value}`);
+        return { success: true };
+      }
+      console.warn("[MeliPayamak Pattern] Failed, falling back to standard send:", pData);
+    } catch (pErr) {
+      console.warn("[MeliPayamak Pattern] Error, falling back to standard send:", pErr);
+    }
+  }
+
+  // 2. Secondary fallback: Standard SendSMS
+  try {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("password", password);
+    if (from) params.append("from", from);
+    params.append("to", phone);
+    params.append("text", `آراما\nکد تأیید: ${code}\nاین کد تا ۲ دقیقه معتبر است.`);
+    params.append("isflash", "false");
+
+    const res = await fetch("https://rest.payamak-panel.com/api/SendSMS/SendSMS", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params,
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = (await res.json().catch(() => ({}))) as { RetStatus?: number; Value?: unknown };
+    if (data.RetStatus === 1 || (data.Value && String(data.Value).length > 2)) {
+      console.log(`[MeliPayamak Standard] OTP sent to ${phone.slice(0, 4)}***${phone.slice(-4)} | RecID: ${data.Value}`);
+      return { success: true };
+    }
+    console.error("[MeliPayamak Standard] Error response:", data);
+  } catch (err) {
+    console.error("[MeliPayamak Standard] Network error:", err);
+  }
+
+  // 3. Dev mode fallback
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[MeliPayamak DEV FALLBACK] OTP for ${phone}: ${code}`);
     return { success: true };
   }
 
-  // Error codes documented for SendSMS (RetStatus !== 1 means failure;
-  // Value holds the specific code below).
-  const ERROR_MESSAGES: Record<string, string> = {
-    "0": "نام کاربری یا ApiKey ملی‌پیامک اشتباه است.",
-    "2": "اعتبار پنل ملی‌پیامک کافی نیست.",
-    "3": "محدودیت ارسال روزانه پنل ملی‌پیامک.",
-    "4": "محدودیت حجم ارسال پنل ملی‌پیامک.",
-    "5": "شمارهٔ فرستنده (from) معتبر نیست.",
-    "6": "سامانهٔ ملی‌پیامک در حال به‌روزرسانی است.",
-    "7": "متن پیامک حاوی کلمهٔ فیلترشده است.",
-    "9": "ارسال از خطوط عمومی از طریق وب‌سرویس امکان‌پذیر نیست.",
-    "10": "کاربر ملی‌پیامک فعال نیست.",
-    "11": "پیامک ارسال نشد.",
-    "12": "مدارک حساب ملی‌پیامک کامل نیست.",
-    "14": "متن پیامک حاوی لینک است.",
-    "16": "شمارهٔ گیرنده یافت نشد.",
-    "17": "متن پیامک خالی است.",
-    "18": "شمارهٔ گیرنده معتبر نیست.",
-    "-108": "IP سرور مسدود شده است.",
-    "-109": "باید IP مجاز برای API را در پنل ملی‌پیامک تنظیم کنی.",
-    "-110": "باید از ApiKey (نه رمز عبور) استفاده کنی — از منوی توسعه‌دهندگان بگیرش.",
-    "-111": "IP درخواست‌دهنده نامعتبر است.",
-  };
-
-  try {
-    const body = new URLSearchParams({
-      username,
-      password: apiKey, // the "password" field is documented to be the ApiKey
-      to: phone,
-      from,
-      text,
-      isFlash: "false",
-    });
-
-    const response = await fetch(
-      "https://rest.payamak-panel.com/api/SendSMS/SendSMS",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      },
-    );
-
-    const rawText = await response.text();
-
-    if (!response.ok) {
-      console.error(
-        `[MeliPayamak] HTTP ${response.status} ${response.statusText}. Body: ${rawText.slice(0, 500)}`,
-      );
-      return { success: false, error: "ارسال کد تأیید انجام نشد." };
-    }
-
-    let result: { Value?: string; RetStatus?: number; StrRetStatus?: string };
-    try {
-      result = JSON.parse(rawText) as { Value?: string; RetStatus?: number; StrRetStatus?: string };
-    } catch {
-      // Not JSON — usually an HTML/XML error page when credentials, IP,
-      // or the endpoint itself are wrong. Log the raw body so the real
-      // cause shows up in server logs instead of a generic 503.
-      console.error(`[MeliPayamak] Non-JSON response: ${rawText.slice(0, 500)}`);
-      return { success: false, error: "پاسخ نامعتبر از سرویس پیامک دریافت شد." };
-    }
-
-    console.log(`[MeliPayamak] RetStatus: ${result.RetStatus}, Value: ${result.Value}`);
-
-    if (result.RetStatus === 1 && result.StrRetStatus === "Ok") {
-      return { success: true };
-    }
-
-    const code_ = String(result.Value ?? "");
-    return {
-      success: false,
-      error: ERROR_MESSAGES[code_] || "ارسال کد تأیید انجام نشد.",
-    };
-  } catch (err) {
-    console.error("[MeliPayamak] Network error:", err);
-    return { success: false, error: "ارتباط با سرویس پیامک برقرار نشد." };
-  }
+  return { success: false, error: "ارسال کد تأیید پیامکی با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید." };
 }

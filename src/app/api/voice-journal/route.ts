@@ -4,17 +4,22 @@ import { db } from "@/db";
 import { voiceJournals, moodEntries } from "@/db/schema";
 import { requireUser } from "@/lib/auth-helpers";
 
+export const dynamic = "force-dynamic";
 export const maxDuration = 60; // Set Vercel execution limit if deployed
 
-const audioClient = new OpenAI({
-  baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
-  apiKey: process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "dummy-key-to-prevent-crash",
-});
+function getAudioClient() {
+  return new OpenAI({
+    baseURL: process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
+    apiKey: process.env.OPENAI_API_KEY || process.env.AI_API_KEY || "dummy-key-for-build",
+  });
+}
 
-const aiClient = new OpenAI({
-  baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.AI_API_KEY,
-});
+function getAiClient() {
+  return new OpenAI({
+    baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
+    apiKey: process.env.AI_API_KEY || process.env.OPENAI_API_KEY || "dummy-key-for-build",
+  });
+}
 
 export async function POST(request: NextRequest) {
   let userResult = requireUser(request);
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Transcribe with Whisper
-    const transcription = await audioClient.audio.transcriptions.create({
+    const transcription = await getAudioClient().audio.transcriptions.create({
       file: audioFile,
       model: "whisper-1",
       language: "fa",
@@ -45,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Get AI Insight and Mood Label
-    const completion = await aiClient.chat.completions.create({
+    const completion = await getAiClient().chat.completions.create({
       model: process.env.AI_MODEL || "z-ai/glm-5.2",
       messages: [
         {

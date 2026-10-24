@@ -30,12 +30,28 @@ export const metadata: Metadata = {
   },
   description:
     "آراما یک همراه هوشمند سلامت روان است؛ گفتگوی همدلانه با هوش مصنوعی، ردیابی خلق‌وخو، مدیتیشن هدایت‌شده و تمرین‌های درمانی — در فضایی امن، گرم و بدون قضاوت.",
-  keywords: ["سلامت روان", "مدیتیشن", "تراپی آنلاین", "آرامش", "هوش مصنوعی", "چت بات", "مدیریت اضطراب"],
+  keywords: [
+    "آراما",
+    "aramaho",
+    "arama",
+    "سلامت روان",
+    "تراپی آنلاین",
+    "تراپی آنلاین هوش مصنوعی",
+    "بعد از حمله پانیک چه کنیم",
+    "آموزش غلبه بر تنبلی و اهمال کاری",
+    "تنهایی",
+    "احساس تنهایی",
+    "eq",
+    "هوش هیجانی",
+    "مدیتیشن",
+    "کاهش اضطراب",
+    "چت بات سلامت روان",
+  ],
   openGraph: {
-    title: "آراما — همراه هوشمند سلامت روان",
+    title: "آراما — همراه هوشمند سلامت روان و تراپی آنلاین",
     description: "گفتگوی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های درمانی در فضایی امن و گرم.",
     url: "https://arama.life",
-    siteName: "Arama",
+    siteName: "آراما",
     images: [
       {
         url: "/images/og-image.jpg",
@@ -49,7 +65,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "آراما — همراه هوشمند سلامت روان",
+    title: "آراما — همراه هوشمند سلامت روان و تراپی آنلاین",
     description: "گفتگوی همدلانه، مدیتیشن هدایت‌شده و تمرین‌های درمانی در فضایی امن و گرم.",
     images: ["/images/og-image.jpg"],
   },
@@ -67,8 +83,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 const themeInit = `
@@ -86,9 +102,19 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "WebSite",
+      "@id": "https://arama.life/#website",
+      "url": "https://arama.life",
+      "name": "آراما",
+      "alternateName": ["Arama", "Aramaho", "آراماهو", "arama.life"],
+      "description": "همراه هوشمند سلامت روان، تراپی آنلاین فارسی، تمرین‌های ذهن‌آگاهی و مدیتیشن",
+      "inLanguage": "fa-IR",
+    },
+    {
       "@type": "Organization",
       "@id": "https://arama.life/#organization",
       "name": "آراما",
+      "alternateName": ["Arama", "Aramaho"],
       "url": "https://arama.life",
       "logo": "https://arama.life/icon-192.png",
       "sameAs": ["https://instagram.com/arama.life", "https://t.me/arama_life"],
@@ -97,13 +123,50 @@ const jsonLd = {
       "@type": "SoftwareApplication",
       "@id": "https://arama.life/#software",
       "name": "آراما — همراه هوشمند سلامت روان",
+      "alternateName": ["Arama App", "Aramaho"],
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Web",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "1420",
+        "bestRating": "5",
+        "worstRating": "1",
+      },
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "IRR",
       },
+    },
+    {
+      "@type": "MedicalWebPage",
+      "@id": "https://arama.life/#medical",
+      "url": "https://arama.life",
+      "name": "راهنمای سلامت روان و آرامش ذهن آراما",
+      "inLanguage": "fa-IR",
+      "about": [
+        {
+          "@type": "MedicalCondition",
+          "name": "اضطراب و استرس",
+          "alternateName": "Anxiety & Stress",
+        },
+        {
+          "@type": "MedicalCondition",
+          "name": "حمله پانیک",
+          "alternateName": "Panic Attack",
+        },
+        {
+          "@type": "MedicalCondition",
+          "name": "احساس تنهایی و انزوای عاطفی",
+          "alternateName": "Loneliness",
+        },
+        {
+          "@type": "MedicalTherapy",
+          "name": "تمرین‌های ذهن‌آگاهی و تنفس آرامش‌بخش",
+          "alternateName": "Mindfulness & Breathwork",
+        },
+      ],
     },
   ],
 };

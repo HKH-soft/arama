@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
       .from(subscriptions)
       .innerJoin(plans, eq(subscriptions.planId, plans.id))
       .where(eq(subscriptions.userId, user.userId))
+      .orderBy(desc(subscriptions.startedAt))
       .limit(1);
 
     const paymentRows = await db

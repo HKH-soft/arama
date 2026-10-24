@@ -6,8 +6,22 @@ import { AppShell } from "@/components/app-shell";
 import { magazines } from "@/data/magazines";
 
 export const metadata: Metadata = {
-  title: "آراما مگ — مجله سلامت روان",
-  description: "جدیدترین مقالات، راهنماها و مطالب علمی درباره سلامت روان، کنترل اضطراب و ذهن‌آگاهی در آراما مگ.",
+  title: "آراما مگ — مجله سلامت روان، ذهن‌آگاهی و خودشناسی",
+  description: "مجموعه مقالات تخصصی، علمی و کاربردی درباره مدیریت اضطراب، حمله پانیک، غلبه بر اهمال‌کاری، هوش هیجانی و تراپی آنلاین.",
+  alternates: {
+    canonical: "https://arama.life/magazine",
+  },
+  keywords: [
+    "مجله سلامت روان",
+    "آراما مگ",
+    "مقالات روانشناسی",
+    "کنترل اضطراب",
+    "بعد از حمله پانیک چه کنیم",
+    "غلبه بر تنبلی و اهمال کاری",
+    "تراپی آنلاین هوش مصنوعی",
+    "هوش هیجانی",
+    "تنهایی",
+  ],
 };
 
 export default function MagazinePage() {

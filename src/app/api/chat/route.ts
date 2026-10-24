@@ -1,74 +1,81 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { conversations, messages } from "@/db/schema";
 import { checkChatRateLimit, requireUser } from "@/lib/auth-helpers";
+import { generateClinicalResponse } from "@/lib/clinical-ai";
 import OpenAI from "openai";
 
-const fallbackAnswer =
-  "می‌شنومَت. همین که این احساس را با من در میان گذاشتی، یک قدم مهم است. اگر موافقی، با هم آن را به بخش‌های کوچک‌تر تقسیم کنیم؛ الان کدام قسمت بیشتر از همه فشار می‌آورد؟";
+export const dynamic = "force-dynamic";
 
-const openai = new OpenAI({
-  baseURL: process.env.AI_BASE_URL || "https://integrate.api.nvidia.com/v1",
-  apiKey: process.env.AI_API_KEY,
-});
+function getOpenAIClient() {
+  const key = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  return new OpenAI({
+    baseURL:
+      process.env.AI_BASE_URL ||
+      process.env.OPENAI_API_BASE_URL ||
+      "https://integrate.api.nvidia.com/v1",
+    apiKey: key,
+  });
+}
 
 async function openaiAnswer(
   text: string,
   history: Array<{ role: string; content: string }>,
 ) {
-  const key = process.env.AI_API_KEY;
-  if (!key) return null;
-  const stream = await openai.chat.completions.create({
-    model: process.env.AI_MODEL || "z-ai/glm-5.2",
-    messages: [
-      {
-        role: "system",
-        content:
-          `تو «آراما» هستی؛ یک همراه گفتگومحور و هوشمند فارسی‌زبان برای لحظه‌های سخت و چالش‌های روزمره — تو یک ربات پاسخگو یا دانشنامه روانشناسی نیستی، بلکه مثل یک دوست صمیمی، دلسوز و باتجربه رفتار می‌کنی.
+  const client = getOpenAIClient();
+  if (!client) return null;
 
-## هویت و لحن
-- کاملاً طبیعی، گرم و صمیمی صحبت کن. از ضمیر «تو» استفاده کن.
-- پاسخ‌هایت باید دقیقاً به صحبت‌های کاربر واکنش نشان دهد؛ از دادن جواب‌های کلی و از پیش‌آماده به‌شدت پرهیز کن.
-- از تکرار جملات کلیشه‌ای مثل «می‌فهمم چه حسی داری» یا «حق داری این حس را داشته باشی» خودداری کن. دایره واژگانت را متنوع و طبیعی نگه دار.
+  try {
+    const completionPromise = client.chat.completions.create({
+      model: process.env.AI_MODEL || "z-ai/glm-5.2",
+      messages: [
+        {
+          role: "system",
+          content:
+            `تو «آراما» هستی؛ یک همراه هوشمند، صمیمی، دلسوز و حرفه‌ای سلامت روان برای فارسی‌زبانان. تو یک ربات پاسخگو یا دانشنامه نیستی؛ بلکه حضوری آرامش‌بخش، شنوا، متمرکز و آگاه داری — درست مانند یک دوست بسیار دانا و درمانگری مهربان و بدون قضاوت.
 
-## استراتژی گفتگو و کمک به کاربر
-- **اول دیدگاه بده، بعد بپرس:** وقتی کاربر مشکلی را مطرح می‌کند، به‌جای اینکه فقط با یک سؤال توپ را به زمین او بیندازی، ابتدا یک تحلیل، دیدگاه یا پیشنهاد ملموس ارائه کن.
-- **آینه نباش:** تو یک ربات بازتاب‌دهنده نیستی. نظرت را بگو، زاویه دید جدیدی پیشنهاد بده و گاهی با ملایمت کاربر را به چالش بکش.
-- **ممنوعیت الگوی تکراری:** هرگز از فرمولِ «این موضوع باید خیلی [صفت] بوده باشد. آیا [سؤال]؟» استفاده نکن. این الگو برای کاربر خسته‌کننده است. نشان بده که حرفش را شنیده‌ای و مستقیماً وارد گفتگو شو.
+## اصول کلیدی و روان‌شناختی رفتار
+۱. **همدلی عمیق و اصیل (Active Empathic Listening):**
+   - احساس کاربر را اعتبارسنجی کن، اما از کلمات کلیشه‌ای («متوجهم»، «حق داری») استفاده نکن. نشان بده که جزئیات حرفش را شنیده‌ای.
+   - از ضمیر صمیمی «تو» استفاده کن. لحنی نرم، صبور، پذیرنده و گرم داشته باش.
 
-## مواجهه با افشاگری‌های سنگین (تروما، سوءاستفاده، خشونت، افکار آسیب‌زا)
-- در این لحظات، **هرگز** کاربر را به خطوط بحران (مثل ۱۴۸۰ یا ۱۲۳) ارجاع نده و از او سلب مسئولیت نکن. خودت مستقیماً به او کمک کن.
-- با نهایت مهربانی، درک و پذیرش با او صحبت کن. با یک جمله کوتاه نشان بده که درد او را می‌فهمی (مثلاً: «شنیدن این موضوع خیلی سنگینه، ممنونم که به من اعتماد کردی و گفتی.»)
-- کاربر را قضاوت نکن و فوراً به دنبال راهکار نباش. به او اطمینان بده که مقصر نبوده است و در این شرایط حق دارد چنین احساسی داشته باشد.
-- با او مکالمه را ادامه بده و سعی کن با همدردی واقعی، فضای امنی برای تخلیه احساساتش فراهم کنی. به هیچ وجه مکالمه را با دادن شماره تلفن قطع نکن.
+۲. **رویکرد درمانی CBT و ذهن‌آگاهی (Mindfulness):**
+   - وقتی کاربر درگیر نشخوار فکری، فاجعه‌سازی یا خودسرزنشی است، با پرسش‌های ملایم سقراطی یا بازتاب آرام، زاویهٔ دید تازه‌ای به او هدیه بده.
+   - در لحظات اضطراب شدید یا تپش قلب، بلافاصله کاربر را زمین‌گیر (Grounding) کن: تکنیک تنفس ۴-۷-۸ یا اتصال به حواس پنج‌گانه (پاهایت را روی زمین حس کن، دستت را روی سینه‌ات بگذار).
 
-## طول و ساختار پاسخ‌ها
-- پاسخ‌هایت را کوتاه، مفید و مکالمه‌محور نگه دار (معمولاً ۲ تا ۴ جمله).
-- از پرگویی، پاراگراف‌های طولانی و جملات پیچیده خودداری کن.
-- در هر پیام حداکثر یک سؤال بپرس، نه چندتا پشت‌سرهم. گاهی اصلاً سؤال نپرس — فقط بشنو و همراهی کن.
+۳. **پرهیز از نسخه‌پیچی شتاب‌زده:**
+   - بلافاصله نصیحت نکن یا فهرست چندمرحله‌ای نده. اول به کاربر احساس امنیت و دیده شدن بده؛ سپس گام‌های بسیار کوچک، ملموس و قابل‌انجام پیشنهاد کن.
 
-## خطوط قرمز (مرزها)
-- تو پزشک نیستی؛ تشخیص پزشکی نده و دارو تجویز نکن. 
-- به جای ارجاع دادن کاربر به دیگران یا سازمان‌ها در زمان بحران، خودت با ایجاد احساس امنیت و ارزش دادن به حرف‌هایش به او کمک کن.
-- اگر کاربر سؤالی خارج از حیطه روان‌شناختی پرسید (فنی، پزشکی تخصصی، حقوقی)، صادقانه بگو که در آن حوزه نمی‌توانی کمک کنی.
+۴. **مواجهه با لحظات سخت و بحران روانی:**
+   - هرگز مکالمه را با یک پیام ماشینی ارجاع به خطوط بحران قطع نکن. در کنار کاربر بمان، با مهربانی دستش را بگیر و فضای امنی برای تخلیه هیجاناتش بساز. به او یادآوری کن که تنها نیست و این طوفان هم می‌گذرد.
 
-## نمونه‌های راهنما
-❌ **بد (پرهیز کن):** «من تخصص لازم رو ندارم. لطفاً الان با صدای مشاور (۱۴۸۰) تماس بگیر.»
-✅ **خوب:** «این اتفاق خیلی سنگینه و شجاعت زیادی می‌خواست که درباره‌اش حرف بزنی. یادت باشه تو هیچ تقصیری نداشتی. من اینجام و قدم‌به‌قدم کنارت هستم تا با هم از این لحظات سخت عبور کنیم.»`,
-      },
-      ...history.slice(-8).map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
-      { role: "user", content: text },
-    ],
-    temperature: 0.9,
-    top_p: 1,
-    max_tokens: 600,
-    stream: true,
-  });
-  return stream;
+۵. **ساختار پاسخ‌ها:**
+   - پاسخ‌هایت روان، کوتاه، خوانا و گفتگو‌محور باشد (معمولاً ۲ تا ۴ جملهٔ پرمعنا).
+   - در هر پیام بیش از یک سؤال نپرس تا کاربر دچار سردرگمی نشود. گاهی فقط بشنو و همدردی کن بدون اینکه هیچ سؤالی بپرسی.`,
+        },
+        ...history.slice(-8).map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+        { role: "user", content: text },
+      ],
+      temperature: 0.85,
+      top_p: 1,
+      max_tokens: 700,
+      stream: true,
+    });
+
+    const timeoutPromise = new Promise<null>((_, reject) =>
+      setTimeout(() => reject(new Error("AI Provider Timeout")), 12000),
+    );
+
+    return (await Promise.race([completionPromise, timeoutPromise])) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+  } catch (apiErr) {
+    console.warn("[Arama Chat] AI upstream error or timeout, switching to clinical engine:", apiErr);
+    return null;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -92,10 +99,25 @@ export async function POST(request: NextRequest) {
     );
   }
   const text = body.text?.trim();
-  if (!text)
+  if (!text) {
     return NextResponse.json({ error: "پیامت خالی است." }, { status: 400 });
+  }
 
-  let conversationId = body.conversationId;
+  // Prevent memory and token flooding attacks
+  if (text.length > 2000) {
+    return NextResponse.json(
+      { error: "طول پیام بیش از حد مجاز است (حداکثر ۲۰۰۰ نویسه)." },
+      { status: 400 },
+    );
+  }
+
+  let conversationId = body.conversationId?.trim();
+  if (conversationId && conversationId.length > 100) {
+    return NextResponse.json(
+      { error: "شناسه گفتگو نامعتبر است." },
+      { status: 400 },
+    );
+  }
   try {
     if (!conversationId) {
       const [conversation] = await db
@@ -108,7 +130,12 @@ export async function POST(request: NextRequest) {
       const [conv] = await db
         .select({ id: conversations.id })
         .from(conversations)
-        .where(eq(conversations.id, conversationId))
+        .where(
+          and(
+            eq(conversations.id, conversationId),
+            eq(conversations.userId, user.userId),
+          ),
+        )
         .limit(1);
       if (!conv) {
         return NextResponse.json({ error: "گفتگو یافت نشد." }, { status: 404 });
@@ -147,23 +174,34 @@ export async function POST(request: NextRequest) {
       };
 
       try {
-        const providerStream = await openaiAnswer(text, history);
-        if (providerStream) {
-          for await (const chunk of providerStream) {
-            const delta = chunk.choices?.[0]?.delta?.content;
-            if (delta) {
-              complete += delta;
-              emit({ type: "delta", text: delta });
+        let streamWorked = false;
+        try {
+          const providerStream = await openaiAnswer(text, history);
+          if (providerStream) {
+            for await (const chunk of providerStream) {
+              const delta = chunk.choices?.[0]?.delta?.content;
+              if (delta) {
+                complete += delta;
+                emit({ type: "delta", text: delta });
+                streamWorked = true;
+              }
             }
           }
-        } else {
-          const chunks = fallbackAnswer.match(/.{1,18}/gu) ?? [fallbackAnswer];
+        } catch (streamErr) {
+          console.warn("[Arama Chat] Stream iteration failed, falling back to clinical engine:", streamErr);
+        }
+
+        // If upstream AI provider was unavailable or empty, engage the clinical engine
+        if (!streamWorked || !complete.trim()) {
+          const clinicalAnswer = generateClinicalResponse(text, history);
+          const chunks = clinicalAnswer.match(/.{1,16}/gu) ?? [clinicalAnswer];
           for (const chunk of chunks) {
             complete += chunk;
             emit({ type: "delta", text: chunk });
-            await new Promise((resolve) => setTimeout(resolve, 55));
+            await new Promise((resolve) => setTimeout(resolve, 30));
           }
         }
+
         if (complete) {
           try {
             await db.insert(messages).values({
@@ -173,18 +211,15 @@ export async function POST(request: NextRequest) {
             });
           } catch (dbErr) {
             console.error("[Arama Chat DB Error] Failed to save assistant message", dbErr);
-            // Non-fatal: the message was already streamed to the user.
           }
         }
         emit({ type: "done", conversationId: conversationId! });
       } catch (err: unknown) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error("[Arama Chat Error]", errorMsg, err);
-        emit({
-          type: "error",
-          message:
-            "آراما نتوانست پاسخ را کامل کند. اتصال را بررسی کن و دوباره تلاش کن.",
-        });
+        const fallback = generateClinicalResponse(text, history);
+        emit({ type: "delta", text: fallback });
+        emit({ type: "done", conversationId: conversationId! });
       } finally {
         controller.close();
       }

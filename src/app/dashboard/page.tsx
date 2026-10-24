@@ -63,7 +63,7 @@ function WeeklyRing({ daysDone }: { daysDone: number }) {
             : "گزارش این هفته خالی است. هنوز برای شروع دیر نیست!"}
         </p>
         <Link
-          href="/dashboard"
+          href="/reports"
           className="group mt-3 inline-flex items-center gap-1 text-xs font-black text-brand-ink"
         >
           خواندن گزارش
@@ -76,7 +76,9 @@ function WeeklyRing({ daysDone }: { daysDone: number }) {
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
-  const userId = cookieStore.get("arama-user")?.value || "temp-guest-user";
+  const rawToken = cookieStore.get("arama-user")?.value;
+  const { getSessionUserId } = await import("@/lib/auth-helpers");
+  const userId = getSessionUserId(rawToken) || "temp-guest-user";
 
   let profile = null;
   let weeklyMoods: any[] = [];
@@ -129,7 +131,7 @@ export default async function DashboardPage() {
           id: conv.id,
           title: conv.title,
           preview: latestMessage?.content || "شروع گفتگو...",
-          time: new Intl.DateTimeFormat("en.fa", { dateStyle: "short" }).format(
+          time: new Intl.DateTimeFormat("fa-IR", { dateStyle: "short" }).format(
             conv.updatedAt
           ),
           count: Number(count),
@@ -299,7 +301,7 @@ export default async function DashboardPage() {
                 {chats.map((c) => (
                   <li key={c.id}>
                     <Link
-                      href={`/chat?id=${c.id}`}
+                      href={`/chat?conversation=${c.id}`}
                       className="group flex items-center gap-4 rounded-2xl border border-line bg-canvas/50 p-4 transition-all duration-300 hover:border-brand/30 hover:bg-tint/60"
                     >
                       <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-tint-strong text-brand-ink">

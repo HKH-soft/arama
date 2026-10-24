@@ -42,11 +42,32 @@ export async function DELETE(request: NextRequest) {
   if (user instanceof NextResponse) return user;
   try {
     const { id } = (await request.json()) as { id?: string };
-    if (!id)
+    if (!id) {
       return NextResponse.json(
         { error: "شناسهٔ گفتگو لازم است." },
         { status: 400 },
       );
+    }
+
+    // Verify ownership first to prevent deleting messages of other users
+    const [existing] = await db
+      .select({ id: conversations.id })
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.id, id),
+          eq(conversations.userId, user.userId),
+        ),
+      )
+      .limit(1);
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "گفتگو یافت نشد یا دسترسی مجاز نیست." },
+        { status: 404 },
+      );
+    }
+
     await db.delete(messages).where(eq(messages.conversationId, id));
     await db
       .delete(conversations)

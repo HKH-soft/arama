@@ -111,6 +111,9 @@ export async function GET(request: Request) {
   } catch (error: unknown) {
     const errorDetails = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
     console.error("[HEALTH CHECK FAILED]", errorDetails, error);
+
+    const isDev = process.env.NODE_ENV !== "production";
+    const publicErrorMsg = isDev ? errorDetails : "خطا در اتصال به سرویس‌های پایگاه داده.";
     
     const htmlError = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -127,7 +130,7 @@ export async function GET(request: Request) {
         <div class="bg-gradient-to-r from-red-600 to-rose-700 px-8 py-6 text-white flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold">خطای سیستمی (Critical Error)</h1>
-                <p class="text-red-100 mt-1 text-sm">ارتباط با سرور یا دیتابیس قطع شده است</p>
+                <p class="text-red-100 mt-1 text-sm">ارتباط با سرور یا دیتابیس برقرار نشد</p>
             </div>
             <div class="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
                 <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -135,7 +138,7 @@ export async function GET(request: Request) {
         </div>
         <div class="p-8">
             <div class="bg-red-50 text-red-800 p-4 rounded-lg border border-red-200 font-mono text-left" dir="ltr">
-                ${errorDetails}
+                ${publicErrorMsg}
             </div>
         </div>
     </div>
@@ -150,8 +153,8 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         status: "error",
-        database: "disconnected_or_missing_tables",
-        error: errorDetails,
+        database: "disconnected",
+        message: publicErrorMsg,
       },
       { status: 500 }
     );

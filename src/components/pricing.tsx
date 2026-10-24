@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, HeartHandshake, RefreshCw, Sparkles, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { Reveal } from "./reveal";
@@ -22,27 +22,84 @@ type Plan = {
 
 const formatPrice = (price: number) => price === 0 ? "رایگان" : price.toLocaleString("fa-IR");
 
+const DEFAULT_PLANS: Plan[] = [
+  {
+    id: "1-month",
+    name: "آغاز آرامش (۱ ماهه)",
+    price: 335000,
+    originalPrice: 390000,
+    unit: "تومان",
+    period: "ماهانه",
+    description: "۳۰ روز مدیتیشن، گفتگو و تمرین‌های آراما",
+    dailyEquivalentNote: "معادل روزانه ۱۱,۰۰۰ تومان",
+    cta: "شروع ۱ ماهه",
+    featured: false,
+    features: [
+      "گفتگوی نامحدود با آراما",
+      "کتابخانهٔ کامل مدیتیشن و تمرین‌ها",
+      "گزارش هفتگی رشد و الگوهای خلق",
+      "یادآورهای مهربانانهٔ چک‌این",
+    ],
+  },
+  {
+    id: "3-month",
+    name: "مسیر آگاهی (۳ ماهه)",
+    price: 819000,
+    originalPrice: 1275000,
+    unit: "تومان",
+    period: "۳ ماهه",
+    description: "۹۰ روز مدیتیشن، گفتگو و تمرین‌های آراما",
+    dailyEquivalentNote: "معادل روزانه ۹,۱۰۰ تومان",
+    cta: "شروع ۳ ماهه",
+    featured: false,
+    features: [
+      "همهٔ امکانات اشتراک ۱ ماهه",
+      "تخفیف ویژهٔ ۳ ماهه",
+      "تحلیل عمیق ماهانهٔ روند روانی",
+      "پشتیبانی اولویت‌دار",
+    ],
+  },
+  {
+    id: "1-year",
+    name: "تحول درونی (۱ ساله)",
+    price: 990000,
+    originalPrice: 2185000,
+    unit: "تومان",
+    period: "سالانه",
+    description: "۳۶۵ روز مدیتیشن، گفتگو و تمرین‌های آراما",
+    dailyEquivalentNote: "معادل ماهانه ۸۲,۵۰۰ تومان و روزانه فقط ۲,۷۵۰ تومان",
+    cta: "شروع ۱ ساله",
+    featured: true,
+    features: [
+      "همهٔ امکانات اشتراک ۳ ماهه",
+      "بیشترین میزان صرفه‌جویی",
+      "دسترسی زودهنگام به امکانات جدید",
+      "گفتگوی صوتی زنده با آراما",
+    ],
+  },
+];
+
 export function Pricing() {
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const load = async () => {
-    setLoading(true);
-    setError("");
+  const load = useCallback(async () => {
     try {
       const response = await fetch("/api/plans", { cache: "no-store" });
       const data = (await response.json()) as { plans?: Plan[]; error?: string };
-      if (!response.ok) throw new Error(data.error || "تعرفه‌ها بارگذاری نشدند.");
-      setPlans(data.plans ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "تعرفه‌ها بارگذاری نشدند.");
-    } finally {
-      setLoading(false);
+      if (response.ok && data.plans && data.plans.length > 0) {
+        setPlans(data.plans);
+        setError("");
+      }
+    } catch {
+      // Keep DEFAULT_PLANS visible if network fetch fails
     }
-  };
+  }, []);
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <section id="pricing" className="relative scroll-mt-28 overflow-hidden bg-canvas-warm/60 py-24 sm:py-32">

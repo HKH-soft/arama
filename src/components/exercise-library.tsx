@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Anchor, Check, Heart, Pause, PenLine, Play, Sparkles, Wind, WifiOff, X, Plus, Minus } from "lucide-react";
 import type { Exercise } from "@/db/schema";
 
@@ -275,10 +276,12 @@ function BreathingSession({
             <div className="flex-1 flex flex-col p-4 sm:p-6 pb-24">
               {/* Header */}
               <div className="relative h-48 sm:h-56 w-full rounded-[2rem] overflow-hidden mb-6 shrink-0 shadow-md">
-                <img
+                <Image
                   src={exercise.iconName === "wind" ? "/images/meditation/breath-guide.jpg" : "/images/meditation/forest-ambience.jpg"}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  alt="Background"
+                  fill
+                  sizes="(min-width: 640px) 560px, 100vw"
+                  className="object-cover"
+                  alt={exercise.title}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <button

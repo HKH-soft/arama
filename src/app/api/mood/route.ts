@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
               Math.max(0, Math.round(mood / 2) - 1),
             )
           ],
-        note: body.note?.trim() || null,
+        note: body.note ? body.note.trim().slice(0, 500) : null,
       })
       .returning();
     return NextResponse.json({ entry }, { status: 201 });

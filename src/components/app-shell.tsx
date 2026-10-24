@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   AudioLines,
   BarChart3,
@@ -9,6 +9,7 @@ import {
   CreditCard,
   LayoutDashboard,
   LifeBuoy,
+  LogOut,
   Menu,
   MessageCircleHeart,
   Settings,
@@ -35,11 +36,25 @@ const nav = [
 const mobilePrimary = nav.slice(0, 4);
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileName, setProfileName] = useState<string | null>(null);
   const [planName, setPlanName] = useState<string | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      router.push("/login");
+    }
+  };
 
   useEffect(() => {
     async function loadUserData() {
@@ -144,7 +159,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
             </div>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              title="خروج از حساب کاربری"
+              aria-label="خروج از حساب کاربری"
+              className="grid size-9 place-items-center rounded-2xl text-soft transition-colors hover:bg-danger/10 hover:text-danger disabled:opacity-50"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -254,7 +281,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 </div>
               </div>
-              <ThemeToggle />
+              <div className="flex items-center gap-1.5">
+                <ThemeToggle />
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  title="خروج از حساب کاربری"
+                  aria-label="خروج از حساب کاربری"
+                  className="grid size-9 place-items-center rounded-2xl text-soft transition-colors hover:bg-danger/10 hover:text-danger disabled:opacity-50"
+                >
+                  <LogOut className="size-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

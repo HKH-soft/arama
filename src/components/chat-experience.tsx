@@ -3,18 +3,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
+  Check,
+  CloudRain,
+  Copy,
+  Flame,
+  Headphones,
   MessageCircleHeart,
   Mic,
+  MicOff,
+  Moon,
+  Music,
   PanelLeftClose,
   PanelLeftOpen,
   Plus,
   RefreshCw,
   SendHorizonal,
+  Sparkles,
   Trash2,
+  Volume2,
+  Waves,
   Wind,
 } from "lucide-react";
 import { AramaMark } from "./logo";
 import { Ambient } from "./ambient";
+import { useAmbientPlayer } from "./ambient-provider";
 
 type Msg = { id: string; from: "ai" | "user"; text: string; time: string };
 
@@ -34,7 +46,8 @@ function updateMessage(msgs: Msg[], id: string, text: string) {
 
 export function ChatExperience() {
   const searchParams = useSearchParams();
-  const initialConversation = searchParams.get("conversation") ?? undefined;
+  const initialConversation =
+    searchParams.get("conversation") ?? searchParams.get("id") ?? undefined;
 
   const [messages, setMessages] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
@@ -50,6 +63,82 @@ export function ChatExperience() {
   const [historyLoading, setHistoryLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [listening, setListening] = useState(false);
+  const [showPrompts, setShowPrompts] = useState(false);
+
+  // ambient player for calming audio during chat
+  const ambient = useAmbientPlayer();
+  const [ambientMenuOpen, setAmbientMenuOpen] = useState(false);
+
+  const ambientSoundscapes = [
+    { id: "rain", title: "باران پشت پنجره", icon: CloudRain, url: "/audio/rain-window.wav", art: "/images/meditation/forest-ambience.jpg" },
+    { id: "sleep", title: "فرکانس ۴۳۲ هرتز خواب", icon: Moon, url: "/audio/deep-sleep-432hz.wav", art: "/images/meditation/night-safe.jpg" },
+    { id: "fire", title: "شومینه و کلبه چوبی", icon: Flame, url: "/audio/fireplace-cabin.wav", art: "/images/meditation/night-safe.jpg" },
+    { id: "ocean", title: "امواج عمیق اقیانوس", icon: Waves, url: "/audio/ocean-waves-deep.wav", art: "/images/meditation/ocean-calm.jpg" },
+    { id: "bowl", title: "کاسه تبتی ۵۲۸ هرتز", icon: Music, url: "/audio/tibetan-singing-bowl.wav", art: "/images/meditation/bell-vibrant.jpg" },
+    { id: "forest", title: "پرندگان و رودخانه", icon: Wind, url: "/audio/forest-birds-stream.wav", art: "/images/meditation/forest-ambience.jpg" },
+  ];
+
+  const copyText = (id: string, text: string) => {
+    void navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const speakText = (id: string, text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speakingId === id) {
+      window.speechSynthesis.cancel();
+      setSpeakingId(null);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "fa-IR";
+    utterance.rate = 0.95;
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => setSpeakingId(null);
+    setSpeakingId(id);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleVoiceInput = () => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition ||
+      (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("مرورگر شما از ورودی صوتی پشتیبانی نمی‌کند.");
+      return;
+    }
+
+    if (listening) {
+      setListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "fa-IR";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => setListening(true);
+      recognition.onresult = (event: { results: Array<Array<{ transcript: string }>> }) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript) {
+          setDraft((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        }
+      };
+      recognition.onerror = () => setListening(false);
+      recognition.onend = () => setListening(false);
+      recognition.start();
+    } catch {
+      setListening(false);
+    }
+  };
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -205,12 +294,18 @@ export function ChatExperience() {
             .split("\n")
             .find((part) => part.startsWith("data: "));
           if (!line) continue;
-          const payload = JSON.parse(line.slice(6)) as {
+          let payload: {
             type?: string;
             text?: string;
             message?: string;
             conversationId?: string;
-          };
+          } | null = null;
+          try {
+            payload = JSON.parse(line.slice(6));
+          } catch {
+            continue;
+          }
+          if (!payload) continue;
           if (payload.type === "delta" && payload.text) {
             received = true;
             setMessages((cur) =>
@@ -382,6 +477,93 @@ export function ChatExperience() {
               </div>
             </div>
           </div>
+
+          {/* ── Ambient Soundscape Controller ── */}
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setAmbientMenuOpen((v) => !v)}
+              className={`flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-bold transition-all ${
+                ambient.track
+                  ? "border-brand-glow/40 bg-brand-glow/10 text-brand-glow shadow-sm"
+                  : "border-line/70 bg-card text-soft hover:bg-tint hover:text-brand-ink shadow-sm"
+              }`}
+              title="پخش صوت آرامش‌بخش در پس‌زمینه"
+            >
+              {ambient.track ? (
+                <>
+                  <span className="flex items-center gap-0.5" aria-hidden>
+                    <span className="wave-bar h-3 w-0.5 rounded-full bg-brand-glow" />
+                    <span className="wave-bar h-4 w-0.5 rounded-full bg-brand-glow" style={{ animationDelay: "0.15s" }} />
+                    <span className="wave-bar h-2.5 w-0.5 rounded-full bg-brand-glow" style={{ animationDelay: "0.3s" }} />
+                  </span>
+                  <span className="hidden sm:inline font-extrabold">{ambient.track.title}</span>
+                </>
+              ) : (
+                <>
+                  <Headphones className="size-4 text-brand-ink" />
+                  <span className="hidden sm:inline">صوت آرامش</span>
+                </>
+              )}
+            </button>
+
+            {ambientMenuOpen && (
+              <div className="absolute start-0 sm:start-auto sm:end-0 top-full mt-2 z-50 w-64 rounded-2xl border border-line bg-card/95 p-3 shadow-[var(--shadow-lift)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between pb-2 border-b border-line mb-2">
+                  <span className="text-xs font-black text-ink">صوت پس‌زمینه گفتگو</span>
+                  {ambient.track && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        ambient.setTrack(null);
+                        setAmbientMenuOpen(false);
+                      }}
+                      className="text-[10px] font-bold text-rose-500 hover:underline"
+                    >
+                      توقف صدا
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  {ambientSoundscapes.map((snd) => {
+                    const isCurrent = ambient.track?.audioUrl === snd.url;
+                    const Icon = snd.icon;
+                    return (
+                      <button
+                        key={snd.id}
+                        type="button"
+                        onClick={() => {
+                          if (isCurrent) {
+                            ambient.setTrack(null);
+                          } else {
+                            ambient.setTrack({
+                              id: `ambient-${snd.id}`,
+                              title: snd.title,
+                              coverArt: snd.art,
+                              audioUrl: snd.url,
+                              createdAt: new Date(),
+                            });
+                          }
+                          setAmbientMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-bold transition-colors ${
+                          isCurrent
+                            ? "bg-brand-deep text-onbrand"
+                            : "hover:bg-tint text-ink"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Icon className="size-3.5" />
+                          <span>{snd.title}</span>
+                        </span>
+                        {isCurrent && <Check className="size-3" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </header>
 
         <div
@@ -416,23 +598,50 @@ export function ChatExperience() {
                   className={`animate-rise flex w-full flex-col ${marginTop}`}
                 >
                   <div className={`flex flex-col w-fit max-w-[88%] sm:max-w-[82%] ${isUser ? "ml-auto items-end" : "mr-auto items-start"}`}>
-                    <div
-                      className={`px-4.5 py-3.5 text-sm leading-7 sm:text-[15px] sm:leading-8 ${roundedClasses} ${
-                        isUser
-                          ? "bg-brand-deep text-onbrand shadow-[var(--shadow-brand)]"
-                          : "bg-card border border-line/60 text-ink shadow-[var(--shadow-soft)]"
-                      }`}
-                    >
-                      {m.text || (
-                        <div className="flex h-4 items-center gap-0.5 px-1 py-1" aria-label="آراما در حال فکر کردن است">
-                          <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-80" />
-                          <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-60" style={{ animationDelay: "0.15s" }} />
-                          <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-40" style={{ animationDelay: "0.3s" }} />
+                    <div className="relative group/msg w-full">
+                      <div
+                        className={`px-4.5 py-3.5 text-sm leading-7 sm:text-[15px] sm:leading-8 ${roundedClasses} ${
+                          isUser
+                            ? "bg-brand-deep text-onbrand shadow-[var(--shadow-brand)]"
+                            : "bg-card border border-line/60 text-ink shadow-[var(--shadow-soft)]"
+                        }`}
+                      >
+                        {m.text || (
+                          <div className="flex h-4 items-center gap-0.5 px-1 py-1" aria-label="آراما در حال فکر کردن است">
+                            <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-80" />
+                            <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-60" style={{ animationDelay: "0.15s" }} />
+                            <span className="wave-bar w-1 rounded-full bg-brand-glow opacity-40" style={{ animationDelay: "0.3s" }} />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action buttons (Copy & TTS) */}
+                      {m.text && (
+                        <div className={`mt-1 flex items-center gap-1.5 opacity-0 group-hover/msg:opacity-100 transition-opacity ${isUser ? "justify-end" : "justify-start"}`}>
+                          <button
+                            type="button"
+                            onClick={() => copyText(m.id, m.text)}
+                            className="p-1 rounded-lg text-faint hover:text-ink hover:bg-card text-xs flex items-center gap-1 transition"
+                            title="کپی متن"
+                          >
+                            {copiedId === m.id ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
+                            {copiedId === m.id && <span className="text-[10px] text-emerald-600">کپی شد</span>}
+                          </button>
+                          {!isUser && (
+                            <button
+                              type="button"
+                              onClick={() => speakText(m.id, m.text)}
+                              className={`p-1 rounded-lg text-xs flex items-center gap-1 transition ${speakingId === m.id ? "text-brand-glow bg-brand-glow/10" : "text-faint hover:text-ink hover:bg-card"}`}
+                              title={speakingId === m.id ? "توقف خواندن" : "شنیدن پیام"}
+                            >
+                              <Volume2 className={`size-3 ${speakingId === m.id ? "animate-pulse" : ""}`} />
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
                     {isLastInGroup && (
-                      <span className={`mt-1.5 px-2 text-[10px] font-semibold text-faint ${isUser ? "text-right" : "text-left"}`}>
+                      <span className={`mt-1 px-2 text-[10px] font-semibold text-faint ${isUser ? "text-right" : "text-left"}`}>
                         {m.time}
                       </span>
                     )}
@@ -460,29 +669,122 @@ export function ChatExperience() {
             )}
 
             {welcomeOnly && (
-              <div className="mt-4 flex flex-wrap gap-2 self-start">
-                {[
-                  "روز پر استرسی رو گذروندم",
-                  "ذهنم خیلی شلوغه",
-                  "نمی‌دونم از کجا شروع کنم...",
-                ].map((choice) => (
-                  <button
-                    key={choice}
-                    type="button"
-                    onClick={() => void send(choice)}
-                    className="rounded-full border border-brand/20 bg-card/80 px-4 py-2.5 text-xs font-bold text-brand-ink shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-tint hover:shadow-[var(--shadow-soft)]"
-                  >
-                    {choice}
-                  </button>
-                ))}
+              <div className="mt-5 space-y-3">
+                <p className="text-xs font-extrabold text-soft">می‌توانی از این موضوعات شروع کنی یا هر احساسی داری بنویسی:</p>
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {[
+                    { label: "مهار فوری تپش قلب و پانیک (SOS)", prompt: "تپش قلب و اضطراب شدید دارم، لطفاً یک تمرین فوری برای مهار پانیک بهم بده.", emoji: "🚨", color: "border-rose-500/20 hover:border-rose-500/50 hover:bg-rose-500/5" },
+                    { label: "خواب آرام و رهایی از فکر شبانه", prompt: "خوابم نمی‌بره و مغزم از فکر و خیال خاموش نمیشه؛ کمکم کن بخوابم.", emoji: "🌙", color: "border-indigo-500/20 hover:border-indigo-500/50 hover:bg-indigo-500/5" },
+                    { label: "تمرین تنفس هدایت‌شده ۴-۴-۴-۴", prompt: "یک تمرین هدایت‌شده تنفس جعبه‌ای با من شروع کن تا آروم بشم.", emoji: "🌬️", color: "border-teal-500/20 hover:border-teal-500/50 hover:bg-teal-500/5" },
+                    { label: "تخلیه غم، تنهایی و دلتنگی", prompt: "خیلی احساس تنهایی و غم دارم و دلم گرفته؛ نیاز به یک گوش شنوا دارم.", emoji: "🤍", color: "border-brand/20 hover:border-brand/50 hover:bg-brand/5" },
+                    { label: "غلبه بر تنبلی و عذاب وجدان", prompt: "دچار اهمال‌کاری و بی‌انگیزگی شدم و عذاب وجدان دارم؛ چطور یک قدم بردارم؟", emoji: "🎯", color: "border-amber-500/20 hover:border-amber-500/50 hover:bg-amber-500/5" },
+                    { label: "شنیدن صدای باران در پس‌زمینه", action: "rain", emoji: "🌧️", color: "border-sky-500/20 hover:border-sky-500/50 hover:bg-sky-500/5" },
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        if (item.action === "rain") {
+                          ambient.setTrack({
+                            id: "ambient-rain",
+                            title: "باران پشت پنجره",
+                            coverArt: "/images/meditation/forest-ambience.jpg",
+                            audioUrl: "/audio/rain-window.wav",
+                            createdAt: new Date(),
+                          });
+                        } else if (item.prompt) {
+                          void send(item.prompt);
+                        }
+                      }}
+                      className={`flex items-center gap-3 rounded-2xl border bg-card/90 p-3.5 text-start shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] ${item.color}`}
+                    >
+                      <span className="text-xl shrink-0">{item.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-xs font-extrabold text-ink">{item.label}</span>
+                        <span className="block text-[11px] text-soft mt-0.5 truncate">
+                          {item.action === "rain" ? "پخش صدای باران در حین گفتگو با آراما" : item.prompt}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
-
-
           </div>
         </div>
 
-        <div className="bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-3 pb-4 pt-6 sm:px-8 sm:pb-6">
+        <div className="bg-gradient-to-t from-canvas via-canvas/95 to-transparent px-3 pb-4 pt-3 sm:px-8 sm:pb-6">
+          {/* Aramia-style Quick SOS & Mindfulness Tools Bar */}
+          <div className="mx-auto max-w-2xl mb-2.5">
+            <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
+              <button
+                type="button"
+                onClick={() => void send("تپش قلب و اضطراب شدید دارم؛ لطفاً یک تمرین فوری برای مهار پانیک بهم بده.")}
+                className="shrink-0 flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-[11px] font-black text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-all shadow-sm"
+              >
+                <span>🚨</span>
+                <span>مهار فوری پانیک (SOS)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void send("خوابم نمی‌بره و درگیر نشخوار فکری هستم؛ چطور ذهنم رو خاموش کنم؟")}
+                className="shrink-0 flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition-all"
+              >
+                <span>🌙</span>
+                <span>آرامش خواب</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void send("یک تمرین هدایت‌شده تنفس جعبه‌ای ۴-۴-۴-۴ با من شروع کن.")}
+                className="shrink-0 flex items-center gap-1.5 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1.5 text-[11px] font-bold text-teal-700 dark:text-teal-300 hover:bg-teal-500/20 transition-all"
+              >
+                <span>🌬️</span>
+                <span>تنفس جعبه‌ای</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  ambient.setTrack({
+                    id: "ambient-rain",
+                    title: "باران پشت پنجره",
+                    coverArt: "/images/meditation/forest-ambience.jpg",
+                    audioUrl: "/audio/rain-window.wav",
+                    createdAt: new Date(),
+                  });
+                }}
+                className="shrink-0 flex items-center gap-1.5 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-[11px] font-bold text-sky-700 dark:text-sky-300 hover:bg-sky-500/20 transition-all"
+              >
+                <span>🌧️</span>
+                <span>صدای باران</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void send("دچار اهمال‌کاری و بی‌انگیزگی شدم و عذاب وجدان دارم؛ چطور شروع کنم؟")}
+                className="shrink-0 flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-all"
+              >
+                <span>🎯</span>
+                <span>حل اهمال‌کاری</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void send("خیلی احساس تنهایی و غم دارم؛ نیاز به یک گوش شنوا دارم.")}
+                className="shrink-0 flex items-center gap-1.5 rounded-full border border-brand/30 bg-card px-3 py-1.5 text-[11px] font-bold text-brand-ink hover:bg-tint transition-all"
+              >
+                <span>🤍</span>
+                <span>تخلیه غم</span>
+              </button>
+            </div>
+          </div>
+
+          {listening && (
+            <div className="mx-auto max-w-2xl mb-2 text-center">
+              <span className="text-xs font-bold text-rose-500 animate-pulse flex items-center justify-center gap-1.5">
+                <span className="size-2 rounded-full bg-rose-500" />
+                در حال شنیدن صدای شما... صحبت کنید...
+              </span>
+            </div>
+          )}
+
           <form
             className="mx-auto flex max-w-2xl items-center gap-2"
             onSubmit={(e) => {
@@ -490,13 +792,6 @@ export function ChatExperience() {
               void send();
             }}
           >
-            <button
-              type="button"
-              aria-label="افزودن پیوست"
-              className="hidden size-12 shrink-0 place-items-center rounded-2xl bg-card text-faint shadow-[var(--shadow-soft)] transition-colors hover:bg-tint hover:text-brand-ink sm:grid"
-            >
-              <Plus className="size-5" />
-            </button>
             <label htmlFor="chat-input" className="sr-only">
               پیام تو به آراما
             </label>
@@ -505,16 +800,23 @@ export function ChatExperience() {
                 id="chat-input"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder="اینجا بنویس…"
+                placeholder={listening ? "در حال گوش دادن... صحبت کنید..." : "اینجا بنویس…"}
                 autoComplete="off"
-                className="w-full rounded-2xl border border-line/80 bg-card/90 px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-ink shadow-[var(--shadow-soft)] outline-none backdrop-blur-md transition-all placeholder:text-faint focus-within:border-brand-glow focus-within:ring-4 focus-within:ring-brand-glow/10 sm:py-4 sm:pr-14"
+                className={`w-full rounded-2xl border bg-card/90 px-4 py-3.5 pr-12 text-base sm:text-sm font-medium text-ink shadow-[var(--shadow-soft)] outline-none backdrop-blur-md transition-all placeholder:text-faint focus-within:border-brand-glow focus-within:ring-4 focus-within:ring-brand-glow/10 sm:py-4 sm:pr-14 ${
+                  listening ? "border-rose-400 ring-4 ring-rose-500/10" : "border-line/80"
+                }`}
               />
               <button
                 type="button"
-                aria-label="پیام صوتی"
-                className="absolute right-2 grid size-9 place-items-center rounded-xl text-faint transition-colors hover:bg-tint hover:text-brand-ink sm:right-2 sm:size-10"
+                onClick={toggleVoiceInput}
+                aria-label={listening ? "توقف ضبط صدا" : "ورودی صوتی"}
+                className={`absolute right-2 grid size-9 place-items-center rounded-xl transition-colors sm:right-2 sm:size-10 ${
+                  listening
+                    ? "bg-rose-500 text-white animate-pulse"
+                    : "text-faint hover:bg-tint hover:text-brand-ink"
+                }`}
               >
-                <Mic className="size-4 sm:size-5" />
+                {listening ? <MicOff className="size-4 sm:size-5" /> : <Mic className="size-4 sm:size-5" />}
               </button>
             </div>
             <button

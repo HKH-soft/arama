@@ -19,7 +19,17 @@ export async function GET(request: NextRequest) {
       .from(meditationTracks)
       .where(filters.length ? and(...filters) : undefined)
       .orderBy(asc(meditationTracks.createdAt));
-    return NextResponse.json({ tracks: rows, categories: ["همه", "خواب", "تمرکز", "کاهش اضطراب", "تنفس"] });
+    return NextResponse.json({
+      tracks: rows,
+      categories: [
+        "همه",
+        "خواب و ریلکسیشن",
+        "کاهش اضطراب و پانیک",
+        "تمرکز و مطالعه",
+        "تنفس و ذهن‌آگاهی",
+        "شکرگزاری و آرامش",
+      ],
+    });
   } catch {
     return NextResponse.json({ error: "کتابخانهٔ مدیتیشن فعلاً در دسترس نیست." }, { status: 503 });
   }

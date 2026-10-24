@@ -46,41 +46,7 @@ export function VoiceJournalCard() {
     };
   }, [isRecording, stopRecording]);
 
-  const startRecording = useCallback(async () => {
-    try {
-      setError(null);
-      setResult(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
-        // Stop all tracks to release microphone
-        stream.getTracks().forEach((track) => track.stop());
-        await processAudio(audioBlob, recordingTime);
-      };
-
-      mediaRecorder.start();
-      // eslint-disable-next-line react-hooks/purity
-      startTimeRef.current = Date.now();
-      setRecordingTime(0);
-      setIsRecording(true);
-    } catch (err) {
-      console.error(err);
-      setError("دسترسی به میکروفون داده نشد یا خطایی رخ داد.");
-    }
-  }, []);
-
-
-  const processAudio = async (blob: Blob, durationSeconds: number) => {
+  const processAudio = useCallback(async (blob: Blob, durationSeconds: number) => {
     setIsProcessing(true);
     setError(null);
 
@@ -102,12 +68,46 @@ export function VoiceJournalCard() {
       const data = await res.json();
       setResult(data);
       router.refresh(); // Refresh dashboard to show the new mood
-    } catch (err: any) {
-      setError(err.message || "اتصال برقرار نشد.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "اتصال برقرار نشد.";
+      setError(msg);
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [router]);
+
+  const startRecording = useCallback(async () => {
+    try {
+      setError(null);
+      setResult(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+        // Stop all tracks to release microphone
+        stream.getTracks().forEach((track) => track.stop());
+        const elapsed = Math.max(1, Math.round((Date.now() - (startTimeRef.current || Date.now())) / 1000));
+        await processAudio(audioBlob, elapsed);
+      };
+
+      mediaRecorder.start();
+      startTimeRef.current = Date.now();
+      setRecordingTime(0);
+      setIsRecording(true);
+    } catch (err) {
+      console.error(err);
+      setError("دسترسی به میکروفون داده نشد یا خطایی رخ داد.");
+    }
+  }, [processAudio]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);

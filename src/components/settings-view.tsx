@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Check, RefreshCw, WifiOff, AlertTriangle } from "lucide-react";
+import { Bell, BellOff, Check, RefreshCw, WifiOff, AlertTriangle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Profile = {
@@ -21,7 +21,20 @@ export function SettingsView() {
   const [saveError, setSaveError] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
+
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      router.push("/login");
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -184,7 +197,25 @@ export function SettingsView() {
           هر زمان بخواهی می‌توانی از صفحهٔ «تاریخچهٔ گفتگوها» آن‌ها را پاک کنی.
         </p>
 
-        <div className="mt-8 border-t border-line pt-6">
+        <div className="mt-8 border-t border-line pt-6 flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-ink">خروج از حساب کاربری</h3>
+            <p className="mt-1 text-xs text-soft">
+              خروج از نشست فعلی و بازگشت به صفحه ورود.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="inline-flex items-center gap-2 rounded-xl border border-line bg-canvas/60 px-4 py-2 text-xs font-bold text-ink hover:bg-danger/10 hover:text-danger hover:border-danger/30 transition-colors disabled:opacity-50"
+          >
+            <LogOut className="size-3.5" />
+            {loggingOut ? "در حال خروج..." : "خروج"}
+          </button>
+        </div>
+
+        <div className="mt-6 border-t border-line pt-6">
           <h3 className="text-sm font-bold text-danger">حذف حساب کاربری</h3>
           <p className="mt-2 text-xs leading-6 text-faint">
             این عملیات غیرقابل بازگشت است و تمام پروفایل، گفتگوها، سوابق خلق‌وخو و اشتراک شما برای همیشه حذف خواهد شد.
